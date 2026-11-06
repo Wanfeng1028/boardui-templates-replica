@@ -1,0 +1,392 @@
+[
+  {
+    "slug": "templates",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-templates-1440.png"
+  },
+  {
+    "slug": "templates",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-templates-768.png"
+  },
+  {
+    "slug": "templates",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-templates-390.png"
+  },
+  {
+    "slug": "dashboard",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-dashboard-1440.png"
+  },
+  {
+    "slug": "dashboard",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-dashboard-768.png"
+  },
+  {
+    "slug": "dashboard",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-dashboard-390.png"
+  },
+  {
+    "slug": "project-board",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-project-board-1440.png"
+  },
+  {
+    "slug": "project-board",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-project-board-768.png"
+  },
+  {
+    "slug": "project-board",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-project-board-390.png"
+  },
+  {
+    "slug": "marketing",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-marketing-1440.png"
+  },
+  {
+    "slug": "marketing",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-marketing-768.png"
+  },
+  {
+    "slug": "marketing",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-marketing-390.png"
+  },
+  {
+    "slug": "calendar",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-calendar-1440.png"
+  },
+  {
+    "slug": "calendar",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-calendar-768.png"
+  },
+  {
+    "slug": "calendar",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-calendar-390.png"
+  },
+  {
+    "slug": "finance",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-finance-1440.png"
+  },
+  {
+    "slug": "finance",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-finance-768.png"
+  },
+  {
+    "slug": "finance",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-finance-390.png"
+  },
+  {
+    "slug": "medical-profile",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-medical-profile-1440.png"
+  },
+  {
+    "slug": "medical-profile",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-medical-profile-768.png"
+  },
+  {
+    "slug": "medical-profile",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-medical-profile-390.png"
+  },
+  {
+    "slug": "hr-management",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-hr-management-1440.png"
+  },
+  {
+    "slug": "hr-management",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-hr-management-768.png"
+  },
+  {
+    "slug": "hr-management",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-hr-management-390.png"
+  },
+  {
+    "slug": "ai-chat",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-chat-1440.png"
+  },
+  {
+    "slug": "ai-chat",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-chat-768.png"
+  },
+  {
+    "slug": "ai-chat",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-chat-390.png"
+  },
+  {
+    "slug": "ai-image-generation",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-image-generation-1440.png"
+  },
+  {
+    "slug": "ai-image-generation",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-image-generation-768.png"
+  },
+  {
+    "slug": "ai-image-generation",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-image-generation-390.png"
+  },
+  {
+    "slug": "ai-profile",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-profile-1440.png"
+  },
+  {
+    "slug": "ai-profile",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-profile-768.png"
+  },
+  {
+    "slug": "ai-profile",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-ai-profile-390.png"
+  },
+  {
+    "slug": "pro-components",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-components-1440.png"
+  },
+  {
+    "slug": "pro-components",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-components-768.png"
+  },
+  {
+    "slug": "pro-components",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-components-390.png"
+  },
+  {
+    "slug": "pro-charts",
+    "w": 1440,
+    "dark": true,
+    "scrollW": 1440,
+    "clientW": 1440,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-charts-1440.png"
+  },
+  {
+    "slug": "pro-charts",
+    "w": 768,
+    "dark": true,
+    "scrollW": 768,
+    "clientW": 768,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-charts-768.png"
+  },
+  {
+    "slug": "pro-charts",
+    "w": 390,
+    "dark": true,
+    "scrollW": 390,
+    "clientW": 390,
+    "bodyBg": "rgb(18, 18, 18)",
+    "bodyColor": "lab(98.26 0 0)",
+    "file": "dark-pro-charts-390.png"
+  }
+]

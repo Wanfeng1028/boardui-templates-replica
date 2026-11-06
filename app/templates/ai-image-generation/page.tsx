@@ -40,7 +40,10 @@ import { cx } from "@/utils/cx";
  * shown in the gallery list below; the 7 image tiles use BoardUI's free
  * carousel assets as stand-ins (the official generated images are Pro
  * content and are not in the free repo), each paired with the first 7
- * original prompts in order.
+ * original prompts in order. Prompts 8–20 have no free image at all, so
+ * they render as gradient placeholder tiles (content-matched theme-token
+ * gradients, badged "Placeholder") in the same card shape — the gallery
+ * stays complete without pretending the placeholders are the originals.
  *
  * Images use plain <img>: this repo builds with output: "export", and
  * next/image's default optimizer throws a runtime error under that setting.
@@ -99,6 +102,36 @@ const GALLERY_SEED: Generation[] = [
   { id: "g6", src: "/carousel/sunrise.webp", prompt: ORIGINAL_PROMPTS[5], style: "Cel-shaded", liked: null },
   { id: "g7", src: "/carousel/shark-collage.webp", prompt: ORIGINAL_PROMPTS[6], style: "Impasto", liked: null },
 ];
+
+/**
+ * Gradient stand-ins for the remaining 13 original prompts (8–20).
+ * The official generated images are Pro content and are not in the free
+ * repo, so each prompt gets a content-matched two-stop gradient built
+ * only from BoardUI theme tokens (chart / neutral), plus an explicit
+ * Placeholder badge — never presented as the original image.
+ * Gradient pairs are [from, to] in 135deg order, one per prompt 8–20.
+ */
+const PLACEHOLDER_GRADIENTS: [string, string][] = [
+  ["var(--color-chart-2)", "var(--color-chart-7)"], // Hoopoes in olive branches — olive green
+  ["var(--color-chart-3)", "var(--color-chart-5)"], // Girls and blooms — pink blooms
+  ["var(--color-chart-6)", "var(--color-chart-4)"], // Biker resting — dusty blue
+  ["var(--color-chart-4)", "var(--color-chart-1)"], // Beach kid — sea sky
+  ["var(--color-chart-3)", "var(--color-chart-3-active)"], // Reader on pink — tonal pink
+  ["var(--color-chart-6)", "var(--color-chart-1)"], // Underwater highway — deep sea
+  ["var(--color-chart-5)", "var(--color-chart-3)"], // Perfume still life — grainy neon
+  ["var(--color-chart-8)", "var(--color-chart-8-active)"], // Yellow cabs — tonal yellow
+  ["var(--color-chart-8)", "var(--color-chart-3)"], // Goldfish living room — warm gold
+  ["var(--color-chart-3-active)", "var(--color-chart-5)"], // Linen campaign — deep crimson
+  ["var(--color-neutral-400)", "var(--color-neutral-600)"], // Helmet portraits — risograph graphite
+  ["var(--color-chart-7)", "var(--color-chart-1)"], // Racing suit — metallic green
+  ["var(--color-neutral-300)", "var(--color-neutral-500)"], // MASSIV3 packaging — studio grey
+];
+
+const PLACEHOLDER_TILES = ORIGINAL_PROMPTS.slice(7).map((prompt, i) => ({
+  prompt,
+  style: STYLES[(i + 7) % STYLES.length],
+  gradient: `linear-gradient(135deg, ${PLACEHOLDER_GRADIENTS[i][0]}, ${PLACEHOLDER_GRADIENTS[i][1]})`,
+}));
 
 const MESSI_PROMPT =
   "Create a vintage editorial illustration of Lionel Messi dribbling in Argentina's home kit against a blue background.";
@@ -330,7 +363,7 @@ export default function AiImageGenerationTemplatePage() {
               </div>
 
               <p className="px-1 text-body-2-regular text-text-tertiary">
-                Images are stand-ins from BoardUI&apos;s free carousel assets; the prompts are the originals from the template.
+                Images are stand-ins from BoardUI&apos;s free carousel assets; prompts 8–20 use gradient placeholder tiles — the original generated images are Pro-only. The prompts themselves are the originals from the template.
               </p>
             </div>
           </div>
@@ -522,13 +555,36 @@ function GalleryPanel({
             </div>
           )}
           <div className="pt-4">
+            <p className="pb-2 text-body-2-medium text-text-tertiary">Prompts 8–20 · gradient placeholders — the original images are Pro-only</p>
+            <div className="grid w-full grid-cols-1 gap-3 min-[480px]:grid-cols-2">
+              {PLACEHOLDER_TILES.map((tile) => (
+                <figure key={tile.prompt} className="flex w-full flex-col gap-2 overflow-hidden rounded-2xl border border-border-button-default bg-background-primary-default p-2">
+                  <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl" style={{ backgroundImage: tile.gradient }}>
+                    <RiImageAiLine className="size-10 text-white/80" aria-hidden />
+                    <span className="absolute start-2 top-2 rounded-full bg-black/45 px-2 py-0.5 text-body-2-medium text-white">Placeholder</span>
+                  </div>
+                  <figcaption className="flex w-full items-start justify-between gap-2 px-1 pb-1">
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span title={tile.prompt} className="line-clamp-2 text-body-medium text-text-primary">{tile.prompt}</span>
+                      <span className="text-body-2-regular text-text-tertiary">{tile.style} · Placeholder</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+          <div className="pt-4">
             <p className="pb-2 text-body-2-medium text-text-tertiary">All 20 original prompts</p>
             <ul className="flex flex-col gap-1">
               {ORIGINAL_PROMPTS.map((prompt, i) => (
                 <li key={prompt} className="flex items-center gap-2 text-body-2-regular text-text-secondary">
                   <span className="w-6 shrink-0 text-end tabular-nums text-text-tertiary">{i + 1}</span>
                   <span className="min-w-0 truncate">{prompt}</span>
-                  {i < 7 && <span className="shrink-0 rounded-md bg-background-primary-default px-1.5 py-0.5 text-body-2-medium text-text-tertiary">in gallery</span>}
+                  {i < 7 ? (
+                    <span className="shrink-0 rounded-md bg-background-primary-default px-1.5 py-0.5 text-body-2-medium text-text-tertiary">in gallery</span>
+                  ) : (
+                    <span className="shrink-0 rounded-md bg-background-primary-default px-1.5 py-0.5 text-body-2-medium text-text-tertiary">placeholder</span>
+                  )}
                 </li>
               ))}
             </ul>

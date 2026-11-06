@@ -159,56 +159,62 @@ const REVENUE: Record<Period, ChartPoint[]> = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Contributions heatmap: 53 weeks x 7 days, total exactly 958.        */
+/* ------------------------------------------------------------------ */
+/* Contributions heatmap: 259 cells verbatim from the official page's   */
+/* server HTML (aria-label + data-tier, DOM order, 7 rows x 37 cols).   */
+/* NOTE: the cells sum to 1,721, not the card headline's 958 — the      */
+/* original page itself is inconsistent there; these are the real       */
+/* per-day counts, not rescaled to the headline.                        */
 /* ------------------------------------------------------------------ */
 
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-type HeatCell = { date: Date; value: number };
+// [date, count, tier] for all 259 heatmap cells, in the original's DOM order.
+// Values transcribed from boardui.com/templates/dashboard SSR HTML, aria-labels + data-tier.
+const DASHBOARD_HEATMAP: [string, number, number][] = [
+  ["Jan 1",0,0], ["Jan 11",0,0], ["Jan 21",23,4], ["Jan 31",3,1], ["Feb 10",1,1], ["Feb 19",0,0], ["Mar 1",10,3], ["Mar 11",3,1],
+  ["Mar 21",12,3], ["Mar 31",0,0], ["Apr 10",4,1], ["Apr 20",2,1], ["Apr 30",12,3], ["May 9",2,1], ["May 19",13,3], ["May 29",0,0],
+  ["Jun 8",6,2], ["Jun 18",20,4], ["Jun 28",1,1], ["Jul 8",6,2], ["Jul 18",4,1], ["Jul 27",9,2], ["Aug 6",0,0], ["Aug 16",0,0],
+  ["Aug 26",0,0], ["Sep 5",3,1], ["Sep 15",13,3], ["Sep 25",0,0], ["Oct 5",2,1], ["Oct 14",0,0], ["Oct 24",4,1], ["Nov 3",19,4],
+  ["Nov 13",0,0], ["Nov 23",0,0], ["Dec 3",11,3], ["Dec 13",6,2], ["Dec 23",9,2], ["Jan 2",0,0], ["Jan 12",0,0], ["Jan 22",36,5],
+  ["Feb 1",4,1], ["Feb 11",3,1], ["Feb 21",1,1], ["Mar 3",3,1], ["Mar 13",0,0], ["Mar 22",6,2], ["Apr 1",0,0], ["Apr 11",9,2],
+  ["Apr 21",0,0], ["May 1",9,2], ["May 11",0,0], ["May 21",3,1], ["May 31",3,1], ["Jun 9",3,1], ["Jun 19",10,3], ["Jun 29",13,3],
+  ["Jul 9",18,4], ["Jul 19",9,2], ["Jul 29",2,1], ["Aug 8",3,1], ["Aug 18",1,1], ["Aug 27",4,1], ["Sep 6",0,0], ["Sep 16",6,2],
+  ["Sep 26",0,0], ["Oct 6",0,0], ["Oct 16",1,1], ["Oct 26",8,2], ["Nov 5",0,0], ["Nov 14",24,4], ["Nov 24",0,0], ["Dec 4",11,3],
+  ["Dec 14",0,0], ["Dec 24",0,0], ["Jan 4",0,0], ["Jan 14",0,0], ["Jan 24",1,1], ["Feb 2",1,1], ["Feb 12",20,4], ["Feb 22",19,4],
+  ["Mar 4",6,2], ["Mar 14",0,0], ["Mar 24",0,0], ["Apr 3",26,5], ["Apr 13",6,2], ["Apr 22",2,1], ["May 2",0,0], ["May 12",9,2],
+  ["May 22",1,1], ["Jun 1",3,1], ["Jun 11",2,1], ["Jun 21",2,1], ["Jul 1",0,0], ["Jul 10",21,4], ["Jul 20",9,2], ["Jul 30",3,1],
+  ["Aug 9",21,4], ["Aug 19",22,4], ["Aug 29",4,1], ["Sep 8",9,2], ["Sep 18",13,3], ["Sep 27",15,3], ["Oct 7",29,5], ["Oct 17",6,2],
+  ["Oct 27",0,0], ["Nov 6",0,0], ["Nov 16",6,2], ["Nov 26",30,5], ["Dec 6",1,1], ["Dec 15",10,3], ["Dec 25",27,5], ["Jan 5",0,0],
+  ["Jan 15",6,2], ["Jan 25",0,0], ["Feb 4",6,2], ["Feb 14",6,2], ["Feb 24",38,5], ["Mar 5",15,3], ["Mar 15",4,1], ["Mar 25",9,2],
+  ["Apr 4",3,1], ["Apr 14",6,2], ["Apr 24",0,0], ["May 4",10,3], ["May 14",34,5], ["May 23",3,1], ["Jun 2",0,0], ["Jun 12",1,1],
+  ["Jun 22",0,0], ["Jul 2",0,0], ["Jul 12",6,2], ["Jul 22",9,2], ["Aug 1",0,0], ["Aug 11",1,1], ["Aug 20",1,1], ["Aug 30",6,2],
+  ["Sep 9",2,1], ["Sep 19",1,1], ["Sep 29",1,1], ["Oct 9",4,1], ["Oct 19",16,4], ["Oct 29",6,2], ["Nov 7",1,1], ["Nov 17",2,1],
+  ["Nov 27",11,3], ["Dec 7",14,3], ["Dec 17",0,0], ["Dec 27",21,4], ["Jan 7",6,2], ["Jan 17",0,0], ["Jan 26",14,3], ["Feb 5",6,2],
+  ["Feb 15",10,3], ["Feb 25",1,1], ["Mar 7",9,2], ["Mar 17",6,2], ["Mar 27",34,5], ["Apr 6",9,2], ["Apr 15",13,3], ["Apr 25",2,1],
+  ["May 5",3,1], ["May 15",6,2], ["May 25",6,2], ["Jun 4",17,4], ["Jun 14",0,0], ["Jun 24",33,5], ["Jul 3",6,2], ["Jul 13",0,0],
+  ["Jul 23",6,2], ["Aug 2",2,1], ["Aug 12",0,0], ["Aug 22",9,2], ["Sep 1",9,2], ["Sep 11",0,0], ["Sep 20",1,1], ["Sep 30",12,3],
+  ["Oct 10",2,1], ["Oct 20",9,2], ["Oct 30",2,1], ["Nov 9",0,0], ["Nov 19",4,1], ["Nov 29",12,3], ["Dec 8",0,0], ["Dec 18",0,0],
+  ["Dec 28",6,2], ["Jan 8",3,1], ["Jan 18",0,0], ["Jan 28",4,1], ["Feb 7",6,2], ["Feb 17",9,2], ["Feb 26",2,1], ["Mar 8",9,2],
+  ["Mar 18",2,1], ["Mar 28",12,3], ["Apr 7",0,0], ["Apr 17",14,3], ["Apr 27",6,2], ["May 7",3,1], ["May 16",3,1], ["May 26",6,2],
+  ["Jun 5",0,0], ["Jun 15",15,3], ["Jun 25",0,0], ["Jul 5",0,0], ["Jul 15",24,4], ["Jul 25",1,1], ["Aug 3",0,0], ["Aug 13",3,1],
+  ["Aug 23",4,1], ["Sep 2",6,2], ["Sep 12",3,1], ["Sep 22",4,1], ["Oct 2",3,1], ["Oct 12",0,0], ["Oct 21",0,0], ["Oct 31",6,2],
+  ["Nov 10",2,1], ["Nov 20",3,1], ["Nov 30",15,3], ["Dec 10",14,3], ["Dec 20",9,2], ["Dec 30",4,1], ["Jan 9",15,3], ["Jan 19",0,0],
+  ["Jan 29",0,0], ["Feb 8",15,3], ["Feb 18",6,2], ["Feb 28",11,3], ["Mar 10",0,0], ["Mar 20",10,3], ["Mar 29",6,2], ["Apr 8",23,4],
+  ["Apr 18",35,5], ["Apr 28",12,3], ["May 8",9,2], ["May 18",0,0], ["May 28",6,2], ["Jun 7",0,0], ["Jun 16",11,3], ["Jun 26",6,2],
+  ["Jul 6",33,5], ["Jul 16",11,3], ["Jul 26",1,1], ["Aug 5",6,2], ["Aug 15",2,1], ["Aug 25",0,0], ["Sep 3",13,3], ["Sep 13",9,2],
+  ["Sep 23",21,4], ["Oct 3",0,0], ["Oct 13",4,1], ["Oct 23",6,2], ["Nov 2",12,3], ["Nov 12",3,1], ["Nov 21",3,1], ["Dec 1",10,3],
+  ["Dec 11",15,3], ["Dec 21",0,0], ["Dec 31",2,1],
+];
+
+type HeatCell = { date: Date; value: number; tier: number };
 
 function buildContributions(): { cells: HeatCell[]; total: number } {
-  const rng = mulberry32(2026);
-  const start = new Date(2026, 0, 1);
-  const cells: HeatCell[] = [];
-  for (let col = 0; col < 37; col++) {
-    for (let row = 0; row < 7; row++) {
-      const date = new Date(start);
-      date.setDate(start.getDate() + col * 10 + row);
-      const r = rng();
-      const value =
-        r < 0.42 ? 0 : r < 0.62 ? 1 + Math.floor(rng() * 4) : r < 0.85 ? 5 + Math.floor(rng() * 9) : r < 0.96 ? 14 + Math.floor(rng() * 12) : 26 + Math.floor(rng() * 13);
-      cells.push({ date, value });
-    }
-  }
-  let sum = cells.reduce((s, c) => s + c.value, 0);
-  const target = 958;
-  const factor = target / Math.max(1, sum);
-  cells.forEach((c) => {
-    c.value = Math.round(c.value * factor);
+  const cells: HeatCell[] = DASHBOARD_HEATMAP.map(([label, value, tier]) => {
+    const [mon, day] = label.split(" ");
+    return { date: new Date(2026, MONTHS_SHORT.indexOf(mon), Number(day)), value, tier };
   });
-  sum = cells.reduce((s, c) => s + c.value, 0);
-  let i = 0;
-  while (sum !== target && i < 10000) {
-    const cell = cells[Math.floor(rng() * cells.length)];
-    if (sum < target) {
-      cell.value += 1;
-      sum += 1;
-    } else if (cell.value > 0) {
-      cell.value -= 1;
-      sum -= 1;
-    }
-    i += 1;
-  }
   return { cells, total: cells.reduce((s, c) => s + c.value, 0) };
-}
-
-function heatTier(value: number) {
-  if (value === 0) return 0;
-  if (value <= 4) return 1;
-  if (value <= 9) return 2;
-  if (value <= 19) return 3;
-  if (value <= 29) return 4;
-  return 5;
 }
 
 /* ------------------------------------------------------------------ */
@@ -581,7 +587,7 @@ function ContributionsCard() {
     const marks: { col: number; label: string }[] = [];
     let last = "";
     for (let col = 0; col < 37; col++) {
-      const date = cells[col * 7]?.date;
+      const date = cells[col]?.date;
       if (!date) continue;
       const m = MONTHS_SHORT[date.getMonth()];
       if (m !== last) {
@@ -649,7 +655,7 @@ function ContributionsCard() {
                 <button
                   key={i}
                   type="button"
-                  data-tier={heatTier(cell.value)}
+                  data-tier={cell.tier}
                   aria-label={readout(cell)}
                   onMouseEnter={() => setHovered(cell)}
                   onMouseLeave={() => setHovered(null)}

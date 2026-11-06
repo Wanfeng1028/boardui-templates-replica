@@ -21,7 +21,6 @@ import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 
 import {
   DASHBOARD_NAV,
   DashboardSidebar,
-  type DashboardNavItem,
 } from "@/components/application/dashboard/dashboard-sidebar";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -38,18 +37,12 @@ import { cx } from "@/utils/cx";
  * hires vs leavers, team breakdown, employee data table.
  * Built only from free BoardUI components + mock data. Not the Pro source.
  *
- * The shared sidebar (DASHBOARD_NAV) has no HR entry, so this page renders
- * the same sidebar with HR Management appended — the nav item is local to
- * this page until the shared nav is updated.
+ * The shared sidebar (DASHBOARD_NAV) includes HR Management, so this page
+ * uses it directly.
  */
 
-const HR_NAV: DashboardNavItem[] = [
-  ...DASHBOARD_NAV,
-  { key: "hr", label: "HR Management", icon: RiTeamLine, href: "/templates/hr-management" },
-];
-
 /* ------------------------------------------------------------------ */
-/* Local shell (TemplateShell + HR in the nav)                         */
+/* Local shell (same layout as TemplateShell)                           */
 /* ------------------------------------------------------------------ */
 
 function HrShell({
@@ -62,12 +55,12 @@ function HrShell({
   const [navOpen, setNavOpen] = useState(false);
   return (
     <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
-      <DashboardSidebar items={HR_NAV} selected="hr" className="hidden lg:flex" />
+      <DashboardSidebar items={DASHBOARD_NAV} selected="hr-management" className="hidden lg:flex" />
       {navOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <button type="button" aria-label="Close navigation" onClick={() => setNavOpen(false)} className="absolute inset-0 cursor-pointer bg-black/40" />
           <div className="relative flex h-full p-3">
-            <DashboardSidebar mobile items={HR_NAV} selected="hr" onClose={() => setNavOpen(false)} className="flex" />
+            <DashboardSidebar mobile items={DASHBOARD_NAV} selected="hr-management" onClose={() => setNavOpen(false)} className="flex" />
           </div>
         </div>
       )}
@@ -126,7 +119,7 @@ const KPI_PERIODS = [
     label: "Q2 2026",
     kpis: [
       { label: "Total headcount", value: "230", delta: "+11 YoY", up: true },
-      { label: "New hires", value: "18", delta: "+2 vs Q1", up: true },
+      { label: "New hires", value: "18", delta: "−1 vs Q1", up: false },
       { label: "Attrition rate", value: "5.0%", delta: "+0.4 pts", up: false },
       { label: "Avg. engagement", value: "75%", delta: "+1 pt", up: true },
     ],
@@ -151,20 +144,29 @@ const FUNNEL = [
 ];
 
 const RADAR_AXES = ["Growth", "Recognition", "Balance", "Leadership", "Compensation"];
+// "All teams" averages 78/100, matching the Q3 "Avg. engagement 78%" KPI.
 const RADAR_TEAMS: Record<string, number[]> = {
-  "All teams": [78, 72, 81, 76, 68],
+  "All teams": [80, 74, 83, 78, 75],
   Engineering: [84, 70, 76, 79, 74],
   Design: [80, 82, 85, 74, 66],
   Sales: [71, 76, 73, 81, 70],
 };
 
+/**
+ * Monthly hires vs leavers, Apr–Sep 2026. These reconcile with the KPI
+ * periods above: Q2 hires 18 (5+6+7), Q3 hires 24 (8+7+9), matching the
+ * Q2/Q3 "New hires" KPIs and the funnel's 24 hires; YTD hires are
+ * 61 (Q1 19 + Q2 18 + Q3 24). Net +21 over these 6 months, and with Q1
+ * net +8 (219 → 227) the headcount path is 219 → 227 → 230 → 248,
+ * i.e. +29 YTD as the 2026 KPI states.
+ */
 const HIRES_LEAVERS = [
-  { month: "Apr", hires: 8, leavers: 3 },
-  { month: "May", hires: 11, leavers: 4 },
-  { month: "Jun", hires: 9, leavers: 2 },
-  { month: "Jul", hires: 12, leavers: 5 },
-  { month: "Aug", hires: 10, leavers: 3 },
-  { month: "Sep", hires: 11, leavers: 4 },
+  { month: "Apr", hires: 5, leavers: 5 },
+  { month: "May", hires: 6, leavers: 6 },
+  { month: "Jun", hires: 7, leavers: 4 },
+  { month: "Jul", hires: 8, leavers: 3 },
+  { month: "Aug", hires: 7, leavers: 2 },
+  { month: "Sep", hires: 9, leavers: 1 },
 ];
 
 const TEAMS = [
@@ -490,7 +492,7 @@ export default function HrManagementTemplatePage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-body-2-regular text-text-tertiary">Net +40 over the last 6 months (61 hires, 21 leavers).</p>
+          <p className="text-body-2-regular text-text-tertiary">Net +21 over the last 6 months (42 hires, 21 leavers).</p>
         </section>
 
         {/* Team breakdown */}

@@ -631,10 +631,13 @@
     var(--color-red-950) 100%
   );
 
-  /* Neutral graph structure; categorical and status colors stay unchanged. */
+  /* Neutral graph structure; categorical and status colors stay unchanged.
+   * chart-neutral is a DATA series (the "previous period" bars/lines and
+   * their legend dots), not structure: neutral-800 is invisible on the dark
+   * card, so it takes the mid gray that reads on dark without glowing. */
   --color-chart-track:   var(--color-neutral-800);
   --color-chart-cursor:  var(--color-neutral-700);
-  --color-chart-neutral: var(--color-neutral-800);
+  --color-chart-neutral: var(--color-neutral-500);
   --color-chart-agents-bar:        var(--color-purple-500);
   --color-chart-agents-bar-active: var(--color-purple-600);
 }

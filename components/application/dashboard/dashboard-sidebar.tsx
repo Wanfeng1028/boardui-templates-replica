@@ -17,6 +17,7 @@ import {
   RiChatAiLine,
   RiCloseLine,
   RiCustomerServiceLine,
+  RiGroupLine,
   RiHomeLine,
   RiImageAiLine,
   RiKanbanView2,
@@ -166,6 +167,7 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
   { key: "ai-chat", label: "AI Chat", icon: RiChatAiLine, href: "/templates/ai-chat" },
   { key: "ai-image", label: "AI Image Generation", icon: RiImageAiLine, href: "/templates/ai-image-generation" },
   { key: "profile", label: "Profile", icon: RiUserSmileLine, href: "/templates/ai-profile" },
+  { key: "multi-agent-chat", label: "Multi-Agent Chat", icon: RiGroupLine, href: "/templates/multi-agent-chat" },
 ];
 
 /**

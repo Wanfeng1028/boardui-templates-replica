@@ -147,7 +147,7 @@ export function AgentCreator({ className }: { className?: string }) {
               aria-pressed={voice === v.id}
               className={cx(
                 "flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                voice === v.id ? "border-accent-500 bg-accent-50" : "border-border-button-default bg-background-primary-default",
+                voice === v.id ? "border-accent-500 bg-accent-500/15" : "border-border-button-default bg-background-primary-default",
               )}
             >
               <span className={cx("flex size-6 items-center justify-center rounded-full border text-caption-1-semibold", voice === v.id ? "border-accent-500 bg-accent-500 text-white" : "border-border-button-default text-text-secondary")}>
