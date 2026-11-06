@@ -10,6 +10,7 @@ import {
   RiKanbanView2,
   RiMegaphoneLine,
   RiAsterisk,
+  RiTeamLine,
   RiUserSmileLine,
 } from "@remixicon/react";
 import Link from "next/link";
@@ -29,6 +30,7 @@ const TEMPLATES = [
   { slug: "calendar", name: "Calendar", desc: "Month view — August 2026 grid with events pinned to dates.", icon: RiCalendarLine },
   { slug: "finance", name: "Finance", desc: "Finance dashboard — balance, income, expenses, cash flow, spending, portfolio.", icon: RiBankLine },
   { slug: "medical-profile", name: "Medical Profile", desc: "Patient info, important alerts, steps, sleep score.", icon: RiAsterisk },
+  { slug: "hr-management", name: "HR Management", desc: "Headcount KPIs, hiring pipeline, engagement radar, employees table. Built from the official description (no live demo).", icon: RiTeamLine },
   { slug: "ai-chat", name: "AI Chat", desc: "Coding agent chat — working chat with demo mode (no API key needed).", icon: RiChatAiLine },
   { slug: "ai-image-generation", name: "AI Image Generation", desc: "Gallery / Styles tabs with image generations and prompts.", icon: RiImageAiLine },
   { slug: "ai-profile", name: "AI Profile", desc: "Agent profile — lifetime tokens, activity, 32 agents.", icon: RiUserSmileLine },
@@ -45,9 +47,18 @@ export default function TemplatesIndexPage() {
       actions={null}
     >
       <p className="px-1 text-body-regular text-text-secondary">
-        10 Pro templates replicated with free BoardUI components (MIT) and mock
-        data. This is a replica for reference — it is not the official Pro
-        source. Pick one to open it.
+        11 template routes replicated with free BoardUI components (MIT) and mock
+        data — the 10 Pro templates plus the Calendar demo page. This is a replica
+        for reference — it is not the official Pro source. Pick one to open it.
+        The 30 Pro components are showcased separately at{" "}
+        <Link href="/pro-components" className="text-accent-600 underline">
+          /pro-components
+        </Link>{" "}
+        (13 agent/composer components) and{" "}
+        <Link href="/pro-components/charts" className="text-accent-600 underline">
+          /pro-components/charts
+        </Link>{" "}
+        (17 chart cards).
       </p>
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
         {TEMPLATES.map((template) => (

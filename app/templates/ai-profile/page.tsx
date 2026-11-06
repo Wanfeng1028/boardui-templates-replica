@@ -279,7 +279,7 @@ export default function AiProfileTemplatePage() {
             <p className="text-title-2-medium whitespace-nowrap text-text-primary tabular-nums">32 agents</p>
           </div>
         </div>
-        <div className="absolute top-4 end-4 flex h-8 w-[128px] min-w-[151px] shrink-0 items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-1 py-1 shadow-xs">
+        <div className="absolute top-4 end-4 z-20 flex h-8 w-[128px] min-w-[151px] shrink-0 items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-1 py-1 shadow-xs">
           <button type="button" aria-label="Previous" onClick={() => setMonthIndex((m) => (m + MONTHS.length - 1) % MONTHS.length)} className="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[3px] text-text-secondary outline-none transition-colors duration-150 ease hover:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring">
             <RiArrowLeftSLine className="size-4 rtl:rotate-180" aria-hidden />
           </button>

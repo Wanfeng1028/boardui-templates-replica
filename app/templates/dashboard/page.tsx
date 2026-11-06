@@ -405,12 +405,15 @@ function PeriodChartCard({
   variant,
   periodLabel,
   className,
+  flexGrow = true,
 }: {
   label: string;
   series: Record<Period, ChartPoint[]>;
   variant: "area" | "bars";
   periodLabel: string;
   className?: string;
+  /** Revenue is flex-1 in the original; Earnings is w-full with no flex-1. */
+  flexGrow?: boolean;
 }) {
   const [period, setPeriod] = useState<Period>("weekly");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -425,7 +428,7 @@ function PeriodChartCard({
   const money = (v: number) => (v >= 1000 ? `$${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k` : `$${v}`);
 
   return (
-    <section className={cx("flex h-[337px] min-w-0 flex-1 flex-col gap-6 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3", className)}>
+    <section className={cx("flex h-[337px] min-w-0 flex-col gap-6 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3", flexGrow && "flex-1", className)}>
       <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="w-full text-body-medium text-text-secondary">{point ? point.label : label}</p>
@@ -1084,7 +1087,7 @@ export default function DashboardTemplatePage() {
     >
       <div className="flex w-full flex-col gap-4 xl:flex-row">
         <RecentHiresCard />
-        <PeriodChartCard label="Earned so far" series={EARNINGS} variant="area" periodLabel="Earnings period" className="h-[329px] xl:w-[673px] xl:shrink-0 xl:flex-none" />
+        <PeriodChartCard label="Earned so far" series={EARNINGS} variant="area" periodLabel="Earnings period" flexGrow={false} className="h-[329px] w-full xl:w-[673px] xl:shrink-0" />
       </div>
 
       <div className="flex w-full flex-col items-stretch gap-4 lg:flex-row lg:items-start">

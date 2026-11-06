@@ -401,7 +401,7 @@ export default function AiImageGenerationTemplatePage() {
       {/* Lightbox */}
       {lightbox && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={lightbox.prompt}>
-          <button type="button" aria-label="Close viewer" onClick={() => setLightbox(null)} className="absolute inset-0 cursor-pointer bg-black/70" />
+          <button type="button" aria-label="Close image viewer" onClick={() => setLightbox(null)} className="absolute inset-0 cursor-pointer bg-black/70" />
           <div className="relative flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-hidden rounded-3xl bg-background-primary-default p-4 shadow-card">
             <div className="flex items-center justify-between gap-2">
               <p className="min-w-0 truncate text-title-3-semibold text-text-primary">{lightbox.prompt}</p>

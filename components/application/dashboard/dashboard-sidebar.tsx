@@ -24,6 +24,7 @@ import {
   RiSearchLine,
   RiSettings4Line,
   RiSideBarFill,
+  RiTeamLine,
   RiUserSmileLine,
 } from "@remixicon/react";
 import { SettingsModal } from "@/components/application/settings/settings-modal";
@@ -161,6 +162,7 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
   { key: "calendar", label: "Calendar", icon: RiCalendarLine, href: "/templates/calendar" },
   { key: "finance", label: "Finance", icon: RiBankLine, href: "/templates/finance" },
   { key: "medical", label: "Medical Report", icon: RiAsterisk, href: "/templates/medical-profile" },
+  { key: "hr-management", label: "HR Management", icon: RiTeamLine, href: "/templates/hr-management" },
   { key: "ai-chat", label: "AI Chat", icon: RiChatAiLine, href: "/templates/ai-chat" },
   { key: "ai-image", label: "AI Image Generation", icon: RiImageAiLine, href: "/templates/ai-image-generation" },
   { key: "profile", label: "Profile", icon: RiUserSmileLine, href: "/templates/ai-profile" },
