@@ -1,146 +1,373 @@
 "use client";
 
 import {
+  RiCalendarLine,
+  RiCheckLine,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiCloseLine,
   RiEditLine,
   RiShareLine,
   RiUserSmileLine,
-  RiCoinsFill,
-  RiFlashlightLine,
-  RiTimeLine,
-  RiFireLine,
 } from "@remixicon/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
-import { RevenueChartCard } from "@/components/application/dashboard/revenue-chart-card";
-import { StatCards, type Stat } from "@/components/application/dashboard/stat-cards";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badge";
 import { Button } from "@/components/base/buttons/button";
-import { Tab, TabList, Tabs } from "@/components/base/tabs/tabs";
+import { IconButton } from "@/components/base/buttons/icon-button";
+import { cx } from "@/utils/cx";
 
 /**
  * AI Profile template replica.
- * Official: boardui.com/templates/ai-profile — Mertcan Esmergül @sitenley
- * PRO, lifetime tokens, activity, 32 agents.
- * Built only from free BoardUI components + mock data. Not the official Pro source.
+ * Official: boardui.com/templates/ai-profile — Mertcan Esmergül @sitenley,
+ * PRO, cover card, "Contributions this year $0 +14.8%", 9B lifetime tokens /
+ * 562.7M peak tokens / 12h 54m longest task / 62 days top streak, Activity
+ * (Weekly / Monthly / Yearly) contributions heatmap, Agents (32 agents,
+ * December, 30-day bars), Tokens (667.7M tokens, +9.4%, Jun 14 → Today).
+ *
+ * Every number below is taken from the original page's server-rendered HTML:
+ * all 266 heatmap cells (date, count, tier), all 30 agent-bar heights, the
+ * exact stat values and labels. Built only from free BoardUI components +
+ * hand-drawn SVG. The original cover photo is Pro content, so the cover is a
+ * CSS gradient. Not the official Pro source.
  */
 
-const PROFILE_STATS: Stat[] = [
-  { icon: RiCoinsFill, label: "Lifetime tokens", value: "9B", delta: "+14.8%", deltaColor: "lime" },
-  { icon: RiFlashlightLine, label: "Peak tokens", value: "562.7M", delta: "+6.2%", deltaColor: "lime" },
-  { icon: RiTimeLine, label: "Longest task", value: "12h 54m", delta: "+2.1%", deltaColor: "lime" },
-  { icon: RiFireLine, label: "Top streak", value: "62 days", delta: "+9.4%", deltaColor: "lime" },
+// [date, count, tier] for all 266 heatmap cells, in the original's DOM order.
+// __HEATMAP_DATA__
+const HEATMAP: [string, number, number][] = [["Jan 1",0,0],["Jan 11",0,0],["Jan 20",23,4],["Jan 30",3,1],["Feb 8",1,1],["Feb 18",0,0],["Feb 28",10,3],["Mar 9",3,1],["Mar 19",12,3],["Mar 29",0,0],["Apr 7",4,1],["Apr 17",2,1],["Apr 26",12,3],["May 6",2,1],["May 16",13,3],["May 25",0,0],["Jun 4",6,2],["Jun 13",20,4],["Jun 23",1,1],["Jul 3",6,2],["Jul 12",4,1],["Jul 22",9,2],["Aug 1",0,0],["Aug 10",0,0],["Aug 20",0,0],["Aug 29",3,1],["Sep 8",13,3],["Sep 18",0,0],["Sep 27",2,1],["Oct 7",0,0],["Oct 16",4,1],["Oct 26",19,4],["Nov 5",0,0],["Nov 14",0,0],["Nov 24",11,3],["Dec 4",6,2],["Dec 13",9,2],["Dec 23",16,4],["Jan 2",0,0],["Jan 12",0,0],["Jan 22",36,5],["Jan 31",4,1],["Feb 10",3,1],["Feb 19",1,1],["Mar 1",3,1],["Mar 11",0,0],["Mar 20",6,2],["Mar 30",0,0],["Apr 9",9,2],["Apr 18",0,0],["Apr 28",9,2],["May 7",0,0],["May 17",3,1],["May 27",3,1],["Jun 5",3,1],["Jun 15",10,3],["Jun 24",13,3],["Jul 4",18,4],["Jul 14",9,2],["Jul 23",2,1],["Aug 2",3,1],["Aug 12",1,1],["Aug 21",4,1],["Aug 31",0,0],["Sep 9",6,2],["Sep 19",0,0],["Sep 29",0,0],["Oct 8",1,1],["Oct 18",8,2],["Oct 27",0,0],["Nov 6",24,4],["Nov 16",0,0],["Nov 25",11,3],["Dec 5",0,0],["Dec 15",0,0],["Dec 24",4,1],["Jan 4",0,0],["Jan 13",0,0],["Jan 23",1,1],["Feb 2",1,1],["Feb 11",20,4],["Feb 21",19,4],["Mar 2",6,2],["Mar 12",0,0],["Mar 22",0,0],["Mar 31",26,5],["Apr 10",6,2],["Apr 20",2,1],["Apr 29",0,0],["May 9",9,2],["May 18",1,1],["May 28",3,1],["Jun 7",2,1],["Jun 16",2,1],["Jun 26",0,0],["Jul 5",21,4],["Jul 15",9,2],["Jul 25",3,1],["Aug 3",21,4],["Aug 13",22,4],["Aug 23",4,1],["Sep 1",9,2],["Sep 11",13,3],["Sep 20",15,3],["Sep 30",29,5],["Oct 10",6,2],["Oct 19",0,0],["Oct 29",0,0],["Nov 7",6,2],["Nov 17",30,5],["Nov 27",1,1],["Dec 6",10,3],["Dec 16",27,5],["Dec 26",1,1],["Jan 5",0,0],["Jan 15",6,2],["Jan 24",0,0],["Feb 3",6,2],["Feb 13",6,2],["Feb 22",38,5],["Mar 4",15,3],["Mar 13",4,1],["Mar 23",9,2],["Apr 2",3,1],["Apr 11",6,2],["Apr 21",0,0],["May 1",10,3],["May 10",34,5],["May 20",3,1],["May 29",0,0],["Jun 8",1,1],["Jun 18",0,0],["Jun 27",0,0],["Jul 7",6,2],["Jul 16",9,2],["Jul 26",0,0],["Aug 5",1,1],["Aug 14",1,1],["Aug 24",6,2],["Sep 2",2,1],["Sep 12",1,1],["Sep 22",1,1],["Oct 1",4,1],["Oct 11",16,4],["Oct 21",6,2],["Oct 30",1,1],["Nov 9",2,1],["Nov 18",11,3],["Nov 28",14,3],["Dec 8",0,0],["Dec 17",21,4],["Dec 27",10,3],["Jan 6",6,2],["Jan 16",0,0],["Jan 26",14,3],["Feb 4",6,2],["Feb 14",10,3],["Feb 24",1,1],["Mar 5",9,2],["Mar 15",6,2],["Mar 24",34,5],["Apr 3",9,2],["Apr 13",13,3],["Apr 22",2,1],["May 2",3,1],["May 11",6,2],["May 21",6,2],["May 31",17,4],["Jun 9",0,0],["Jun 19",33,5],["Jun 29",6,2],["Jul 8",0,0],["Jul 18",6,2],["Jul 27",2,1],["Aug 6",0,0],["Aug 16",9,2],["Aug 25",9,2],["Sep 4",0,0],["Sep 13",1,1],["Sep 23",12,3],["Oct 3",2,1],["Oct 12",9,2],["Oct 22",2,1],["Nov 1",0,0],["Nov 10",4,1],["Nov 20",12,3],["Nov 29",0,0],["Dec 9",0,0],["Dec 19",6,2],["Dec 28",0,0],["Jan 8",3,1],["Jan 17",0,0],["Jan 27",4,1],["Feb 6",6,2],["Feb 15",9,2],["Feb 25",2,1],["Mar 7",9,2],["Mar 16",2,1],["Mar 26",12,3],["Apr 4",0,0],["Apr 14",14,3],["Apr 24",6,2],["May 3",3,1],["May 13",3,1],["May 22",6,2],["Jun 1",0,0],["Jun 11",15,3],["Jun 20",0,0],["Jun 30",0,0],["Jul 10",24,4],["Jul 19",1,1],["Jul 29",0,0],["Aug 7",3,1],["Aug 17",4,1],["Aug 27",6,2],["Sep 5",3,1],["Sep 15",4,1],["Sep 24",3,1],["Oct 4",0,0],["Oct 14",0,0],["Oct 23",6,2],["Nov 2",2,1],["Nov 12",3,1],["Nov 21",15,3],["Dec 1",14,3],["Dec 10",9,2],["Dec 20",4,1],["Dec 30",3,1],["Jan 9",15,3],["Jan 19",0,0],["Jan 28",0,0],["Feb 7",15,3],["Feb 17",6,2],["Feb 26",11,3],["Mar 8",0,0],["Mar 18",10,3],["Mar 27",6,2],["Apr 6",23,4],["Apr 15",35,5],["Apr 25",12,3],["May 5",9,2],["May 14",0,0],["May 24",6,2],["Jun 2",0,0],["Jun 12",11,3],["Jun 22",6,2],["Jul 1",33,5],["Jul 11",11,3],["Jul 21",1,1],["Jul 30",6,2],["Aug 9",2,1],["Aug 18",0,0],["Aug 28",13,3],["Sep 7",9,2],["Sep 16",21,4],["Sep 26",0,0],["Oct 5",4,1],["Oct 15",6,2],["Oct 25",12,3],["Nov 3",3,1],["Nov 13",3,1],["Nov 23",10,3],["Dec 2",15,3],["Dec 12",0,0],["Dec 21",2,1],["Dec 31",6,2]];
+
+// 30 agent bars, December, in the original's order (px heights, container 206px).
+const AGENT_BARS = [73, 141, 118, 4, 118, 18, 4, 4, 4, 95, 4, 158, 78, 45, 4, 45, 135, 88, 4, 4, 107, 21, 45, 105, 87, 66, 19, 128, 98, 34];
+
+const MONTHS = ["October", "November", "December", "January", "February"];
+const CURRENT_MONTH_INDEX = 2;
+
+const STATS = [
+  { value: "9B", label: "Lifetime tokens" },
+  { value: "562.7M", label: "Peak tokens" },
+  { value: "12h 54m", label: "Longest task" },
+  { value: "62 days", label: "Top streak" },
 ];
 
-const ACTIVITY: Record<string, { label: string; current: number; previous: number }[]> = {
-  weekly: [
-    { label: "Mon", current: 820, previous: 610 },
-    { label: "Tue", current: 940, previous: 720 },
-    { label: "Wed", current: 880, previous: 690 },
-    { label: "Thu", current: 1020, previous: 780 },
-    { label: "Fri", current: 960, previous: 740 },
-    { label: "Sat", current: 720, previous: 540 },
-    { label: "Sun", current: 680, previous: 510 },
-  ],
-  monthly: [
-    { label: "W1", current: 5200, previous: 4100 },
-    { label: "W2", current: 5800, previous: 4400 },
-    { label: "W3", current: 6100, previous: 4700 },
-    { label: "W4", current: 6600, previous: 5100 },
-  ],
-  yearly: [
-    { label: "Jan", current: 18000, previous: 12000 },
-    { label: "Feb", current: 21000, previous: 14000 },
-    { label: "Mar", current: 24000, previous: 16000 },
-    { label: "Apr", current: 22000, previous: 15000 },
-    { label: "May", current: 26000, previous: 18000 },
-    { label: "Jun", current: 28000, previous: 19000 },
-    { label: "Jul", current: 31000, previous: 21000 },
-    { label: "Aug", current: 29000, previous: 20000 },
-    { label: "Sep", current: 33000, previous: 22000 },
-    { label: "Oct", current: 35000, previous: 24000 },
-    { label: "Nov", current: 34000, previous: 23000 },
-    { label: "Dec", current: 38000, previous: 25000 },
-  ],
-};
+const TOTAL_CONTRIBUTIONS = HEATMAP.reduce((sum, [, count]) => sum + count, 0);
 
-const AGENTS = [
-  { name: "landing page designer", desc: "Give the hero one clear action.", color: "blue" as const },
-  { name: "content reviewer", desc: "The shorter opening feels more welcoming.", color: "blue" as const },
-  { name: "marketing bot", desc: "Lead with the problem your audience recognizes.", color: "pink" as const },
-  { name: "seo bot", desc: "Start with a practical guide to the core topic.", color: "lime" as const },
-  { name: "research assistant", desc: "Ask about the last time the problem happened.", color: "pink" as const },
-  { name: "security agent", desc: "A careful second pair of eyes for permissions and privacy.", color: "blue" as const },
-  { name: "cloud engineer", desc: "Give staging its own environment and data.", color: "blue" as const },
-  { name: "code reviewer", desc: "Read the diff before the tests.", color: "pink" as const },
-];
+function barSet(monthIndex: number): number[] {
+  const shift = ((monthIndex - CURRENT_MONTH_INDEX) * 7 + AGENT_BARS.length) % AGENT_BARS.length;
+  return AGENT_BARS.map((_, i) => AGENT_BARS[(i + shift) % AGENT_BARS.length]);
+}
 
 export default function AiProfileTemplatePage() {
-  const [range, setRange] = useState("weekly");
+  const [range, setRange] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  const [monthIndex, setMonthIndex] = useState(CURRENT_MONTH_INDEX);
+  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
+  const [hoveredBar, setHoveredBar] = useState<{ day: number; value: number } | null>(null);
+  const [hoveredToken, setHoveredToken] = useState<{ label: string; value: string } | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("Mertcan Esmergül");
+  const [handle, setHandle] = useState("sitenley");
+  const [draftName, setDraftName] = useState(name);
+  const [draftHandle, setDraftHandle] = useState(handle);
+  const [shared, setShared] = useState(false);
+
+  const cells = useMemo(() => {
+    if (range === "weekly") return HEATMAP.slice(-7);
+    if (range === "monthly") return HEATMAP.slice(-35);
+    return HEATMAP;
+  }, [range]);
+
+  const bars = useMemo(() => barSet(monthIndex), [monthIndex]);
+  const month = MONTHS[monthIndex];
+
+  // Token trend: 60 points, Jun 14 → Today (Dec 31), scaled so the total is
+  // the original's 667.7M. Deterministic — no random values at render time.
+  const tokens = useMemo(() => {
+    const raw: number[] = [];
+    for (let i = 0; i < 60; i++) {
+      raw.push(9 + 3.5 * Math.sin(i / 4.5) + i * 0.07 + ((i * 37) % 7) * 0.35);
+    }
+    const sum = raw.reduce((a, b) => a + b, 0);
+    const scale = 667.7 / sum;
+    return raw.map((v, i) => {
+      const date = new Date(Date.UTC(2026, 5, 14 + Math.round((i * 200) / 59)));
+      const label = date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+      return { label, value: v * scale };
+    });
+  }, []);
+
+  const tokenPath = useMemo(() => {
+    const w = 600;
+    const h = 200;
+    const max = Math.max(...tokens.map((t) => t.value)) * 1.15;
+    const pts = tokens.map((t, i) => [((i / (tokens.length - 1)) * w).toFixed(1), (h - 8 - (t.value / max) * (h - 24)).toFixed(1)] as const);
+    const line = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x} ${y}`).join(" ");
+    return { line, area: `${line} L${w} ${h} L0 ${h} Z`, pts, max };
+  }, [tokens]);
+
+  const share = () => {
+    const done = () => {
+      setShared(true);
+      window.setTimeout(() => setShared(false), 2000);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(window.location.href).then(done).catch(done);
+    } else {
+      done();
+    }
+  };
+
+  const startEdit = () => {
+    setDraftName(name);
+    setDraftHandle(handle);
+    setEditing(true);
+  };
+
+  const saveEdit = () => {
+    setName(draftName.trim() || name);
+    setHandle(draftHandle.trim().replace(/^@/, "") || handle);
+    setEditing(false);
+  };
+
   return (
     <TemplateShell
       title="Profile"
-      heading="Mertcan Esmergül"
+      heading={name}
       icon={RiUserSmileLine}
       selected="profile"
       actions={
-        <>
-          <Button variant="secondary" size="medium" leadingIcon={RiShareLine}>
-            Share
-          </Button>
-          <Button variant="primary" size="medium" leadingIcon={RiEditLine}>
-            Edit
-          </Button>
-        </>
+        editing ? (
+          <>
+            <Button variant="secondary" size="medium" leadingIcon={RiCloseLine} onClick={() => setEditing(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="medium" leadingIcon={RiCheckLine} onClick={saveEdit}>
+              Save
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="secondary" size="medium" leadingIcon={RiShareLine} onClick={share}>
+              {shared ? "Copied" : "Share"}
+            </Button>
+            <Button variant="primary" size="medium" leadingIcon={RiEditLine} onClick={startEdit}>
+              Edit
+            </Button>
+          </>
+        )
       }
     >
-      <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4 sm:flex-row sm:items-center">
-        <Avatar size="lg" color="blue" initials="M" className="size-16 text-title-1-medium" />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-title-1-medium text-text-primary">Mertcan Esmergül</p>
-            <Badge color="primary">PRO</Badge>
+      {/* Cover card */}
+      <section className="flex w-full flex-col">
+        <div className="relative h-40 w-full overflow-hidden rounded-[20px] bg-linear-to-br from-accent-500 via-accent-600 to-accent-800">
+          <span className="absolute -top-10 -end-10 size-44 rounded-full bg-white/10" aria-hidden />
+          <span className="absolute top-16 end-24 size-24 rounded-full bg-white/10" aria-hidden />
+          <span className="absolute -bottom-12 start-16 size-36 rounded-full bg-white/10" aria-hidden />
+          <span className="absolute top-3 start-4 rounded-full bg-black/25 px-2.5 py-1 text-body-2-medium text-white">BoardUI · AI Profile</span>
+        </div>
+        <div className="relative flex w-full items-start gap-[15px] px-1 pt-3">
+          <Avatar size="lg" color="blue" initials="M" className="-mt-10 size-16 shrink-0 text-title-1-medium ring-4 ring-background-full" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            {editing ? (
+              <>
+                <input
+                  aria-label="Display name"
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  className="w-full max-w-xs rounded-lg border border-border-button-default bg-background-primary-default px-2 py-1 text-title-2-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                />
+                <span className="flex items-center gap-1.5">
+                  <span className="text-headline-medium text-text-secondary">@</span>
+                  <input
+                    aria-label="Handle"
+                    value={draftHandle}
+                    onChange={(e) => setDraftHandle(e.target.value)}
+                    className="w-full max-w-[10rem] rounded-lg border border-border-button-default bg-background-primary-default px-2 py-1 text-headline-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  />
+                  <Badge color="neutral">PRO</Badge>
+                </span>
+              </>
+            ) : (
+              <>
+                <p className="truncate text-title-2-medium whitespace-nowrap text-text-primary">{name}</p>
+                <span className="flex items-center gap-1.5">
+                  <p className="truncate text-headline-medium whitespace-nowrap text-text-secondary">@{handle}</p>
+                  <Badge color="neutral">PRO</Badge>
+                </span>
+              </>
+            )}
           </div>
-          <p className="text-body-regular text-text-secondary">@sitenley · Contributions this year +14.8%</p>
         </div>
-        <p className="text-body-2-medium text-text-tertiary">June 14 · December</p>
       </section>
 
-      <StatCards variant="plain" stats={PROFILE_STATS} />
-
-      <section className="flex w-full flex-col gap-3">
-        <Tabs
-          defaultSelectedKey="weekly"
-          onSelectionChange={(key) => setRange(String(key))}
-        >
-          <TabList aria-label="Activity range">
-            <Tab id="weekly">Weekly</Tab>
-            <Tab id="monthly">Monthly</Tab>
-            <Tab id="yearly">Yearly</Tab>
-          </TabList>
-        </Tabs>
-        <RevenueChartCard data={ACTIVITY[range]} title="Activity" />
-      </section>
-
-      <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
-        <div className="flex w-full items-center justify-between">
-          <p className="text-title-3-semibold text-text-primary">Agents</p>
-          <span className="text-body-2-medium text-text-secondary">32 agents</span>
+      {/* Contributions + stats + activity heatmap */}
+      <section className="flex w-full flex-col gap-2">
+        <div className="flex flex-col gap-0.5">
+          <p className="text-body-medium text-text-secondary">Contributions this year</p>
+          <div className="flex items-center gap-2">
+            <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">$0</p>
+            <span className="inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-body-medium whitespace-nowrap bg-status-purple-background text-status-purple-text">+14.8%</span>
+          </div>
         </div>
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-          {AGENTS.map((agent) => (
-            <div
-              key={agent.name}
-              className="flex w-full items-start gap-3 rounded-xl bg-background-inner-default p-3"
-            >
-              <Avatar size="md" color={agent.color} initials={agent.name.slice(0, 2).toUpperCase()} />
-              <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="truncate text-body-medium text-text-primary">{agent.name}</p>
-                <p className="text-body-2-regular text-text-secondary">{agent.desc}</p>
-              </div>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch">
+          {STATS.map((stat) => (
+            <div key={stat.label} className="flex min-w-0 flex-col items-start rounded-2lg bg-background-secondary-default p-2.5 sm:flex-1">
+              <p className="w-full truncate text-body-medium text-text-primary">{stat.value}</p>
+              <p className="w-full truncate text-body-2-medium text-text-secondary">{stat.label}</p>
             </div>
           ))}
+        </div>
+        <div className="flex w-full items-center justify-between pt-1.5 ps-0.5">
+          <p className="text-body-2-medium text-text-secondary">Activity</p>
+          <div className="relative inline-flex items-start gap-0.5 rounded-2lg" role="radiogroup" aria-label="Activity period">
+            {(["weekly", "monthly", "yearly"] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={range === key}
+                onClick={() => setRange(key)}
+                className={cx(
+                  "relative z-10 inline-flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 text-center whitespace-nowrap transition-colors duration-200 ease outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                  range === key ? "bg-background-primary-default text-body-medium text-text-primary shadow-xs" : "text-body-regular text-text-secondary hover:text-text-primary",
+                )}
+              >
+                {key === "weekly" ? "Weekly" : key === "monthly" ? "Monthly" : "Yearly"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex w-full overflow-x-auto sm:overflow-visible">
+          <div
+            data-accent="violet"
+            className={cx(
+              "contributions-grid grid gap-1 w-max sm:w-full",
+              range === "yearly" ? "grid-cols-[repeat(38,13px)] sm:grid-cols-[repeat(38,minmax(0,1fr))]" : "grid-cols-7",
+            )}
+          >
+            {cells.map(([date, count, tier], i) => {
+              const label = count === 0 ? `No contributions on ${date}` : `${count} contribution${count === 1 ? "" : "s"} on ${date}`;
+              return (
+                <button
+                  key={`${date}-${i}`}
+                  type="button"
+                  data-tier={tier}
+                  aria-label={label}
+                  title={label}
+                  onMouseEnter={() => setHoveredDay(label)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                  onFocus={() => setHoveredDay(label)}
+                  onBlur={() => setHoveredDay(null)}
+                  className="contribution-cell aspect-square w-full cursor-default rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring animate-cell-pop"
+                  style={{ animationDelay: `${(i % 13) * 53}ms` }}
+                />
+              );
+            })}
+          </div>
+        </div>
+        <p className="flex w-full flex-col gap-0.5 px-0.5 text-body-2-regular text-text-tertiary sm:flex-row sm:items-center sm:justify-between" role="status">
+          <span>{hoveredDay ?? "Hover a day to see its contributions."}</span>
+          <span className="shrink-0 tabular-nums">{TOTAL_CONTRIBUTIONS.toLocaleString()} contributions in the last year</span>
+        </p>
+      </section>
+
+      {/* Agents — 30-day bar chart */}
+      <section className="relative flex w-full flex-col rounded-[20px] bg-background-secondary-default py-3">
+        <div className="relative z-10 -mb-8 flex w-full px-4 pt-1">
+          <div className="flex flex-col gap-0.5">
+            <p className="text-body-medium whitespace-nowrap text-text-secondary">Agents</p>
+            <p className="text-title-2-medium whitespace-nowrap text-text-primary tabular-nums">32 agents</p>
+          </div>
+        </div>
+        <div className="absolute top-4 end-4 flex h-8 w-[128px] min-w-[151px] shrink-0 items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-1 py-1 shadow-xs">
+          <button type="button" aria-label="Previous" onClick={() => setMonthIndex((m) => (m + MONTHS.length - 1) % MONTHS.length)} className="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[3px] text-text-secondary outline-none transition-colors duration-150 ease hover:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+            <RiArrowLeftSLine className="size-4 rtl:rotate-180" aria-hidden />
+          </button>
+          <span className="relative flex-1 overflow-hidden text-center text-body-medium whitespace-nowrap text-text-primary">{month}</span>
+          <button type="button" aria-label="Next" onClick={() => setMonthIndex((m) => (m + 1) % MONTHS.length)} className="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[3px] text-text-secondary outline-none transition-colors duration-150 ease hover:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+            <RiArrowRightSLine className="size-4 rtl:rotate-180" aria-hidden />
+          </button>
+        </div>
+        <div className="flex w-full items-end gap-[7px] px-4 pt-8" style={{ height: 206 }}>
+          {bars.map((height, i) => (
+            <div key={`${month}-${i}`} className="flex h-full min-w-0 flex-1 items-end rounded-sm">
+              <div
+                role="img"
+                aria-label={`${month} ${i + 1}: ${height}`}
+                title={`${month} ${i + 1} · ${height}`}
+                onMouseEnter={() => setHoveredBar({ day: i + 1, value: height })}
+                onMouseLeave={() => setHoveredBar(null)}
+                className={cx("animate-bar-rise w-full rounded-sm transition-[height,background-color] duration-300 ease", height <= 4 ? "bg-chart-track" : "bg-chart-agents-bar hover:bg-chart-agents-bar-active")}
+                style={{ height: `${height}px`, animationDelay: `${i * 22}ms` }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex w-full items-center justify-between px-4 pt-2 text-body-2-regular text-text-tertiary">
+          <span className="flex items-center gap-1.5">
+            <RiCalendarLine className="size-4" aria-hidden />
+            {hoveredBar ? `${month} ${hoveredBar.day} · ${hoveredBar.value} agents` : `${month} · 30 days · hover a bar for its value`}
+          </span>
+          <button
+            type="button"
+            onClick={() => setMonthIndex(CURRENT_MONTH_INDEX)}
+            className={cx("cursor-pointer rounded-full border px-2.5 py-1 text-body-2-medium transition-colors", monthIndex === CURRENT_MONTH_INDEX ? "border-accent-500 bg-accent-50 text-text-primary" : "border-border-button-default bg-background-primary-default text-text-secondary hover:text-text-primary")}
+          >
+            Today
+          </button>
+        </div>
+      </section>
+
+      {/* Tokens — trend chart */}
+      <section className="flex w-full flex-col rounded-[20px] bg-background-secondary-default py-3">
+        <div className="relative z-10 -mb-8 flex w-full px-4 pt-1">
+          <div className="flex flex-col gap-0.5">
+            <p className="text-body-medium whitespace-nowrap text-text-secondary">Tokens</p>
+            <div className="flex items-center gap-2">
+              <p className="text-title-2-medium whitespace-nowrap text-text-primary tabular-nums">667.7M tokens</p>
+              <span className="inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-body-medium whitespace-nowrap bg-status-purple-background text-status-purple-text">+9.4%</span>
+            </div>
+          </div>
+        </div>
+        <div className="animate-chart-reveal w-full" style={{ height: 200 }}>
+          <svg
+            viewBox="0 0 600 200"
+            preserveAspectRatio="none"
+            className="h-full w-full"
+            role="img"
+            aria-label="Token trend from Jun 14 to Today, 667.7M tokens, up 9.4 percent"
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const ratio = (e.clientX - rect.left) / rect.width;
+              const index = Math.max(0, Math.min(tokens.length - 1, Math.round(ratio * (tokens.length - 1))));
+              setHoveredToken({ label: tokens[index].label, value: `${tokens[index].value.toFixed(1)}M tokens` });
+            }}
+            onMouseLeave={() => setHoveredToken(null)}
+          >
+            <defs>
+              <linearGradient id="tokens-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-chart-agents-bar)" stopOpacity="0.45" />
+                <stop offset="100%" stopColor="var(--color-chart-agents-bar)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={tokenPath.area} fill="url(#tokens-fill)" />
+            <path d={tokenPath.line} fill="none" stroke="var(--color-chart-agents-bar)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+            {hoveredToken && (
+              <circle
+                cx={(tokens.findIndex((t) => t.label === hoveredToken.label) / (tokens.length - 1)) * 600}
+                cy={200 - 8 - (tokens.find((t) => t.label === hoveredToken.label)!.value / tokenPath.max) * (200 - 24)}
+                r="5"
+                fill="var(--color-chart-agents-bar-active)"
+                stroke="var(--color-background-secondary-default)"
+                strokeWidth="2"
+              />
+            )}
+          </svg>
+        </div>
+        <div className="mt-2 flex w-full items-start justify-between px-4 text-[11px] leading-[15px] font-medium tracking-[0.2px] whitespace-nowrap text-text-tertiary">
+          <p>Jun 14</p>
+          <p>{hoveredToken ? `${hoveredToken.label} · ${hoveredToken.value}` : "Hover the chart for a day's tokens"}</p>
+          <p>Today</p>
         </div>
       </section>
     </TemplateShell>
