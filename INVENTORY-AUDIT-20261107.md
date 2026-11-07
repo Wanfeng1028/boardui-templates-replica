@@ -78,3 +78,26 @@
 - 已补：`rules` → `docs/agent-rules.md`（5357 字节，按注册表原样装入，与注册表字节一致）。
 - 未补：`agent-runtime` → `app/api/chat/route.ts`，因静态导出已移入 `docs/api-chat-route.ts.bak`（有意排除，恢复会破坏静态导出构建；模板不依赖它）。
 - lib 覆盖：**14/15**（1 个有意排除）。
+
+## 官方剩余页面补齐（2026-11-07，提交 643b47a，已 push）
+
+用户令：官方有的我们都要有。补齐盘点残留第 3 项的全部官方页面：
+
+| 页面 | URL | 来源 |
+|---|---|---|
+| 博客列表 | /blog | boardui.com/blog，2 篇文章 |
+| 博客文章 1 | /blog/best-react-design-systems | 全文 670 行照抄 |
+| 博客文章 2 | /blog/react-design-system-for-agentic-products | 全文 142 行照抄 |
+| 介绍文档 | /docs/introduction | 51 行照抄 |
+| CLI 文档 | /docs/cli | 129 行照抄 |
+| 安装文档 | /installation | 1161 行照抄（含 theme.css 全文） |
+| MCP 文档 | /mcp | 133 行照抄 |
+| Skill 文档 | /skill | 73 行照抄 |
+| RTL 文档 | /rtl | 161 行照抄 |
+| 定价页 | /pricing | 4 档，价格按原版（无档位价不编造） |
+
+app-shell docs 预览文件：补 18 个（13 任务清单 + skeleton/spinner/tag-group/time-field/toast 5 个额外发现），与注册表字节一致；本地已有 8 个未动。lib 覆盖 14/15（agent-runtime 有意排除）。
+
+/templates：原版 307 跳到 /templates/dashboard，本站保留列表页作 11 套模板切换入口。
+
+验证：tsc 0 报错、构建 146/146 页、OCR 28 文件 0 High/Critical、线上 10 新页逐个 200、可点击外链 0 条（封面图引用原版图片 URL，非导航链接）。
