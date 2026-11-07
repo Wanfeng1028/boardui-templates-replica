@@ -11,6 +11,7 @@ import {
   Children,
   isValidElement,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -85,6 +86,13 @@ export interface NotificationProps
    * bar is rendered along the full bottom edge for the same duration.
    */
   autoDismissDuration?: number;
+  /**
+   * Hold the auto-dismiss countdown and its bar, e.g. while the pointer or
+   * focus is in a toast stack. The countdown resumes where it stopped.
+   */
+  paused?: boolean;
+  /** Dismiss from outside: plays the exit animation, then calls `onDismiss`. */
+  dismissed?: boolean;
   /** Optional entrance delay in seconds. */
   introDelay?: number;
   ref?: Ref<HTMLDivElement>;
@@ -198,25 +206,52 @@ export function Notification({
   closeLabel = "Dismiss notification",
   onDismiss,
   autoDismissDuration,
+  paused = false,
+  dismissed: dismissedProp = false,
   introDelay,
   className,
   ref,
   role,
   ...props
 }: NotificationProps) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissedState, setDismissed] = useState(false);
+  const dismissed = dismissedProp || dismissedState;
   const Icon = icon ?? STATUS_ICON[status];
   const hasIntro = introDelay !== undefined;
   const introDelayMs = (introDelay ?? 0) * 1000;
+  const timed = Boolean(autoDismissDuration && autoDismissDuration > 0);
+
+  // The countdown bar runs as one native Web Animation so `paused` can hold
+  // and resume it in step with the timer below. (Motion's standalone
+  // animate() on this child cancelled the card's own enter animation.)
+  const barRef = useRef<HTMLSpanElement>(null);
+  const bar = useRef<Animation | null>(null);
+  const remaining = useRef((autoDismissDuration ?? 0) + introDelayMs);
 
   useEffect(() => {
-    if (!autoDismissDuration || autoDismissDuration <= 0) return;
-    const timer = window.setTimeout(
-      () => setDismissed(true),
-      autoDismissDuration + introDelayMs,
+    const element = barRef.current;
+    if (!timed || !element) return;
+    bar.current = element.animate(
+      [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }],
+      { duration: autoDismissDuration, delay: introDelayMs, easing: "linear", fill: "forwards" },
     );
-    return () => window.clearTimeout(timer);
-  }, [autoDismissDuration, introDelayMs]);
+    return () => bar.current?.cancel();
+  }, [timed, autoDismissDuration, introDelayMs]);
+
+  useEffect(() => {
+    if (!timed || dismissed) return;
+    if (paused) {
+      bar.current?.pause();
+      return;
+    }
+    bar.current?.play();
+    const startedAt = performance.now();
+    const timer = window.setTimeout(() => setDismissed(true), remaining.current);
+    return () => {
+      window.clearTimeout(timer);
+      remaining.current = Math.max(0, remaining.current - (performance.now() - startedAt));
+    };
+  }, [timed, paused, dismissed]);
 
   return (
     <AnimatePresence onExitComplete={onDismiss}>
@@ -294,17 +329,11 @@ export function Notification({
             />
           ) : null}
 
-          {autoDismissDuration && autoDismissDuration > 0 ? (
-            <motion.span
+          {timed ? (
+            <span
+              ref={barRef}
               aria-hidden
               className="absolute inset-x-0 bottom-0 h-[3px] origin-left rtl:origin-right bg-accent-600"
-              initial={{ scaleX: 1 }}
-              animate={{ scaleX: 0 }}
-              transition={{
-                duration: autoDismissDuration / 1000,
-                delay: introDelay,
-                ease: "linear",
-              }}
             />
           ) : null}
         </motion.div>

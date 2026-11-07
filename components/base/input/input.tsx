@@ -8,17 +8,19 @@ import {
   type Ref,
 } from "react";
 import {
+  FieldError as AriaFieldError,
   Group as AriaGroup,
   Input as AriaInput,
   TextField as AriaTextField,
   useLocale,
 } from "react-aria-components";
 import type {
+  FieldErrorProps as AriaFieldErrorProps,
   InputProps as AriaInputProps,
   TextFieldProps as AriaTextFieldProps,
 } from "react-aria-components";
 import { Label } from "./label";
-import { HintText } from "./hint-text";
+import { HintText, hintTextClassName } from "./hint-text";
 import { cx, sortCx } from "@/utils/cx";
 
 /**
@@ -33,7 +35,8 @@ import { cx, sortCx } from "@/utils/cx";
  *                 classes can flow from the composer down into InputBase
  *                 without prop drilling.
  *   Input       — opinionated composition: TextField → Label → InputBase
- *                 → HintText. The component most consumers use.
+ *                 → HintText, or React Aria's FieldError for `errorMessage`
+ *                 while the field is invalid. The component most consumers use.
  *
  * Why React Aria:
  *   - Label ↔ input ↔ hint association via aria-labelledby / aria-describedby
@@ -117,6 +120,9 @@ export interface InputBaseProps extends Omit<AriaInputProps, "size" | "className
   trailingIcon?: IconComponent;
   /** Custom element rendered in the leading slot (Phone basic uses this). */
   leadingAddon?: ReactNode;
+  /** Custom element rendered in the trailing slot, in place of
+   *  `trailingIcon` (ComboBox's toggle button uses this). */
+  trailingAddon?: ReactNode;
   /** Class for the field shell. */
   fieldClassName?: string;
   /** Ref to the <input> element. */
@@ -161,11 +167,43 @@ const inputStyles = sortCx({
   icon: "size-5 shrink-0",
 });
 
+/** The field shell's state for a render-prop className. */
+export interface InputFieldState {
+  isFocusWithin: boolean;
+  isHovered: boolean;
+  isDisabled: boolean;
+  isInvalid: boolean;
+}
+
+/**
+ * The field shell's classes for a state. InputBase uses it, and so do fields
+ * whose editable part isn't an <input> (Time Field's segments).
+ */
+export function inputFieldClassName(
+  { isFocusWithin, isHovered, isDisabled, isInvalid }: InputFieldState,
+  size: InputSize = "medium",
+  hasAddon = false,
+) {
+  return cx(
+    inputStyles.field,
+    hasAddon ? inputStyles.fieldWithAddonSize[size] : inputStyles.fieldSize[size],
+    // Hover: idle, no focus, no disabled, no invalid
+    isHovered && !isFocusWithin && !isDisabled && !isInvalid && "ring-border-button-hover",
+    // Focus wins over hover
+    isFocusWithin && !isDisabled && !isInvalid && "ring-border-button-active",
+    // Disabled
+    isDisabled && "bg-input-disabled-background text-input-disabled-foreground",
+    // Invalid
+    isInvalid && "bg-background-tertiary-error text-foreground-icon-error",
+  );
+}
+
 export function InputBase({
   size: sizeProp,
   leadingIcon: Leading,
   trailingIcon: Trailing,
   leadingAddon,
+  trailingAddon,
   fieldClassName,
   className,
   ref,
@@ -180,32 +218,7 @@ export function InputBase({
   return (
     <AriaGroup
       ref={groupRef}
-      className={({ isFocusWithin, isHovered, isDisabled, isInvalid }) =>
-        cx(
-          inputStyles.field,
-          hasAddon
-            ? inputStyles.fieldWithAddonSize[size]
-            : inputStyles.fieldSize[size],
-          // Hover: idle, no focus, no disabled, no invalid
-          isHovered &&
-            !isFocusWithin &&
-            !isDisabled &&
-            !isInvalid &&
-            "ring-border-button-hover",
-          // Focus wins over hover
-          isFocusWithin &&
-            !isDisabled &&
-            !isInvalid &&
-            "ring-border-button-active",
-          // Disabled
-          isDisabled &&
-            "bg-input-disabled-background text-input-disabled-foreground",
-          // Invalid
-          isInvalid && "bg-background-tertiary-error text-foreground-icon-error",
-          ctx.fieldClassName,
-          fieldClassName,
-        )
-      }
+      className={(state) => cx(inputFieldClassName(state, size, hasAddon), ctx.fieldClassName, fieldClassName)}
     >
       <div className={inputStyles.content}>
         <div className={inputStyles.leftSection}>
@@ -221,9 +234,9 @@ export function InputBase({
             className={cx(inputStyles.input, direction === "rtl" ? "pr-1 text-right" : "pl-1 text-left", ctx.inputClassName, className)}
           />
         </div>
-        {Trailing ? (
+        {trailingAddon ?? (Trailing ? (
           <Trailing className={inputStyles.icon} aria-hidden />
-        ) : null}
+        ) : null)}
       </div>
     </AriaGroup>
   );
@@ -248,6 +261,13 @@ export interface InputProps
     > {
   label?: ReactNode;
   hint?: ReactNode;
+  /**
+   * Shown in place of `hint` while the field is invalid, through React Aria's
+   * FieldError: the error-message slot the input is described by. Pass a
+   * function to render from the validation result, e.g. the browser's own
+   * message under the default native validation.
+   */
+  errorMessage?: AriaFieldErrorProps["children"];
   /** Show an info icon next to the label. Replace with tooltip when Tooltip lands. */
   tooltip?: boolean | string;
   placeholder?: string;
@@ -259,6 +279,7 @@ export interface InputProps
 export function Input({
   label,
   hint,
+  errorMessage,
   tooltip,
   placeholder,
   inputDir,
@@ -303,7 +324,11 @@ export function Input({
             leadingAddon={leadingAddon}
             fieldClassName={fieldClassName}
           />
-          {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}
+          {isInvalid && errorMessage != null ? (
+            <AriaFieldError className={hintTextClassName(true)}>{errorMessage}</AriaFieldError>
+          ) : (
+            hint && <HintText isInvalid={isInvalid}>{hint}</HintText>
+          )}
         </>
       )}
     </TextField>

@@ -22,6 +22,15 @@ export interface HintTextProps extends AriaTextProps {
   ref?: Ref<HTMLElement>;
 }
 
+/** HintText's classes. Input's `errorMessage` reuses the invalid look. */
+export function hintTextClassName(isInvalid: boolean, className?: string) {
+  return cx(
+    "pt-px text-caption-1-medium text-text-secondary",
+    isInvalid && "text-text-error-primary",
+    className,
+  );
+}
+
 export function HintText({
   isInvalid = false,
   className,
@@ -31,11 +40,7 @@ export function HintText({
     <AriaText
       slot={isInvalid ? "errorMessage" : "description"}
       {...props}
-      className={cx(
-        "pt-px text-caption-1-medium text-text-secondary",
-        isInvalid && "text-text-error-primary",
-        className,
-      )}
+      className={hintTextClassName(isInvalid, className)}
     />
   );
 }

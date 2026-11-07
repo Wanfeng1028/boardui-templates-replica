@@ -77,9 +77,9 @@ export function parseChipDate(text: string): CalendarDate | null {
   return new CalendarDate(year, month, day);
 }
 
-export function DayCell(props: CalendarCellRenderProps & { isRange: boolean }) {
+export function DayCell(props: CalendarCellRenderProps & { isRange: boolean; showToday?: boolean }) {
   const { locale } = useLocale();
-  const { date, formattedDate, isSelected, isSelectionStart, isSelectionEnd, isHovered, isFocusVisible, isDisabled, isOutsideMonth, isRange } = props;
+  const { date, formattedDate, isSelected, isSelectionStart, isSelectionEnd, isHovered, isFocusVisible, isDisabled, isUnavailable, isToday, isOutsideMonth, isRange, showToday = false } = props;
 
   if (isOutsideMonth) {
     return <div className="size-8" />;
@@ -143,9 +143,24 @@ export function DayCell(props: CalendarCellRenderProps & { isRange: boolean }) {
             isEdge ? "opacity-100" : "opacity-0",
           )}
         />
-        <span className={cx("relative text-body-medium text-text-primary", isDisabled && "text-text-tertiary")}>
+        <span
+          className={cx(
+            "relative text-body-medium text-text-primary",
+            (isDisabled || isUnavailable) && "text-text-tertiary",
+            // Unavailable days (isDateUnavailable) can be focused but not
+            // picked, so they read as struck out rather than just faded.
+            isUnavailable && "line-through",
+          )}
+        >
           {formattedDate}
         </span>
+        {/* Opt-in (the standalone Calendar): a dot under today's date. */}
+        {showToday && isToday ? (
+          <span
+            aria-hidden
+            className={cx("absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full", isEdge ? "bg-text-primary" : "bg-accent-500")}
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -157,6 +172,7 @@ export function MonthPanel({
   showNext,
   bare = false,
   hideHeader = false,
+  showToday = false,
 }: {
   offset: number;
   showPrev?: boolean;
@@ -170,6 +186,8 @@ export function MonthPanel({
    *  renders its own single month title/nav (the calendar template's month
    *  switcher pill) and only needs the day grid underneath it. */
   hideHeader?: boolean;
+  /** Mark today with a dot under its date (the standalone Calendar does). */
+  showToday?: boolean;
 }) {
   const { locale } = useLocale();
   // Works inside either a RangeCalendar (DateRangePicker) or a plain Calendar
@@ -183,6 +201,12 @@ export function MonthPanel({
   const title = panelDate
     ? new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(panelDate.toDate(getLocalTimeZone()))
     : "";
+  // Two-letter weekdays ("Su", "Mo") only work in Latin scripts: cut down,
+  // every Arabic name keeps just its article. Other scripts take the
+  // locale's narrow names instead.
+  const latinWeekdays = /^\p{Script=Latin}/u.test(
+    new Intl.DateTimeFormat(locale, { weekday: "short" }).format(new Date(2024, 0, 7)),
+  );
 
   return (
     <div className={bare ? "w-[296px] shrink-0" : "w-[326px] shrink-0 rounded-2xl bg-background-primary-default p-[15px] shadow-xs"}>
@@ -214,21 +238,21 @@ export function MonthPanel({
         )}
         <CalendarGrid
           offset={{ months: offset }}
-          weekdayStyle="short"
+          weekdayStyle={latinWeekdays ? "short" : "narrow"}
           className="-m-3 self-start border-separate outline-none"
           style={{ borderSpacing: "12px 12px" }}
         >
           <CalendarGridHeader>
             {(day) => (
               <CalendarHeaderCell className="size-6 pb-0 text-center text-body-medium text-text-secondary">
-                {day.slice(0, 2)}
+                {latinWeekdays ? day.slice(0, 2) : day}
               </CalendarHeaderCell>
             )}
           </CalendarGridHeader>
           <CalendarGridBody>
             {(date) => (
               <CalendarCell date={date} className="p-0 outline-none">
-                {(cellProps) => <DayCell {...cellProps} isRange={isRange} />}
+                {(cellProps) => <DayCell {...cellProps} isRange={isRange} showToday={showToday} />}
               </CalendarCell>
             )}
           </CalendarGridBody>
@@ -297,7 +321,8 @@ export const triggerButtonClassName = cx(
 /** Shared popover chrome (Figma's rounded/3xl, background/secondary/default
  *  "Calendar component" surface) for both pickers. */
 export const popoverClassName = cx(
-  "origin-top rounded-3xl bg-background-secondary-default shadow-dropdown",
+  // Above the modal layer (z-100), like the menu surfaces.
+  "z-110 origin-top rounded-3xl bg-background-secondary-default shadow-dropdown",
   "transition duration-150 ease-out",
   "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",
   "data-[exiting]:opacity-0 data-[exiting]:scale-95 data-[exiting]:blur-[2px]",

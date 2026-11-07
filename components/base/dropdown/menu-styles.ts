@@ -6,7 +6,9 @@
  * motion, and row treatments from here.
  */
 export const MENU_POPOVER_SURFACE = [
-  "max-w-[calc(100vw-32px)] overflow-y-auto",
+  // z-110 sits above the modal layer (z-100), so menus opened inside a
+  // Modal or Drawer render over it rather than behind its backdrop.
+  "z-110 max-w-[calc(100vw-32px)] overflow-y-auto",
   "rounded-2xl border border-border-button-default bg-background-primary-default p-2.5 shadow-dropdown",
   "transition duration-150 ease-out",
   "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",

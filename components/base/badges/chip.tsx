@@ -27,7 +27,21 @@ import { cx, sortCx } from "@/utils/cx";
  */
 
 type ChipVariant = "bold" | "subtle" | "caption";
-type ChipColor = "orange" | "lime" | "rose" | "yellow" | "cyan" | "blue" | "purple" | "neutral" | "gray" | "soft";
+export type ChipColor = "orange" | "lime" | "rose" | "yellow" | "cyan" | "blue" | "purple" | "neutral" | "gray" | "soft";
+
+/** Background and text pair per colour, shared with Tag Group's tags. */
+export const CHIP_COLORS: Record<ChipColor, string> = {
+  orange: "bg-status-orange-background text-status-orange-text",
+  lime: "bg-status-lime-background text-status-lime-text",
+  rose: "bg-status-rose-background text-status-rose-text",
+  yellow: "bg-status-yellow-background text-status-yellow-text",
+  cyan: "bg-status-cyan-background text-status-cyan-text",
+  blue: "bg-status-blue-background text-status-blue-text",
+  purple: "bg-status-purple-background text-status-purple-text",
+  neutral: "bg-background-tertiary-default text-text-secondary",
+  gray: "bg-background-secondary-default text-text-primary",
+  soft: "bg-background-secondary-default text-text-secondary",
+};
 
 export interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: ChipVariant;
@@ -42,18 +56,7 @@ const styles = sortCx({
     subtle: "py-1 text-body-medium",
     caption: "py-1 text-caption-1-medium",
   },
-  color: {
-    orange: "bg-status-orange-background text-status-orange-text",
-    lime: "bg-status-lime-background text-status-lime-text",
-    rose: "bg-status-rose-background text-status-rose-text",
-    yellow: "bg-status-yellow-background text-status-yellow-text",
-    cyan: "bg-status-cyan-background text-status-cyan-text",
-    blue: "bg-status-blue-background text-status-blue-text",
-    purple: "bg-status-purple-background text-status-purple-text",
-    neutral: "bg-background-tertiary-default text-text-secondary",
-    gray: "bg-background-secondary-default text-text-primary",
-    soft: "bg-background-secondary-default text-text-secondary",
-  },
+  color: CHIP_COLORS,
 });
 
 export function Chip({
