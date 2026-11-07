@@ -120,6 +120,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard | BoardUI",
   "/docs/cli": "CLI | BoardUI",
   "/docs/introduction": "Introduction | BoardUI",
+  "/getting-started": "Let's Begin with BoardUI | BoardUI",
   "/installation": "Installation | BoardUI",
   "/login": "Sign in | BoardUI",
   "/mcp": "MCP Server | BoardUI",

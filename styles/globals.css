@@ -912,3 +912,55 @@ input[type="search"]::-webkit-search-cancel-button {
     box-shadow: inset 0 0 0 2px var(--color-border-button-hover);
   }
 }
+
+/* Getting-started widget marquee, verbatim from boardui.com's CSS bundle
+ * (/_next/static/immutable/chunks/435hwkkns-skq.css, 2026-11-08): the
+ * track slides one copy width in 72s, linear, infinite; RTL flips the
+ * direction. Cards fade/scale in with their --landing-reveal-delay.
+ * Reduced motion stops the loop, as on the original. */
+@keyframes landing-marquee {
+  to {
+    translate: var(--landing-marquee-end, -50%) 0;
+  }
+}
+
+.animate-landing-marquee {
+  animation: 72s linear infinite landing-marquee;
+}
+
+.animate-landing-marquee:is(:lang(ae), :lang(ar), :lang(arc), :lang(bcc), :lang(bqi), :lang(ckb), :lang(dv), :lang(fa), :lang(glk), :lang(he), :lang(ku), :lang(mzn), :lang(nqo), :lang(pnb), :lang(ps), :lang(sd), :lang(ug), :lang(ur), :lang(yi)) {
+  --landing-marquee-end: 50%;
+}
+
+@keyframes landing-reveal-clarity {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur();
+  }
+}
+
+@keyframes landing-reveal-scale {
+  0% {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.landing-reveal {
+  animation:
+    landing-reveal-clarity 0.45s cubic-bezier(0.22, 1, 0.36, 1) var(--landing-reveal-delay, 0s) backwards,
+    landing-reveal-scale 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--landing-reveal-delay, 0s) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-landing-marquee,
+  .landing-reveal {
+    animation: none;
+  }
+}
