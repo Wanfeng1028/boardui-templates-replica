@@ -1,8 +1,8 @@
 "use client";
 
-import { RiArrowLeftLine, RiArrowRightLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -40,7 +40,7 @@ function TemplateCard({ href, title, description }: { href: string; title: strin
 /** AI Image Generation — boardui.com/components/ai-image-generation (Pro template). */
 export default function AiImageGenerationPage() {
   return (
-    <AppShell title="AI Image Generation" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="AI Image Generation">
       <p className="text-body-regular text-text-secondary">
         An image-generation agent screen built on the AI Chat shell. The prompt thread renders a live generation
         frame that unfolds into the conversation, counts down while a canvas ripple animates, then reveals the result
@@ -86,6 +86,6 @@ export default function AiImageGenerationPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

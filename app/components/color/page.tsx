@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -91,7 +91,7 @@ const STATUS_TOKENS = [
 
 export default function ColorPage() {
   return (
-    <AppShell title="Color" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Color">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function ColorPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

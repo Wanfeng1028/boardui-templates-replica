@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiTextSnippet } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -76,7 +76,7 @@ export default function TextareaPage() {
   const [note, setNote] = useState("Ship the release notes before Friday.");
   const [bio, setBio] = useState("Design engineer. I build dashboards for a living.");
   return (
-    <AppShell title="Textarea" icon={RiTextSnippet} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Textarea">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           A multiline field built on React Aria - the same shell, label, hint and states as Input, plus auto-grow
@@ -261,7 +261,7 @@ const [bio, setBio] = useState("");
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { RiArrowLeftLine, RiArticleLine } from "@remixicon/react";
+import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import {
   ArticleFigure,
   TemplateFigure,
@@ -797,7 +797,7 @@ function Faq({ q, children }: { q: string; children: React.ReactNode }) {
  */
 export default function BestReactDesignSystemsPostPage() {
   return (
-    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]" hideHeading>
+    <DocsLayout variant="marketing" footer={false} title="Blog" heading="Blog" hideHeading>
       <article className="flex flex-col gap-8 pb-8">
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -1033,6 +1033,6 @@ export default function BestReactDesignSystemsPostPage() {
       </article>
       <MoreFromBlog currentSlug="best-react-design-systems" />
       <SiteFooter />
-    </AppShell>
+    </DocsLayout>
   );
 }

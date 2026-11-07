@@ -1,9 +1,9 @@
 "use client";
 
-import { RiArrowRightLine, RiArticleLine, RiRssFill } from "@remixicon/react";
+import { RiArrowRightLine, RiRssFill } from "@remixicon/react";
 import Link from "next/link";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { BLOG_POSTS as POSTS } from "@/components/application/blog/blog-article-footer";
 
 /**
@@ -13,7 +13,7 @@ import { BLOG_POSTS as POSTS } from "@/components/application/blog/blog-article-
 
 export default function BlogIndexPage() {
   return (
-    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="marketing" title="Blog" heading="Blog">
       <div className="flex flex-col gap-8 pb-8">
         <p className="text-body-regular text-text-secondary">
           Notes on building React interfaces for agentic products — comparisons, component
@@ -61,6 +61,6 @@ export default function BlogIndexPage() {
           ))}
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

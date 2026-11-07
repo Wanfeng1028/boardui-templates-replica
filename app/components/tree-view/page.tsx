@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiFolder3Line } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { TreeViewPreview } from "@/components/application/docs/tree-view-preview
 
 export default function TreeViewPage() {
   return (
-    <AppShell title="Tree View" icon={RiFolder3Line} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Tree View">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           Navigate nested folders and structured content with expandable branches, smooth blur transitions, and
@@ -240,7 +240,7 @@ import { TreeView, TreeViewItem } from "@/components/base/tree-view/tree-view";
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { RiGlobalLine, RiInfinityLine } from "@remixicon/react";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
@@ -78,7 +78,7 @@ export default function TabsPage() {
   const [view, setView] = useState("changes");
   const [scope, setScope] = useState("Home");
   return (
-    <AppShell title="Tabs" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Tabs">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           Underline tabs built on React Aria. The active tab paints a 2px blue underline over the baseline,
@@ -197,6 +197,6 @@ import { PillTab, PillTabList } from "@/components/base/tabs/pill-tab";
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

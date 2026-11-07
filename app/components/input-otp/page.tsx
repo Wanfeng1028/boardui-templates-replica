@@ -7,7 +7,7 @@ import {
   RiFileCopyLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { InputOtp } from "@/components/base/input-otp/input-otp";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
@@ -89,7 +89,7 @@ export default function InputOtpPage() {
   const [code, setCode] = useState("");
   const [completed, setCompleted] = useState<string | null>(null);
   return (
-    <AppShell title="Input OTP" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Input OTP">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -188,6 +188,6 @@ export default function InputOtpPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

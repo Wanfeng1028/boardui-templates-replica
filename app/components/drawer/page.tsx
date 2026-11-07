@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiFilterLine, RiHistoryLine, RiLinkM, RiMailLine, RiMessage2Line, RiMoreLine, RiShareForwardLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { Drawer, DrawerBody, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/base/drawer/drawer";
@@ -143,7 +143,7 @@ export default function DrawerPage() {
   const [placement, setPlacement] = useState<DrawerPlacement | null>(null);
 
   return (
-    <AppShell title="Drawer" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Drawer">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -354,6 +354,6 @@ export default function DrawerPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

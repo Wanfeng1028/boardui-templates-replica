@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -69,7 +69,7 @@ const LABEL_CODE = `{/* Status copy and elapsed timer */}
 export default function AgentThinkingPage() {
   const command = "npx boardui@latest add agent-thinking";
   return (
-    <AppShell title="Agent Thinking" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Agent Thinking">
       <p className="text-body-regular text-text-secondary">
         The agent thinking state that sits above a chat composer while a response is being worked on. Four curated
         variants — a dot grid crossed by a diagonal wave, a dot grid with an orbiting head, twinkling stars, and an
@@ -155,6 +155,6 @@ export default function AgentThinkingPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

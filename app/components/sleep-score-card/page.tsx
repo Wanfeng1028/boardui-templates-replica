@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiMoonLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { SleepScoreCard } from "@/components/application/charts/sleep-score-card";
@@ -51,7 +51,7 @@ function CommandRow({ command }: { command: string }) {
 /** Sleep Score Card detail page: boardui.com/components/sleep-score-card, in-site. */
 export default function SleepScoreCardPage() {
   return (
-    <AppShell title="Sleep Score Card" icon={RiMoonLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Sleep Score Card">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="purple" variant="subtle">
@@ -91,6 +91,6 @@ export default function SleepScoreCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
 function CopyButton({ text }: { text: string }) {
@@ -106,7 +106,7 @@ const SKILL_OPTIONS: [string, string][] = [
 /** CLI docs page, mirroring boardui.com/docs/cli. */
 export default function CliPage() {
   return (
-    <AppShell title="CLI" columnClassName="max-w-[964px]">
+    <DocsLayout variant="docs" title="CLI">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <p className="text-body-regular text-text-secondary">
@@ -284,6 +284,6 @@ export default function CliPage() {
           Back to introduction
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

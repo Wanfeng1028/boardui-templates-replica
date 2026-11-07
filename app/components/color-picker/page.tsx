@@ -5,7 +5,7 @@ import Link from "next/link";
 import { parseColor } from "react-aria-components";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ColorPicker, ColorWell } from "@/components/base/color-picker/color-picker";
 import { DirectionProvider } from "@/components/foundations/direction/direction";
@@ -84,7 +84,7 @@ export default function ColorPickerPage() {
   const [translucent, setTranslucent] = useState(() => parseColor("rgba(99, 102, 241, 0.6)"));
 
   return (
-    <AppShell title="Color Picker" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Color Picker">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -192,6 +192,6 @@ export default function ColorPickerPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

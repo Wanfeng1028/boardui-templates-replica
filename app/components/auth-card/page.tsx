@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AuthCard } from "@/components/application/auth/auth-card";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
@@ -139,7 +139,7 @@ const WIRING_CODE = `<AuthCard
 export default function AuthCardPage() {
   const command = "npx boardui@latest add auth-card";
   return (
-    <AppShell title="Auth Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Auth Card">
       <p className="text-body-regular text-text-secondary">
         Sign-in and sign-up blocks built on the social login buttons. The providers sit under the email form and
         arrange three ways from the same array: stacked with labels, inline as compact icons, or spread across equal
@@ -308,6 +308,6 @@ export default function AuthCardPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

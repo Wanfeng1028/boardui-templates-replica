@@ -9,7 +9,7 @@ import {
   RiPhoneLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Input } from "@/components/base/input/input";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
@@ -84,7 +84,7 @@ const PHONE_CODE = `<Input label="Phone Number" hint="This is a hint about this 
  */
 export default function InputPage() {
   return (
-    <AppShell title="Input" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Input">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -228,6 +228,6 @@ export default function InputPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

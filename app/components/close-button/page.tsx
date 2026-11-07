@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { CloseButton } from "@/components/base/buttons/close-button";
 
@@ -70,7 +70,7 @@ const CONTEXT_CODE = `<header className="flex items-center justify-between p-4">
 </header>`;
 export default function CloseButtonPage() {
   return (
-    <AppShell title="Close Button" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Close Button">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export default function CloseButtonPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { TemplatePreview } from "@/components/application/docs/template-preview";
@@ -23,7 +23,7 @@ export default function HrPage() {
 
 export default function HrManagementPage() {
   return (
-    <AppShell title="HR Management" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="HR Management">
       <div className="flex flex-col gap-6 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="neutral">Pro</Chip>
@@ -63,7 +63,7 @@ export default function HrManagementPage() {
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

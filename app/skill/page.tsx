@@ -2,7 +2,7 @@
 
 import { RiArrowRightSLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { CodeTabs, PkgCommand } from "@/components/application/docs/code-tabs";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -28,7 +28,7 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 /** Agent Skills page, mirroring boardui.com/skill. */
 export default function SkillPage() {
   return (
-    <AppShell title="Agent Skills" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" hidePrevNext title="Agent Skills">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <p className="text-body-regular text-text-secondary">
@@ -169,6 +169,6 @@ export default function SkillPage() {
           next={{ href: "/rtl", label: "RTL Support" }}
         />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

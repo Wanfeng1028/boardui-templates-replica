@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiDeleteBinLine, RiFileTextLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
@@ -159,7 +159,7 @@ export default function ModalPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState("Acme Dashboard");
   return (
-    <AppShell title="Modal" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Modal">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -404,6 +404,6 @@ export default function ModalPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

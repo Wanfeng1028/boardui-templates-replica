@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AgentCreator } from "@/components/application/pro/agent-creator";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -51,7 +51,7 @@ function Demo({ children }: { children: React.ReactNode }) {
 export default function AgentCreatorPage() {
   const command = "npx boardui@latest add agent-creator";
   return (
-    <AppShell title="Agent Creator" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Agent Creator">
       <p className="text-body-regular text-text-secondary">
         Give every agent its own identity. A reusable sidebar with animated paper avatars, nine shapes, expressive
         faces, custom colors, profile fields, and voice, language, and notification preferences.
@@ -106,6 +106,6 @@ export default function AgentCreatorPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

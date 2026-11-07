@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { BarListCard } from "@/components/application/charts/bar-list-card";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -85,7 +85,7 @@ const SINGLE_CODE = `{/* One list, no tabs - a heading takes the tab strip's pla
 export default function BarListCardPage() {
   const command = "npx boardui@latest add bar-list-card";
   return (
-    <AppShell title="Bar List Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Bar List Card">
       <p className="text-body-regular text-text-secondary">
         The analytics breakdown list — traffic by device, browser, OS, country, or source as ranked rows whose
         background bars encode each item&apos;s share, label on the bar, metric on the right. Our underline Tabs
@@ -135,6 +135,6 @@ export default function BarListCardPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

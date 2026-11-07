@@ -7,7 +7,7 @@ import {
   RiFileCopyLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Pagination } from "@/components/base/pagination/pagination";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
@@ -79,7 +79,7 @@ export function Example() {
 export default function PaginationPage() {
   const [page, setPage] = useState(6);
   return (
-    <AppShell title="Pagination" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Pagination">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -147,7 +147,7 @@ export default function PaginationPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

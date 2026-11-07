@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
 /** Pro installation guide - content mirrors boardui.com/components/pro-installation. */
@@ -116,7 +116,7 @@ const PRO_TEMPLATES = [
 /** Pro installation guide, mirroring boardui.com/components/pro-installation. */
 export default function ProInstallationPage() {
   return (
-    <AppShell title="Pro installation" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Pro installation">
       <div className="flex flex-col gap-8 pb-8">
         <Section title="Welcome to BoardUI Pro">
           <p className="text-body-regular text-text-secondary">
@@ -293,7 +293,7 @@ export default function ProInstallationPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiArrowRightSLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
@@ -34,7 +34,7 @@ function CopyButton({ text }: { text: string }) {
 
 export default function FinanceDashboardPage() {
   return (
-    <AppShell title="Finance Dashboard" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Finance Dashboard">
       <div className="flex flex-col gap-6 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="neutral">Pro</Chip>
@@ -62,6 +62,6 @@ export default function FinanceDashboardPage() {
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

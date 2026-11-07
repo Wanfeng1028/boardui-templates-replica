@@ -14,7 +14,7 @@ import {
   RiUserLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Chip } from "@/components/base/badges/chip";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
@@ -82,7 +82,7 @@ const AVATARS_CODE = `{/* Items take arbitrary leading content - avatars, icons,
 /** Breadcrumb detail page, mirroring boardui.com/components/breadcrumb. */
 export default function BreadcrumbPage() {
   return (
-    <AppShell title="Breadcrumb" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Breadcrumb">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -171,6 +171,6 @@ export default function BreadcrumbPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

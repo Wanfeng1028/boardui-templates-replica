@@ -2,7 +2,7 @@
 
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
 
@@ -44,7 +44,7 @@ function TemplateCard({
 const PRE_STYLE = "overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary";
 export default function ProjectBoardPage() {
   return (
-    <AppShell title="Project Board" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Project Board">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -121,7 +121,7 @@ export default function ProjectBoardPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

@@ -5,7 +5,7 @@ import type { Key } from "react-aria-components";
 import Link from "next/link";
 import { RiAddLine, RiArrowLeftLine, RiBankCardLine, RiCheckLine, RiFileCopyLine, RiNotification3Line, RiShieldKeyholeLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { Switch } from "@/components/base/switch/switch";
@@ -158,7 +158,7 @@ export default function AccordionPage() {
   const [expanded, setExpanded] = useState<Set<Key>>(new Set(["billing"]));
 
   return (
-    <AppShell title="Accordion" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Accordion">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -330,6 +330,6 @@ export default function AccordionPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

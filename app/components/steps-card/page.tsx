@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLineChartLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { StepsCard } from "@/components/application/charts/steps-card";
 
 export default function StepsCardPage() {
   return (
-    <AppShell title="Steps Chart" icon={RiLineChartLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Steps Chart">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           The weekly steps bar chart from the medical dashboard — seven day bars with a week-range switcher, a
@@ -100,6 +100,6 @@ export default function StepsCardPage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

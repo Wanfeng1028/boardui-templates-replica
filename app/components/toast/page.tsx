@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiDownload2Line, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { toast, Toaster } from "@/components/base/toast/toast";
@@ -103,7 +103,7 @@ const RTL_CODE = `import { DirectionProvider } from "@/components/foundations/di
 /** Toast detail page, mirroring boardui.com/components/toast. */
 export default function ToastPage() {
   return (
-    <AppShell title="Toast" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Toast">
       <Toaster />
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
@@ -264,6 +264,6 @@ export default function ToastPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

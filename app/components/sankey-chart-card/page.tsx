@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiFlowChart } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { SankeyChartCard } from "@/components/application/charts/sankey-chart-card";
@@ -89,7 +89,7 @@ const RANGES_CODE = `// …or a working period dropdown: each range overrides li
 /** Sankey Chart Card detail page: boardui.com/components/sankey-chart-card, in-site. */
 export default function SankeyChartCardPage() {
   return (
-    <AppShell title="Sankey Chart Card" icon={RiFlowChart} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Sankey Chart Card">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="purple" variant="subtle">
@@ -138,6 +138,6 @@ export default function SankeyChartCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

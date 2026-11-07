@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
@@ -54,7 +54,7 @@ function TemplateCard({ href, title, description }: { href: string; title: strin
 export default function AiProfilePage() {
   const command = "npx boardui@latest add template-ai-profile";
   return (
-    <AppShell title="AI Profile" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="AI Profile">
       <p className="text-body-regular text-text-secondary">
         A GitHub-style contributions profile for AI work — cover photo and identity card, contributions headline with
         stat tiles, an activity heatmap, a 30-day agents bar chart with month switcher (idle days collapse to grey
@@ -90,6 +90,6 @@ export default function AiProfilePage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

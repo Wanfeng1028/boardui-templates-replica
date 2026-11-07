@@ -2,7 +2,7 @@
 
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
 
@@ -49,7 +49,7 @@ function TemplateCard({
  */
 export default function MedicalProfilePage() {
   return (
-    <AppShell title="Medical Profile" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Medical Profile">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -109,6 +109,6 @@ export default function MedicalProfilePage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

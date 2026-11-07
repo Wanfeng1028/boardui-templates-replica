@@ -2,7 +2,7 @@
 
 import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { CodeTabs, PkgCommand } from "@/components/application/docs/code-tabs";
 import { FileCodeBlock, InstallStep, InstallTabs } from "@/components/application/docs/install-tabs";
@@ -66,7 +66,7 @@ const COLLAPSED_CODE = `<ThemeToggle collapsed />`;
 /** Theme Toggle detail page: boardui.com/components/theme-toggle, in-site. */
 export default function ThemeTogglePage() {
   return (
-    <AppShell title="Theme Toggle" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Theme Toggle">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -172,6 +172,6 @@ export default function ThemeTogglePage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

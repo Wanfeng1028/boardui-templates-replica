@@ -2,7 +2,7 @@
 
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { CodeTabs } from "@/components/application/docs/code-tabs";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
@@ -55,7 +55,7 @@ function TemplateCard({
 const PRE_STYLE = "overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary";
 export default function MultiAgentChatPage() {
   return (
-    <AppShell title="Multi-agent Chat" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" hidePrevNext title="Multi-agent Chat">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -196,7 +196,7 @@ export function Chat() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

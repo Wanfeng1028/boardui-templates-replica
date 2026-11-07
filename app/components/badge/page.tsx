@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Badge } from "@/components/base/badges/badge";
 import { Kbd } from "@/components/base/kbd/kbd";
@@ -72,7 +72,7 @@ const KBD_CODE = `import { Kbd } from "@/components/base/kbd/kbd";
 /** Badge detail page, mirroring boardui.com/components/badge. */
 export default function BadgePage() {
   return (
-    <AppShell title="Badge" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Badge">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -141,6 +141,6 @@ export default function BadgePage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

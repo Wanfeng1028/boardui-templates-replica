@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ComboChartCard } from "@/components/application/charts/combo-chart-card";
 
@@ -58,7 +58,7 @@ const data = [
 />`;
 export default function ComboChartCardPage() {
   return (
-    <AppShell title="Combo Chart Card" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Combo Chart Card">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function ComboChartCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

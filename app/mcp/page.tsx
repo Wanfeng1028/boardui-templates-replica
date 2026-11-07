@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { PkgCommand } from "@/components/application/docs/code-tabs";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -190,7 +190,7 @@ const VSCODE_INSTALL_URL =
 export default function McpPage() {
   const [client, setClient] = useState<(typeof CLIENTS)[number]>("Claude Code");
   return (
-    <AppShell title="MCP Server" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" hidePrevNext title="MCP Server">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <p className="text-body-regular text-text-secondary">
@@ -432,6 +432,6 @@ export default function McpPage() {
           next={{ href: "/skill", label: "Agent Skills", sub: "Knowledge for your agent" }}
         />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

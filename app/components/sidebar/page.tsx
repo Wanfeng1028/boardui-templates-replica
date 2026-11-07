@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiSideBarLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { DashboardSidebar } from "@/components/application/dashboard/dashboard-sidebar";
@@ -42,7 +42,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 /** Sidebar detail page: boardui.com/components/sidebar, in-site. */
 export default function SidebarPage() {
   return (
-    <AppShell title="Sidebar" icon={RiSideBarLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Sidebar">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="lime" variant="subtle">
@@ -96,6 +96,6 @@ export default function SidebarPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

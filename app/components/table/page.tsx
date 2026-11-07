@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiTableLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -104,7 +104,7 @@ function CustomersTable({ size }: { size: "md" | "sm" }) {
 
 export default function TablePage() {
   return (
-    <AppShell title="Table" icon={RiTableLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Table">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           An accessible table primitive built on React Aria — semantic markup, keyboard navigation, row
@@ -162,6 +162,6 @@ export default function TablePage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -8,7 +8,7 @@ import {
   RiFileCopyLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import {
   Notification,
   NotificationViewport,
@@ -327,7 +327,7 @@ function PositionDemo() {
 
 export default function NotificationPage() {
   return (
-    <AppShell title="Notification" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Notification">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <span
@@ -474,7 +474,7 @@ export default function NotificationPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

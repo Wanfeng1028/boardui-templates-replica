@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine, RiSparklingFill } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiSparklingFill } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Announcement } from "@/components/base/announcement/announcement";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -79,7 +79,7 @@ const VARIATIONS_CODE = `import { RiSparklingFill } from "@remixicon/react";
 export default function AnnouncementPage() {
   const command = "npx boardui@latest add announcement";
   return (
-    <AppShell title="Announcement" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Announcement">
       <p className="text-body-regular text-text-secondary">
         A compact onboarding / announcement card sized for the sidebar footer — leading icon, dismiss button, title,
         description, and a full-width secondary CTA. Dismissal animates out with Motion.
@@ -123,6 +123,6 @@ export default function AnnouncementPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiRadarLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { RadarChartCard } from "@/components/application/charts/radar-chart-card";
@@ -100,7 +100,7 @@ const RANGES_CODE = `// …or a working period dropdown: each range overrides da
 /** Radar Chart Card detail page: boardui.com/components/radar-chart-card, in-site. */
 export default function RadarChartCardPage() {
   return (
-    <AppShell title="Radar Chart Card" icon={RiRadarLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Radar Chart Card">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="purple" variant="subtle">
@@ -159,6 +159,6 @@ export default function RadarChartCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

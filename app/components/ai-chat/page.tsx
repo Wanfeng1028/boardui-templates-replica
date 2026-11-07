@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
@@ -54,7 +54,7 @@ function TemplateCard({ href, title, description }: { href: string; title: strin
 export default function AiChatPage() {
   const command = "npx boardui@latest add template-ai-chat";
   return (
-    <AppShell title="AI Chat" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="AI Chat">
       <p className="text-body-regular text-text-secondary">
         A complete coding-agent chat screen, in the style of Cursor or Claude Code — an agent sidebar with quick
         actions and a repositories tree of recent chats, a chat thread with user/assistant turns and feedback
@@ -95,6 +95,6 @@ export default function AiChatPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

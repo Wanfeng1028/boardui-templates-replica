@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiRadioButtonLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { Radio, RadioGroup } from "@/components/base/radio/radio";
@@ -71,7 +71,7 @@ import { RadioGroup } from "@/components/base/radio/radio";
 /** Radio detail page: boardui.com/components/radio, in-site. */
 export default function RadioPage() {
   return (
-    <AppShell title="Radio" icon={RiRadioButtonLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Radio">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="lime" variant="subtle">
@@ -148,6 +148,6 @@ export default function RadioPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

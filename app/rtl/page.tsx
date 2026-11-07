@@ -2,7 +2,7 @@
 
 import { RiArrowRightSLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { PkgCommand } from "@/components/application/docs/code-tabs";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -114,7 +114,7 @@ function CustomOverlay() {
 /** RTL Support page, mirroring boardui.com/rtl. */
 export default function RtlPage() {
   return (
-    <AppShell title="RTL Support" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" hidePrevNext title="RTL Support">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <p className="text-body-regular text-text-secondary">
@@ -275,6 +275,6 @@ export default function RtlPage() {
           next={{ href: "/components/color", label: "Color", sub: "Semantic color tokens" }}
         />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiBarChartLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { RevenueChartCard } from "@/components/application/dashboard/revenue-chart-card";
@@ -73,7 +73,7 @@ const IN_A_ROW_CODE = `{/* Fills a dashboard row beside another card; the defaul
 /** Revenue Chart Card detail page: boardui.com/components/revenue-chart-card, in-site. */
 export default function RevenueChartCardPage() {
   return (
-    <AppShell title="Revenue Chart Card" icon={RiBarChartLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Revenue Chart Card">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="lime" variant="subtle">
@@ -131,6 +131,6 @@ export default function RevenueChartCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

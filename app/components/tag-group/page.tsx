@@ -11,7 +11,7 @@ import {
   RiSparklingLine,
 } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { DirectionProvider } from "@/components/foundations/direction/direction";
 import { Tag, TagGroup } from "@/components/base/tag-group/tag-group";
@@ -115,7 +115,7 @@ export default function TagGroupPage() {
     { id: "design", name: "التصميم" },
   ]);
   return (
-    <AppShell title="Tag Group" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Tag Group">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -233,6 +233,6 @@ export default function TagGroupPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

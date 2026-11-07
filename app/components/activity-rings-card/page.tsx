@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { ActivityRingsCard } from "@/components/application/charts/activity-rings-card";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -51,7 +51,7 @@ function Demo({ children }: { children: React.ReactNode }) {
 export default function ActivityRingsCardPage() {
   const command = "npx boardui@latest add activity-rings-card";
   return (
-    <AppShell title="Activity Rings Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Activity Rings Card">
       <p className="text-body-regular text-text-secondary">
         Apple Watch-style concentric goal rings — move, exercise, and running progress with hoverable ring focus and
         stat tiles below. Pairs with the Most Active Days card to show any selected day.
@@ -81,6 +81,6 @@ export default function ActivityRingsCardPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

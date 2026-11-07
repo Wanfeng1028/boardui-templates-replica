@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiDonutChartLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { RadialChartCard } from "@/components/application/charts/radial-chart-card";
@@ -104,7 +104,7 @@ const RANGES_CODE = `// …or a working period dropdown: each range overrides da
 /** Radial Chart Card detail page: boardui.com/components/radial-chart-card, in-site. */
 export default function RadialChartCardPage() {
   return (
-    <AppShell title="Radial Chart Card" icon={RiDonutChartLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Radial Chart Card">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="purple" variant="subtle">
@@ -172,6 +172,6 @@ export default function RadialChartCardPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

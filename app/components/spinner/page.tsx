@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { Spinner, SpinnerGlyph } from "@/components/base/spinner/spinner";
@@ -87,7 +87,7 @@ function ButtonSpinner({ className }: { className?: string }) {
 export default function SpinnerPage() {
   const [pending, setPending] = useState(false);
   return (
-    <AppShell title="Spinner" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Spinner">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -197,6 +197,6 @@ export default function SpinnerPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

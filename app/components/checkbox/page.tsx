@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { CheckboxCard } from "@/components/base/checkbox/checkbox-card";
@@ -79,7 +79,7 @@ const CARD_CODE = `import { CheckboxCard } from "@/components/base/checkbox/chec
 /** Checkbox detail page, mirroring boardui.com/components/checkbox. */
 export default function CheckboxPage() {
   return (
-    <AppShell title="Checkbox" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Checkbox">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -163,6 +163,6 @@ export default function CheckboxPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

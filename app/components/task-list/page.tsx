@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiListCheck3 } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { TaskList } from "@/components/application/pro/task-list";
 
 export default function TaskListPage() {
   return (
-    <AppShell title="Task List" icon={RiListCheck3} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Task List">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           A streaming log of what an agent actually did. Tasks reveal one unit at a time, each animating its
@@ -170,6 +170,6 @@ const steps = [
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

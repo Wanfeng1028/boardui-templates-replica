@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Time } from "@internationalized/date";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { DirectionProvider } from "@/components/foundations/direction/direction";
 import { TimeField } from "@/components/base/time-field/time-field";
@@ -85,7 +85,7 @@ const RTL_CODE = `import { DirectionProvider } from "@/components/foundations/di
 /** Time Field detail page, mirroring boardui.com/components/time-field. */
 export default function TimeFieldPage() {
   return (
-    <AppShell title="Time Field" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Time Field">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -192,6 +192,6 @@ export default function TimeFieldPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AgentProgress } from "@/components/application/pro/agent-progress";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -77,7 +77,7 @@ const TIMING_CODE = `<AgentProgress
 export default function AgentProgressPage() {
   const command = "npx boardui@latest add agent-progress";
   return (
-    <AppShell title="Agent Progress" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Agent Progress">
       <p className="text-body-regular text-text-secondary">
         A collapsible progress block for multi-step AI work. It introduces steps with a soft stagger, advances the
         active task with synchronized circular progress, preserves progress while minimized, and exposes completion
@@ -123,6 +123,6 @@ export default function AgentProgressPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

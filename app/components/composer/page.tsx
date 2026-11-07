@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { RiCheckLine, RiFileCopyLine, RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { Composer } from "@/components/application/pro/composer";
 import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
@@ -77,7 +77,7 @@ const PARTS_CODE = `{/* The pill alone — attachment menu, input, model picker,
 export default function ComposerPage() {
   const [showWorking, setShowWorking] = useState(false);
   return (
-    <AppShell title="Composer" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Composer">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -182,6 +182,6 @@ export default function ComposerPage() {
           </LinkButton>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiArticleLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import {
   ArticleFigure,
   TemplateFigure,
@@ -105,7 +105,7 @@ const HARNESS_QUESTIONS: QuestionnaireQuestion[] = [
  */
 export default function AgenticProductsPostPage() {
   return (
-    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]" hideHeading>
+    <DocsLayout variant="marketing" footer={false} title="Blog" heading="Blog" hideHeading>
       <article className="flex flex-col gap-8 pb-8">
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -339,6 +339,6 @@ export default function AgenticProductsPostPage() {
       </article>
       <MoreFromBlog currentSlug="react-design-system-for-agentic-products" />
       <SiteFooter />
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ComposerAttachments } from "@/components/application/pro/composer-attachments";
 
@@ -81,7 +81,7 @@ const OWN_UPLOADER_CODE = `{/* Real uploads: feed the ring from your own progres
 />`;
 export default function ComposerAttachmentsPage() {
   return (
-    <AppShell title="Composer Attachments" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Composer Attachments">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export default function ComposerAttachmentsPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

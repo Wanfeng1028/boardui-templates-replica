@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { LinkButton } from "@/components/base/buttons/link-button";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -18,12 +18,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 /** Introduction docs page, mirroring boardui.com/docs/introduction. */
 export default function IntroductionPage() {
   return (
-    <AppShell title="Introduction" columnClassName="max-w-[964px]">
+    <DocsLayout variant="docs" eyebrow="Docs · Get started" title="Introduction">
       <div className="flex flex-col gap-8 pb-8">
-        <div className="flex flex-col gap-3">
-          <p className="text-caption-1-semibold text-text-tertiary">Docs · Get started</p>
-        </div>
-
         <Section title="What is BoardUI?">
           <p className="text-body-regular text-text-secondary">
             BoardUI is an open-source collection of React components built with Tailwind CSS and designed in
@@ -110,6 +106,6 @@ export default function IntroductionPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

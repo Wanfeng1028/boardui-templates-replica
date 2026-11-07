@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiBarChartLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { StatCards } from "@/components/application/dashboard/stat-cards";
 
 export default function StatCardsPage() {
   return (
-    <AppShell title="Stat Cards" icon={RiBarChartLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Stat Cards">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           KPI cards for dashboard headers, in two looks — the compact row the dashboard templates use, and a
@@ -143,6 +143,6 @@ const stats: Stat[] = [
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

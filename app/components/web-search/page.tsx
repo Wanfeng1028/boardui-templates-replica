@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiSearchEyeLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { WebSearch } from "@/components/application/pro/web-search";
 
 export default function WebSearchPage() {
   return (
-    <AppShell title="Web Search" icon={RiSearchEyeLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Web Search">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           The research counterpart to Task List: where that one logs the work an agent did, this logs where it
@@ -194,7 +194,7 @@ export default function WebSearchPage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

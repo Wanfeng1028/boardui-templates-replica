@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiBarChartHorizontalLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -74,7 +74,7 @@ import { StageBarsCard } from "@/components/application/charts/stage-bars-card";
 
 export default function StageBarsCardPage() {
   return (
-    <AppShell title="Stage Bars" icon={RiBarChartHorizontalLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Stage Bars">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           The funnel as a list — one rounded pill per stage over the chart track, name on the left, value and
@@ -149,6 +149,6 @@ const stages = [
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

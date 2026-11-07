@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { FREE_COMPONENT_PREVIEWS } from "@/components/application/docs/component-previews-free";
 
@@ -36,7 +36,7 @@ const CODE_0_CODE = "{/* Radio-group rows: selected state on the row + a radio g
 
 export default function DropdownPage() {
   return (
-    <AppShell title="Dropdown" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Dropdown">
       <div className="flex flex-col gap-6 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="neutral">Free</Chip>
@@ -64,6 +64,6 @@ export default function DropdownPage() {
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

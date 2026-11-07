@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLoginBoxLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { RiShieldKeyholeLine } from "@remixicon/react";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
@@ -75,7 +75,7 @@ import { SocialButton } from "@/components/base/social-button/social-button";
 
 export default function SocialButtonPage() {
   return (
-    <AppShell title="Social Button" icon={RiLoginBoxLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Social Button">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           Login buttons for 24 providers plus custom brands. Naming the brand supplies its logo, colour and
@@ -288,6 +288,6 @@ export default function SocialButtonPage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { RiArrowLeftLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AreaChartCard } from "@/components/application/charts/area-chart-card";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
@@ -81,7 +81,7 @@ const data = [
 /** Area Chart Card — boardui.com/components/area-chart-card (Pro). */
 export default function AreaChartCardPage() {
   return (
-    <AppShell title="Area Chart Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" hidePrevNext title="Area Chart Card">
       <p className="text-body-regular text-text-secondary">
         Composition over time — several series as stacked areas with soft gradient fills, a dashed cursor, and a
         count-up headline that swaps to the hovered category&apos;s total. One prop switches between stacked,
@@ -140,6 +140,6 @@ export default function AreaChartCardPage() {
         prev={{ href: "/components/activity-rings-card", label: "Activity Rings", sub: "Concentric goal rings" }}
         next={{ href: "/components/bar-list-card", label: "Bar List", sub: "Ranked horizontal bars" }}
       />
-    </AppShell>
+    </DocsLayout>
   );
 }

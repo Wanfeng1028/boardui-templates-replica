@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiEqualizerLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { RangeSlider, Slider } from "@/components/base/slider/slider";
@@ -94,7 +94,7 @@ export default function SliderPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([200, 800]);
   const [savedRange, setSavedRange] = useState<[number, number] | null>(null);
   return (
-    <AppShell title="Slider" icon={RiEqualizerLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Slider">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="lime" variant="subtle">
@@ -205,6 +205,6 @@ export default function SliderPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

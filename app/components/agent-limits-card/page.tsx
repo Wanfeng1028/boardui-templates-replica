@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { AgentLimitsCard } from "@/components/application/pro/agent-limits-card";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -86,7 +86,7 @@ const EXPANDED_CODE = `<AgentLimitsCard
 export default function AgentLimitsCardPage() {
   const command = "npx boardui@latest add agent-limits-card";
   return (
-    <AppShell title="Agent Limits Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Agent Limits Card">
       <p className="text-body-regular text-text-secondary">
         The agent budget widget — a context window usage bar segmented by token bucket with a used / max readout,
         and plan usage limits with reset times and progress bars. Expanding the context window grows the whole card
@@ -123,6 +123,6 @@ export default function AgentLimitsCardPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

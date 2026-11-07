@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
   RiArrowRightLine,
   RiCheckLine,
-  RiLayoutGridLine,
   RiSparklingLine,
 } from "@remixicon/react";
 
 import { ButtonLink } from "@/components/base/buttons/button";
-import { DocumentTitle } from "@/components/application/app-shell/document-title";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 import { Input } from "@/components/base/input/input";
 
@@ -193,22 +191,8 @@ function SectionHeading({ title, blurb }: { title: string; blurb?: string }) {
 
 export default function PricingPage() {
   return (
-    <div className="flex min-h-dvh flex-col bg-background-full">
-      <DocumentTitle />
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-separator-border bg-background-primary-default px-4">
-        <Link href="/" className="flex items-center gap-2 text-body-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
-          <RiLayoutGridLine className="size-5 text-foreground-icon-primary" aria-hidden />
-          BoardUI
-        </Link>
-        <nav className="flex items-center gap-1 text-body-regular text-text-secondary" aria-label="Site">
-          <Link href="/components" className="rounded-full px-3 py-1.5 outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring">Components</Link>
-          <Link href="/templates" className="rounded-full px-3 py-1.5 outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring">Templates</Link>
-          <Link href="/pro-components" className="rounded-full px-3 py-1.5 outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring">Pro components</Link>
-          <Link href="/pricing" aria-current="page" className="rounded-full px-3 py-1.5 text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">Pricing</Link>
-        </nav>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 py-16">
+    <DocsLayout variant="marketing">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-20">
         {/* Hero */}
         <section className="flex flex-col items-start gap-5">
           <p className="flex items-center gap-1.5 rounded-full border border-border-button-default bg-background-secondary-default px-3 py-1 text-caption-1-semibold text-text-primary">
@@ -398,13 +382,11 @@ export default function PricingPage() {
             </ButtonLink>
           </div>
         </section>
-      </main>
+      </div>
 
-      <footer className="border-t border-separator-border px-4 py-6">
-        <p className="mx-auto max-w-5xl text-body-regular text-text-tertiary">
-          Replica of boardui.com/pricing for reference — not the official BoardUI site.
-        </p>
-      </footer>
-    </div>
+      <p className="mx-auto max-w-5xl text-body-regular text-text-tertiary">
+        Replica of boardui.com/pricing for reference — not the official BoardUI site.
+      </p>
+    </DocsLayout>
   );
 }

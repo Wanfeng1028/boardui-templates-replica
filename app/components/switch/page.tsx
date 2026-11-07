@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiToggleLine } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { RiMoonLine, RiNotification4Line } from "@remixicon/react";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
@@ -77,7 +77,7 @@ import { SwitchCard } from "@/components/base/switch/switch-card";
 export default function SwitchPage() {
   const [enabled, setEnabled] = useState(false);
   return (
-    <AppShell title="Switch" icon={RiToggleLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Switch">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           An accessible toggle switch built on React Aria — native toggle semantics, keyboard support and a
@@ -214,6 +214,6 @@ export function Example() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

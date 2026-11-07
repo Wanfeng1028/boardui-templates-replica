@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiSettingsLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Button } from "@/components/base/buttons/button";
 import { Chip } from "@/components/base/badges/chip";
 import { SettingsModal, type SettingsPage } from "@/components/application/settings/settings-modal";
@@ -94,7 +94,7 @@ export default function SettingsModalPage() {
   };
 
   return (
-    <AppShell title="Settings Modal" icon={RiSettingsLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Settings Modal">
       <div className="flex flex-col gap-8 px-1 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="lime" variant="subtle">
@@ -175,6 +175,6 @@ export default function SettingsModalPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

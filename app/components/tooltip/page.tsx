@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiInformation2Line } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -87,7 +87,7 @@ function PlacedTooltip({ placement, label }: { placement: "top" | "bottom" | "le
 
 export default function TooltipPage() {
   return (
-    <AppShell title="Tooltip" icon={RiInformation2Line} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Tooltip">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           A light-surface tooltip built on React Aria - it opens on hover and focus, flips to stay on-screen,
@@ -218,7 +218,7 @@ export default function TooltipPage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

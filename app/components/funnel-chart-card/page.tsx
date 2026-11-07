@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { FunnelChartCard } from "@/components/application/charts/funnel-chart-card";
 
@@ -37,7 +37,7 @@ const CODE_1_CODE = "// One entry per stage, top of the funnel first.\nconst sta
 
 export default function FunnelChartCardPage() {
   return (
-    <AppShell title="Funnel Chart Card" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Funnel Chart Card">
       <div className="flex flex-col gap-6 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="neutral">Pro</Chip>
@@ -70,6 +70,6 @@ export default function FunnelChartCardPage() {
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

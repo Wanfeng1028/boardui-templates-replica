@@ -2,8 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiFontSize } from "@remixicon/react";
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 
 function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -72,7 +72,7 @@ function BackLink() {
 
 export default function TypographyPage() {
   return (
-    <AppShell title="Typography" icon={RiFontSize} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Typography">
       <div className="flex flex-col gap-10 pb-10">
         <p className="text-body-regular text-text-secondary">
           Type scale, weights, and text styles. BoardUI ships one composite utility per style — each sets
@@ -573,7 +573,7 @@ export default function TypographyPage() {
 
         <BackLink />
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
 

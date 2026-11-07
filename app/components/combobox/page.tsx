@@ -5,7 +5,7 @@ import type { Key } from "react-aria-components";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiTimeLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ComboBox, ComboBoxItem, ComboBoxSection } from "@/components/base/combobox/combobox";
 import { DirectionProvider } from "@/components/foundations/direction/direction";
@@ -151,7 +151,7 @@ export default function ComboboxPage() {
   const [selected, setSelected] = useState<Key | null>("leo");
 
   return (
-    <AppShell title="Combobox" columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Combobox">
       <div className="flex flex-col gap-8 pb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -357,6 +357,6 @@ export default function ComboboxPage() {
           Back to all components
         </Link>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

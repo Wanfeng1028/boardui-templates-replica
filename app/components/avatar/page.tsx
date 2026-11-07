@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
@@ -70,7 +70,7 @@ const PHOTO_CODE = `{/* Photo avatars take a src + alt; initials are the fallbac
 export default function AvatarPage() {
   const command = "npx boardui@latest add avatar";
   return (
-    <AppShell title="Avatar" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Avatar">
       <p className="text-body-regular text-text-secondary">
         A photo or initials avatar in four sizes (20 / 24 / 32 / 36px) with neutral and blue initial tints — used
         across tables, breadcrumbs, menus, and the sidebar.
@@ -139,6 +139,6 @@ export default function AvatarPage() {
           Back to components
         </LinkButton>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }

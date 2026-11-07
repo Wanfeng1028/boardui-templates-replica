@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
-import { AppShell } from "@/components/application/app-shell/app-shell";
+import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Chip } from "@/components/base/badges/chip";
 import { ComposerPanel } from "@/components/application/pro/composer-panel";
 
@@ -39,7 +39,7 @@ const CODE_3_CODE = "const [draft, setDraft] = useState(\"\");\nconst inputRef =
 
 export default function ComposerPanelPage() {
   return (
-    <AppShell title="Composer Panel" actions={null} columnClassName="max-w-[964px]">
+    <DocsLayout variant="library" title="Composer Panel">
       <div className="flex flex-col gap-6 pb-10">
         <div className="flex items-center gap-2">
           <Chip color="neutral">Pro</Chip>
@@ -86,6 +86,6 @@ export default function ComposerPanelPage() {
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>
         </div>
       </div>
-    </AppShell>
+    </DocsLayout>
   );
 }
