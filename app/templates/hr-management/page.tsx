@@ -15,13 +15,14 @@ import {
   RiUserAddLine,
   RiUserSharedLine,
 } from "@remixicon/react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import {
   DASHBOARD_NAV,
   DashboardSidebar,
 } from "@/components/application/dashboard/dashboard-sidebar";
+import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
@@ -37,8 +38,10 @@ import { cx } from "@/utils/cx";
  * hires vs leavers, team breakdown, employee data table.
  * Built only from free BoardUI components + mock data. Not the Pro source.
  *
- * The shared sidebar (DASHBOARD_NAV) includes HR Management, so this page
- * uses it directly.
+ * The shared sidebar (DASHBOARD_NAV) is the original 9-item nav plus the
+ * "全部模板" first row — HR Management is intentionally not a nav row
+ * (the original sidebar has no such row), so no item is highlighted here;
+ * the page is reached from the /templates index.
  */
 
 /* ------------------------------------------------------------------ */
@@ -68,11 +71,11 @@ function HrShell({
         <div className="flex w-full max-w-[1300px] flex-col gap-2.5">
           <header className="flex w-full flex-col gap-2">
             <Breadcrumb>
-              <BreadcrumbItem href="#">
+              <BreadcrumbItem href="/templates/dashboard">
                 <Avatar size="xs" color="blue" initials="B" />
                 Board team
               </BreadcrumbItem>
-              <BreadcrumbItem href="#">
+              <BreadcrumbItem href="/templates/dashboard">
                 <Avatar size="xs" color="neutral" initials="M" />
                 Mertcan
               </BreadcrumbItem>
@@ -91,7 +94,10 @@ function HrShell({
                 />
                 <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">HR Management</h1>
               </div>
-              <div className="flex flex-wrap items-center justify-end gap-2.5">{actions}</div>
+              <div className="flex flex-wrap items-center justify-end gap-2.5">
+                <AllTemplatesButton />
+                {actions}
+              </div>
             </div>
           </header>
           <div className="flex w-full flex-col gap-4 pb-4">{children}</div>
@@ -105,13 +111,20 @@ function HrShell({
 /* Data                                                                */
 /* ------------------------------------------------------------------ */
 
-const KPI_PERIODS = [
+/* `up` is the direction the value moved (arrow); `good` is whether that
+ * move is favorable (chip color), defaulting to `up`. They differ for
+ * attrition, where down is good: Q3 4.2% is down 0.8 pts, so the chip
+ * shows a down arrow in green — previously it showed an up arrow next to
+ * a "−0.8 pts" delta. */
+type Kpi = { label: string; value: string; delta: string; up: boolean; good?: boolean };
+
+const KPI_PERIODS: { label: string; kpis: Kpi[] }[] = [
   {
     label: "Q3 2026",
     kpis: [
       { label: "Total headcount", value: "248", delta: "+18 YoY", up: true },
       { label: "New hires", value: "24", delta: "+6 vs Q2", up: true },
-      { label: "Attrition rate", value: "4.2%", delta: "-0.8 pts", up: true },
+      { label: "Attrition rate", value: "4.2%", delta: "-0.8 pts", up: false, good: true },
       { label: "Avg. engagement", value: "78%", delta: "+3 pts", up: true },
     ],
   },
@@ -120,7 +133,7 @@ const KPI_PERIODS = [
     kpis: [
       { label: "Total headcount", value: "230", delta: "+11 YoY", up: true },
       { label: "New hires", value: "18", delta: "−1 vs Q1", up: false },
-      { label: "Attrition rate", value: "5.0%", delta: "+0.4 pts", up: false },
+      { label: "Attrition rate", value: "5.0%", delta: "+0.4 pts", up: true, good: false },
       { label: "Avg. engagement", value: "75%", delta: "+1 pt", up: true },
     ],
   },
@@ -129,7 +142,7 @@ const KPI_PERIODS = [
     kpis: [
       { label: "Total headcount", value: "248", delta: "+29 YTD", up: true },
       { label: "New hires", value: "61", delta: "YTD", up: true },
-      { label: "Attrition rate", value: "4.6%", delta: "-1.1 pts YoY", up: true },
+      { label: "Attrition rate", value: "4.6%", delta: "-1.1 pts YoY", up: false, good: true },
       { label: "Avg. engagement", value: "77%", delta: "+4 pts YoY", up: true },
     ],
   },
@@ -297,6 +310,19 @@ export default function HrManagementTemplatePage() {
   const [hireTeam, setHireTeam] = useState("Engineering");
   const [extraHires, setExtraHires] = useState<Employee[]>([]);
 
+  // Esc closes either dialog, matching the shared Modal behavior.
+  useEffect(() => {
+    if (!viewEmployee && !hireOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setViewEmployee(null);
+        setHireOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [viewEmployee, hireOpen]);
+
   const period = KPI_PERIODS[periodIdx];
   const radarValues = RADAR_TEAMS[radarTeam] ?? RADAR_TEAMS["All teams"];
   const maxTeam = Math.max(...TEAMS.map((t) => t.count));
@@ -387,7 +413,7 @@ export default function HrManagementTemplatePage() {
           <section key={kpi.label} className="flex flex-col gap-1.5 rounded-2xl bg-background-secondary-default p-4">
             <p className="text-body-medium text-text-secondary">{kpi.label}</p>
             <p className="text-title-1-medium text-text-primary tabular-nums">{kpi.value}</p>
-            <span className={cx("flex w-fit items-center gap-0.5 rounded-full px-2 py-0.5 text-body-2-medium", kpi.up ? "bg-status-lime-background text-status-lime-text" : "bg-rose-100 text-rose-700")}>
+            <span className={cx("flex w-fit items-center gap-0.5 rounded-full px-2 py-0.5 text-body-2-medium", (kpi.good ?? kpi.up) ? "bg-status-lime-background text-status-lime-text" : "bg-rose-100 text-rose-700")}>
               {kpi.up ? <RiArrowUpSLine className="size-3.5" aria-hidden /> : <RiArrowDownSLine className="size-3.5" aria-hidden />}
               {kpi.delta}
             </span>

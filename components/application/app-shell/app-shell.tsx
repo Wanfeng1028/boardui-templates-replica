@@ -60,6 +60,10 @@ export function useStarterBase(): string {
 
 export function starterNav(base: string): DashboardNavItem[] {
   return [
+    // First row: the templates index. The home page is a chat with no other
+    // template entry, so this row (plus the "浏览全部模板" banner in
+    // app/page.tsx) is how a visitor finds the 11 templates from /.
+    { key: "templates", label: "全部模板", icon: RiLayoutGridLine, href: "/templates" },
     { key: "chat", label: "Chat", icon: RiChatAiLine, href: base || "/" },
     { key: "dashboard", label: "Dashboard", icon: RiDashboardLine, href: `${base}/dashboard` },
     { key: "components", label: "Components and Blocks", icon: RiLayoutGridLine, href: `${base}/components` },

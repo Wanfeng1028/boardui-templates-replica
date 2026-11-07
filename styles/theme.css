@@ -46,24 +46,28 @@
 
   /* ----- Typography ----------------------------------------------------------
    * Font sizes, weights, line-heights, and tracking all match Tailwind v4
-   * defaults. The only override is the family: Inter, loaded via next/font
-   * in app/layout.tsx, which exposes --font-inter to the document.
+   * defaults. The only override is the family: Inter, loaded via
+   * next/font/local in app/layout.tsx, which exposes --font-inter to the
+   * document (files bundled at app/fonts/inter/, no network fetch).
+   * --font-inter is deliberately NOT defined here: the next/font variable
+   * class on <html> owns it, and a second definition in @theme would tie
+   * on specificity and make the winner depend on stylesheet order.
+   * --font-sans keeps a var() fallback so the stack still resolves if the
+   * variable class is ever absent.
    *
-   * REPLICA NOTE: this build cannot fetch Google Fonts (sandboxed build
-   * environment; next/font/google fails under Turbopack), so --font-inter
-   * and --font-mono-source are defined here as system stacks instead.
-   * If Inter / JetBrains Mono are installed locally they are used first.
+   * JetBrains Mono is NOT available anywhere on this machine and cannot be
+   * fetched offline, so --font-mono-source stays a system stack.
    * --------------------------------------------------------------------------*/
-  --font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono-source: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo,
                       Consolas, "Liberation Mono", monospace;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif,
+  --font-sans: var(--font-inter, Inter, ui-sans-serif, system-ui, sans-serif),
                "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
                "Noto Color Emoji";
 
-  /* Monospace ramp for code blocks. Loaded via next/font in app/layout.tsx
-   * (--font-mono-source → JetBrains Mono). Figma's spec uses IBM Plex Mono;
-   * JetBrains Mono is the closest already-bundled face. */
+  /* Monospace ramp for code blocks. Figma's spec uses IBM Plex Mono;
+   * JetBrains Mono is the closest face, but no JetBrains Mono file exists
+   * on this machine and it cannot be fetched offline, so this resolves to
+   * the system monospace stack until a font file is bundled. */
   --font-mono: var(--font-mono-source), ui-monospace, "SFMono-Regular", Menlo,
                Consolas, "Liberation Mono", monospace;
 

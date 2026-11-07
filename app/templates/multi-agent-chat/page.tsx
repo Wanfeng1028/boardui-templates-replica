@@ -4,6 +4,7 @@ import {
   RiAddLine,
   RiArrowDownSLine,
   RiArrowUpLine,
+  RiAttachmentLine,
   RiCheckLine,
   RiCloseLine,
   RiFileCopyLine,
@@ -11,9 +12,11 @@ import {
   RiEarthLine,
   RiHeadphoneLine,
   RiLayoutGridLine,
+  RiMenuLine,
   RiMicLine,
   RiMore2Fill,
   RiNotification3Line,
+  RiPlayFill,
   RiSearchLine,
   RiSettings3Line,
   RiShieldLine,
@@ -22,7 +25,7 @@ import {
   RiThumbUpLine,
   RiVolumeUpLine,
 } from "@remixicon/react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import {
   Dropdown,
@@ -32,7 +35,8 @@ import {
   DropdownPopover,
   DropdownTrigger,
 } from "@/components/base/dropdown/dropdown";
-import { SettingsModal } from "@/components/application/settings/settings-modal";
+import { SettingsModal, type SettingsPage } from "@/components/application/settings/settings-modal";
+import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 
 import { Switch } from "@/components/base/switch/switch";
 import { cx } from "@/utils/cx";
@@ -151,6 +155,10 @@ type Agent = {
   name: string;
   label: string;
   desc: string;
+  /** Sidebar list intro, verbatim from the original's server-rendered HTML
+      (for landing/marketing it matches replyP1; for the other five it does
+      not — the replica used to show replyP1 here, which was wrong). */
+  intro: string;
   body: string;
   /** Gradient key: stores the `from` value of one of AVATAR_COLORS. */
   shape: AvatarShape;
@@ -167,6 +175,7 @@ const AGENTS: Agent[] = [
     name: "landing page designer",
     label: "Design",
     desc: "Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.",
+    intro: "Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.",
     body: "#36c15c",
     shape: "shield",
     userMsg: "How can we make the landing page feel clearer?",
@@ -180,6 +189,7 @@ const AGENTS: Agent[] = [
     name: "content reviewer",
     label: "Review",
     desc: "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.",
+    intro: "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.",
     body: "#437EF7",
     shape: "heart",
     userMsg: "Can we make this welcome message sound warmer?",
@@ -193,6 +203,7 @@ const AGENTS: Agent[] = [
     name: "marketing bot",
     label: "Marketing",
     desc: "Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.",
+    intro: "Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.",
     body: "#E34798",
     shape: "star",
     userMsg: "What should our launch campaign focus on?",
@@ -206,6 +217,7 @@ const AGENTS: Agent[] = [
     name: "seo bot",
     label: "SEO",
     desc: "Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.",
+    intro: "Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.",
     body: "#f47327",
     shape: "diamond",
     userMsg: "How should we improve our main article?",
@@ -219,6 +231,7 @@ const AGENTS: Agent[] = [
     name: "research assistant",
     label: "Research",
     desc: "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.",
+    intro: "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.",
     body: "#27b5a2",
     shape: "cloud",
     userMsg: "How should we run discovery interviews?",
@@ -232,7 +245,10 @@ const AGENTS: Agent[] = [
     name: "Security agent",
     label: "Security",
     desc: "A careful second pair of eyes for permissions, privacy, and application security.",
-    body: "#8554F6",
+    intro: "Review access permissions before inviting testers. Confirm that every request checks the current user’s access and that one account cannot read another account’s data.",
+    // Original: Teal (the editor snapshot has Teal aria-pressed="true" for
+    // Security agent). The replica used to assign Violet here — wrong.
+    body: "#27b5a2",
     shape: "shield",
     userMsg: "How do we prepare for tester onboarding?",
     replyP1:
@@ -245,6 +261,7 @@ const AGENTS: Agent[] = [
     name: "Cloud engineer",
     label: "Engineering",
     desc: "Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.",
+    intro: "Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.",
     body: "#1bb4ce",
     shape: "slender",
     userMsg: "How should we approach our staging deployment?",
@@ -262,93 +279,14 @@ const GROUP = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Marketplace roster — agents the visitor can add from the           */
-/* Marketplace modal. Same shape as AGENTS, each with a seeded first  */
-/* exchange, so an added agent opens with a real conversation.        */
-/* ------------------------------------------------------------------ */
+/* Marketplace roster — REMOVED 2026-11-07: the previous list of six agents
+   (data analyst, social media manager, copywriter, support agent, product
+   manager, ux researcher) was invented by the replica; the original's
+   Marketplace panel content is not in the server-rendered snapshot
+   (client-side bailout), so it cannot be restored from the snapshot and the
+   fabricated roster was deleted rather than kept. The Marketplace button
+   still opens the panel, which now says so instead of listing fake agents. */
 
-const MARKETPLACE_AGENTS: Agent[] = [
-  {
-    id: "data-analyst",
-    name: "data analyst",
-    label: "Analytics",
-    desc: "Reads the numbers before the narrative. Finds where users drop off and what actually moves retention.",
-    body: "#88c81c",
-    shape: "petal",
-    userMsg: "What do last month's numbers say about churn?",
-    replyP1:
-      "Churn clusters around the second month: most cancellations come from teams that never invited a second member. The product works, but the habit never forms.",
-    replyP2:
-      "Try a nudge at day 21 — a shared template, not a discount. If the team adds one collaborator, renewal jumps sharply.",
-  },
-  {
-    id: "social-manager",
-    name: "social media manager",
-    label: "Social",
-    desc: "Turns the work into posts people reply to. One honest behind-the-scenes update beats three polished announcements.",
-    body: "#E74241",
-    shape: "flower",
-    userMsg: "What should we post this week?",
-    replyP1:
-      "One behind-the-scenes post beats three polished announcements. Show the messy middle — the draft, the decision, the fix.",
-    replyP2:
-      "Post Tuesday and Thursday, then reply to every comment within the hour. The replies are the content.",
-  },
-  {
-    id: "copywriter",
-    name: "copywriter",
-    label: "Writing",
-    desc: "Cuts words until only the meaning is left. Headlines that say what happens, not how great the product is.",
-    body: "#437EF7",
-    shape: "slender",
-    userMsg: "Can you tighten this landing page headline?",
-    replyP1:
-      "Cut the adjectives and keep the verb. A headline should say what happens when the reader clicks, not how great the product is.",
-    replyP2:
-      "Try one line with a number in it — numbers give the eye a place to land.",
-  },
-  {
-    id: "support-agent",
-    name: "support agent",
-    label: "Support",
-    desc: "Answers the refund question before it is asked. Leads with what can be done, not what the policy says.",
-    body: "#36c15c",
-    shape: "heart",
-    userMsg: "How do we handle the refund questions?",
-    replyP1:
-      "Answer the refund question before it is asked: put the policy next to the price, in plain words, with no link to chase.",
-    replyP2:
-      "For the angry ones, lead with what you can do, not what the policy says. People remember the fix, not the rule.",
-  },
-  {
-    id: "product-manager",
-    name: "product manager",
-    label: "Product",
-    desc: "Finds the gap three customers described in different words. Writes the one-paragraph story before the feature.",
-    body: "#f47327",
-    shape: "pocket",
-    userMsg: "What should we build next?",
-    replyP1:
-      "Build the thing three customers asked for in different words. If the requests sound different but point at the same gap, that is the roadmap.",
-    replyP2:
-      "Write the one-paragraph story first — who it helps, what changes. If the story is boring, the feature will be too.",
-  },
-  {
-    id: "ux-researcher",
-    name: "ux researcher",
-    label: "UX",
-    desc: "Watches where people hesitate. Five users, no script beyond the first task — hesitation is the finding.",
-    body: "#E34798",
-    shape: "cloud",
-    userMsg: "How do we test the new onboarding flow?",
-    replyP1:
-      "Five people, no script beyond the first task. Watch where they hesitate — hesitation is the finding, not the mistake.",
-    replyP2:
-      "Record the session and count the back-button presses. Three or more means the step is unclear, not the user.",
-  },
-];
-
-/* ------------------------------------------------------------------ */
 /* Follow-up replies — one voice per agent. The seeded first exchange */
 /* is verbatim from the original page; later user messages get one of */
 /* these, cycling, instead of a single generic demo line.             */
@@ -472,17 +410,14 @@ function AgentAvatar({
   agent,
   size = 40,
   blinkDelay = "0s",
-  turnable = false,
   className,
 }: {
   agent: Pick<Agent, "body" | "shape" | "name"> & { expression?: AvatarExpression };
   size?: number;
   blinkDelay?: string;
-  turnable?: boolean;
   className?: string;
 }) {
   const rawId = useId().replace(/:/g, "");
-  const [turned, setTurned] = useState(false);
   const expr = EXPRESSIONS[agent.expression ?? "Neutral"] ?? EXPRESSIONS.Neutral;
   const color = AVATAR_COLORS.find((c) => c.from.toLowerCase() === agent.body.toLowerCase());
   const gid = `bui-grad-${rawId}`;
@@ -496,7 +431,7 @@ function AgentAvatar({
       width={size}
       height={size}
       aria-hidden="true"
-      className={cx("block transition-transform duration-500", turned && "[transform:rotateY(180deg)]")}
+      className="block"
     >
       <defs>
         {color && (
@@ -556,26 +491,6 @@ function AgentAvatar({
     </svg>
   );
   const label = `${agent.name}, ${agent.expression ?? "Neutral"}`;
-  if (turnable) {
-    return (
-      <span
-        className={cx("relative block shrink-0 [perspective:600px]", className)}
-        style={{ width: size, height: size }}
-        role="img"
-        aria-label={label}
-      >
-        <button
-          type="button"
-          onClick={() => setTurned((t) => !t)}
-          aria-label={`Turn ${agent.name} avatar around`}
-          title="Click to turn around"
-          className="block cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          {svg}
-        </button>
-      </span>
-    );
-  }
   return (
     <span
       className={cx("relative block shrink-0", className)}
@@ -602,6 +517,11 @@ function Sidebar({
   setSearchOpen,
   agents,
   onOpenMarketplace,
+  onOpenSettings,
+  onCreateAgent,
+  onNewChat,
+  onNewGroup,
+  forceVisible = false,
 }: {
   selectedId: string;
   onSelect: (id: string) => void;
@@ -609,9 +529,24 @@ function Sidebar({
   setSearchOpen: (v: boolean) => void;
   agents: Agent[];
   onOpenMarketplace: () => void;
+  onOpenSettings: () => void;
+  onCreateAgent: () => void;
+  onNewChat: () => void;
+  onNewGroup: () => void;
+  /** Rendered inside the mobile drawer: drop the `hidden md:block` shell. */
+  forceVisible?: boolean;
 }) {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const showGroup =
+    !q || GROUP.name.toLowerCase().includes(q) || GROUP.desc.toLowerCase().includes(q);
+  const visibleAgents = q
+    ? agents.filter((a) =>
+        [a.name, a.label, a.intro, a.desc].some((t) => t.toLowerCase().includes(q)),
+      )
+    : agents;
   return (
-    <div className="me-4 hidden min-h-0 shrink-0 md:block">
+    <div className={cx("me-4 min-h-0 shrink-0", forceVisible ? "block" : "hidden md:block")}>
       <aside
         aria-label="Conversations"
         className="flex h-full min-h-0 w-[260px] shrink-0 flex-col rounded-3xl border border-border-button-white bg-background-secondary-default p-[7px] shadow-sidebar"
@@ -626,17 +561,31 @@ function Sidebar({
               </button>
             </div>
             <div className="flex">
-              {/* Create bot or chat — no dedicated create flow exists in the
-                  replica, so it opens the Marketplace (add an agent to start
-                  a conversation), the same action as the Marketplace button. */}
-              <button
-                type="button"
-                onClick={onOpenMarketplace}
-                className="flex w-full min-w-0 cursor-pointer items-center justify-center rounded-full bg-button-primary text-text-white outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                aria-label="Create bot or chat"
-              >
-                <RiAddLine className="size-5" aria-hidden />
-              </button>
+              {/* Create bot or chat — the original opens a menu here (its items
+                  are not in the server-rendered snapshot, so the labels below
+                  are the expected New agent / New chat / New group set,
+                  pending live verification — NOT the Marketplace). */}
+              <Dropdown>
+                <DropdownTrigger
+                  aria-label="Create bot or chat"
+                  className="flex w-full min-w-0 cursor-pointer items-center justify-center rounded-full bg-button-primary text-text-white outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <RiAddLine className="size-5" aria-hidden />
+                </DropdownTrigger>
+                <DropdownPopover aria-label="Create bot or chat" placement="bottom end" className="w-[190px] p-2">
+                  <DropdownGroup>
+                    <DropdownItem onSelect={onCreateAgent} className="px-2 py-1.5">
+                      <span className="truncate text-body-medium whitespace-nowrap text-text-primary">New agent</span>
+                    </DropdownItem>
+                    <DropdownItem onSelect={onNewChat} className="px-2 py-1.5">
+                      <span className="truncate text-body-medium whitespace-nowrap text-text-primary">New chat</span>
+                    </DropdownItem>
+                    <DropdownItem onSelect={onNewGroup} className="px-2 py-1.5">
+                      <span className="truncate text-body-medium whitespace-nowrap text-text-primary">New group</span>
+                    </DropdownItem>
+                  </DropdownGroup>
+                </DropdownPopover>
+              </Dropdown>
             </div>
           </div>
           <div
@@ -649,15 +598,25 @@ function Sidebar({
                 <input
                   autoFocus
                   type="text"
-                  placeholder="Search conversations"
+                  placeholder="Search conversations…"
                   aria-label="Search conversations"
-                  onBlur={() => setSearchOpen(false)}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setQuery("");
+                      setSearchOpen(false);
+                    }
+                  }}
                   className="min-w-0 flex-1 bg-transparent text-body-regular text-text-primary outline-none placeholder:text-text-tertiary"
                 />
                 <button
                   type="button"
                   aria-label="Close search"
-                  onClick={() => setSearchOpen(false)}
+                  onClick={() => {
+                    setQuery("");
+                    setSearchOpen(false);
+                  }}
                   className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                 >
                   <RiCloseLine className="size-4" aria-hidden />
@@ -683,6 +642,7 @@ function Sidebar({
             className="flex h-full flex-col gap-2 overflow-y-auto overscroll-contain outline-none [scrollbar-width:none] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
           >
             {/* Group chat (first item) */}
+            {showGroup && (
             <button
               type="button"
               onClick={() => onSelect(GROUP.id)}
@@ -716,7 +676,8 @@ function Sidebar({
                 <span className="truncate text-body-regular text-text-tertiary">{GROUP.desc}</span>
               </span>
             </button>
-            {agents.map((agent, i) => {
+            )}
+            {visibleAgents.map((agent, i) => {
               const active = agent.id === selectedId;
               return (
                 <button
@@ -732,11 +693,16 @@ function Sidebar({
                   <AgentAvatar agent={agent} size={40} blinkDelay={`${(i % 5) * 0.7}s`} />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate text-body-medium text-text-primary">{agent.name}</span>
-                    <span className="truncate text-body-regular text-text-tertiary">{agent.replyP1}</span>
+                    <span className="truncate text-body-regular text-text-tertiary">{agent.intro}</span>
                   </span>
                 </button>
               );
             })}
+            {visibleAgents.length === 0 && (
+              <p className="px-2 py-3 text-body-regular text-text-tertiary">
+                No conversations match “{query.trim()}”.
+              </p>
+            )}
           </div>
         </div>
 
@@ -751,42 +717,86 @@ function Sidebar({
             className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-0.5 rounded-2lg bg-transparent p-2 text-body-medium text-text-secondary outline-none transition-colors hover:bg-background-secondary-hover active:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <RiLayoutGridLine className="size-5 shrink-0" aria-hidden />
-            <span className="inline-flex items-center justify-center px-1 shrink-0">All templates</span>
+            <span className="inline-flex items-center justify-center px-1 shrink-0">全部模板</span>
           </a>
+          <Dropdown>
+            <DropdownTrigger
+              aria-label="Support"
+              className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-0.5 rounded-2lg bg-transparent p-2 text-body-medium text-text-secondary outline-none transition-colors hover:bg-background-secondary-hover active:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <RiHeadphoneLine className="size-5 shrink-0" aria-hidden />
+              <span className="inline-flex items-center justify-center px-1 shrink-0">Support</span>
+            </DropdownTrigger>
+            <DropdownPopover aria-label="Support" placement="top start" className="w-[220px] p-2">
+              <DropdownGroup>
+                <DropdownItem
+                  onSelect={() => {
+                    window.location.href = "mailto:hi@boardui.com";
+                  }}
+                  className="px-2 py-1.5"
+                >
+                  <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Email support</span>
+                </DropdownItem>
+                <DropdownItem
+                  onSelect={() => {
+                    window.open("https://www.boardui.com", "_blank", "noopener");
+                  }}
+                  className="px-2 py-1.5"
+                >
+                  <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Visit boardui.com</span>
+                </DropdownItem>
+              </DropdownGroup>
+            </DropdownPopover>
+          </Dropdown>
           <button
             type="button"
-            className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-0.5 rounded-2lg bg-transparent p-2 text-body-medium text-text-secondary outline-none transition-colors hover:bg-background-secondary-hover active:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-          >
-            <RiHeadphoneLine className="size-5 shrink-0" aria-hidden />
-            <span className="inline-flex items-center justify-center px-1 shrink-0">Support</span>
-          </button>
-          <button
-            type="button"
+            onClick={onOpenSettings}
             className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-0.5 rounded-2lg bg-transparent p-2 text-body-medium text-text-secondary outline-none transition-colors hover:bg-background-secondary-hover active:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <RiSettings3Line className="size-5 shrink-0" aria-hidden />
             <span className="inline-flex items-center justify-center px-1 shrink-0">Settings</span>
           </button>
           <div className="mt-2">
-            <button
-              type="button"
-              aria-label="Board team"
-              className="flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border-2 border-transparent bg-background-tertiary-default py-2 pe-4 ps-2.5 outline-none transition-[background-color,border-color] duration-300 ease-in-out hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-blue-300 text-blue-900">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/brand/boardui_logo_circle.webp" alt="Board team" loading="lazy" decoding="async" className="size-full object-cover" />
+            <Dropdown>
+              <DropdownTrigger
+                aria-label="Board team"
+                className="flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border-2 border-transparent bg-background-tertiary-default py-2 pe-4 ps-2.5 outline-none transition-[background-color,border-color] duration-300 ease-in-out hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-blue-300 text-blue-900">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/boardui_logo_circle.webp" alt="Board team" loading="lazy" decoding="async" className="size-full object-cover" />
+                  </span>
+                  <span className="flex min-w-0 flex-col items-start justify-center">
+                    <span className="whitespace-nowrap text-body-medium text-text-primary">Board team</span>
+                    <span className="whitespace-nowrap text-body-regular text-text-secondary">hi@boardui.com</span>
+                  </span>
                 </span>
-                <span className="flex min-w-0 flex-col items-start justify-center">
-                  <span className="whitespace-nowrap text-body-medium text-text-primary">Board team</span>
-                  <span className="whitespace-nowrap text-body-regular text-text-secondary">hi@boardui.com</span>
+                <span className="flex size-4 shrink-0 items-center justify-center rounded-[3px] bg-background-tertiary-hover">
+                  <RiArrowDownSLine className="size-4 text-text-secondary" aria-hidden />
                 </span>
-              </span>
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-[3px] bg-background-tertiary-hover">
-                <RiArrowDownSLine className="size-4 text-text-secondary" aria-hidden />
-              </span>
-            </button>
+              </DropdownTrigger>
+              <DropdownPopover aria-label="Board team" placement="top start" className="w-[220px] p-2">
+                <DropdownGroup>
+                  <DropdownItem
+                    onSelect={() => {
+                      window.location.href = "mailto:hi@boardui.com";
+                    }}
+                    className="px-2 py-1.5"
+                  >
+                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Email hi@boardui.com</span>
+                  </DropdownItem>
+                  <DropdownItem
+                    onSelect={() => {
+                      window.open("https://www.boardui.com", "_blank", "noopener");
+                    }}
+                    className="px-2 py-1.5"
+                  >
+                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Visit boardui.com</span>
+                  </DropdownItem>
+                </DropdownGroup>
+              </DropdownPopover>
+            </Dropdown>
           </div>
         </footer>
       </aside>
@@ -798,22 +808,70 @@ function Sidebar({
 /* Main chat                                                           */
 /* ------------------------------------------------------------------ */
 
-type ChatMsg = { id: number; role: "user" | "agent"; text: string };
+type ChatMsg = {
+  id: number;
+  role: "user" | "agent";
+  text: string;
+  /** Group replies only: which roster agent wrote this message. */
+  agentId?: string;
+  /** Name of a file attached to a user message, if any. */
+  attachment?: string;
+};
 
-function ReplyFooter({ agent }: { agent: Agent }) {
+function ReplyFooter({
+  agent,
+  thinking,
+  onOpenEditor,
+  feedback,
+  onFeedback,
+  copied,
+  onCopy,
+}: {
+  agent: Agent;
+  /** True while this agent's reply is being generated. */
+  thinking: boolean;
+  onOpenEditor: (agentId?: string) => void;
+  feedback: "helpful" | "unhelpful" | null;
+  onFeedback: (v: "helpful" | "unhelpful") => void;
+  copied: boolean;
+  onCopy: () => void;
+}) {
   return (
     <div className="flex items-center justify-between gap-2 px-3">
+      {/* The original button holds two overlapping layers — "Thinking…"
+          (opacity 0) and the agent name (opacity 1) — cross-fading while a
+          reply generates. Clicking it opens the agent editor, like the
+          header pill. */}
       <button
         type="button"
         aria-label={agent.name}
-        className="my-1 flex min-w-0 items-center gap-1 rounded-lg text-start text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        onClick={() => onOpenEditor(agent.id)}
+        className="my-1 flex min-w-0 cursor-pointer items-center gap-1 rounded-lg text-start text-body-2-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
       >
         <span className="relative block shrink-0" style={{ width: 20, height: 20 }}>
           <span className="absolute start-0 top-0 block size-8 origin-top-left rtl:origin-top-right" style={{ transform: "scale(0.625)" }}>
             <AgentAvatar agent={agent} size={32} />
           </span>
         </span>
-        <span>{agent.name}</span>
+        <span className="grid">
+          <span
+            aria-hidden={!thinking}
+            className={cx(
+              "col-start-1 row-start-1 transition-opacity duration-200",
+              thinking ? "opacity-100" : "opacity-0",
+            )}
+          >
+            Thinking…
+          </span>
+          <span
+            className={cx(
+              "col-start-1 row-start-1 transition-opacity duration-200",
+              thinking ? "opacity-0" : "opacity-100",
+            )}
+          >
+            {agent.name}
+          </span>
+        </span>
       </button>
       <div
         className="mt-1 flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-hover/reply:opacity-100 group-focus-within/reply:opacity-100"
@@ -822,25 +880,43 @@ function ReplyFooter({ agent }: { agent: Agent }) {
         <button
           type="button"
           aria-label="Helpful response"
-          aria-pressed="false"
-          className="flex size-[22px] cursor-pointer items-center justify-center rounded-md bg-background-tertiary-default text-foreground-icon-tertiary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          aria-pressed={feedback === "helpful"}
+          onClick={() => onFeedback("helpful")}
+          className={cx(
+            "flex size-[22px] cursor-pointer items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+            feedback === "helpful"
+              ? "bg-background-primary-default text-text-primary ring-1 ring-border-button-default"
+              : "bg-background-tertiary-default text-foreground-icon-tertiary",
+          )}
         >
           <RiThumbUpLine className="size-3" aria-hidden />
         </button>
         <button
           type="button"
           aria-label="Unhelpful response"
-          aria-pressed="false"
-          className="flex size-[22px] cursor-pointer items-center justify-center rounded-md bg-background-tertiary-default text-foreground-icon-tertiary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          aria-pressed={feedback === "unhelpful"}
+          onClick={() => onFeedback("unhelpful")}
+          className={cx(
+            "flex size-[22px] cursor-pointer items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+            feedback === "unhelpful"
+              ? "bg-background-primary-default text-text-primary ring-1 ring-border-button-default"
+              : "bg-background-tertiary-default text-foreground-icon-tertiary",
+          )}
         >
           <RiThumbDownLine className="size-3" aria-hidden />
         </button>
         <button
           type="button"
-          aria-label="Copy response"
+          aria-label={copied ? "Copied to clipboard" : "Copy response"}
+          title={copied ? "Copied!" : "Copy response"}
+          onClick={onCopy}
           className="flex size-[22px] cursor-pointer items-center justify-center rounded-md bg-background-tertiary-default text-foreground-icon-tertiary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
         >
-          <RiFileCopyLine className="size-3" aria-hidden />
+          {copied ? (
+            <RiCheckLine className="size-3 text-text-primary" aria-hidden />
+          ) : (
+            <RiFileCopyLine className="size-3" aria-hidden />
+          )}
         </button>
       </div>
     </div>
@@ -866,17 +942,25 @@ function GroupEmptyState() {
 
 function ChatMain({
   agent,
+  agents,
   messages,
   groupName,
+  thinking,
   onOpenEditor,
+  onOpenMobileNav,
   onRename,
   onDelete,
   onClear,
 }: {
   agent: Agent | null;
+  agents: Agent[];
   messages: ChatMsg[];
   groupName: string;
-  onOpenEditor: () => void;
+  /** A reply is being generated — the latest agent message shows Thinking…. */
+  thinking: boolean;
+  /** Opens the editor; with an id, selects that agent first (group replies). */
+  onOpenEditor: (agentId?: string) => void;
+  onOpenMobileNav: () => void;
   /** Rename the current agent (or the group when no agent is selected). */
   onRename: (name: string) => void;
   /** Delete the current agent conversation. Not offered for the group. */
@@ -885,15 +969,20 @@ function ChatMain({
   onClear: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [copiedResponseId, setCopiedResponseId] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<Record<number, "helpful" | "unhelpful" | null>>({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  const [fade, setFade] = useState(0);
 
-  const copyConversation = async () => {
-    const lines = messages.map((m) =>
-      m.role === "user" ? `You: ${m.text}` : `${agent?.name ?? "Agent"}: ${m.text}`,
-    );
-    const text = lines.join("\n\n");
+  const onListScroll = () => {
+    const el = listRef.current;
+    if (el) setFade(Math.min(el.scrollTop / 24, 1));
+  };
+
+  const copyText = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -904,9 +993,37 @@ function ChatMain({
       document.execCommand("copy");
       document.body.removeChild(ta);
     }
+  };
+
+  const copyResponse = (message: ChatMsg) => {
+    void copyText(message.text).then(() => {
+      setCopiedResponseId(message.id);
+      window.setTimeout(() => setCopiedResponseId((id) => (id === message.id ? null : id)), 1500);
+    });
+  };
+
+  const messageAgentName = (m: ChatMsg) =>
+    (m.agentId ? agents.find((a) => a.id === m.agentId)?.name : undefined) ??
+    agent?.name ??
+    "Agent";
+
+  const copyConversation = async () => {
+    const lines = messages.map((m) =>
+      m.role === "user" ? `You: ${m.text}` : `${messageAgentName(m)}: ${m.text}`,
+    );
+    await copyText(lines.join("\n\n"));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };
+
+  const toggleFeedback = (id: number, value: "helpful" | "unhelpful") => {
+    setFeedback((prev) => ({ ...prev, [id]: prev[id] === value ? null : value }));
+  };
+
+  let lastAgentIdx = -1;
+  messages.forEach((m, i) => {
+    if (m.role === "agent") lastAgentIdx = i;
+  });
 
   const startRename = () => {
     setRenameValue(agent ? agent.name : groupName);
@@ -926,6 +1043,18 @@ function ChatMain({
   return (
     <>
       <header className="flex h-[55px] shrink-0 items-start gap-2 px-3 pt-3">
+        {/* Mobile only: opens the conversation list drawer. The original has
+            this button (aria-label "Open conversations", md:hidden); the
+            sidebar is hidden below md, so without it there is no way to
+            reach the list on narrow screens. */}
+        <button
+          type="button"
+          aria-label="Open conversations"
+          onClick={onOpenMobileNav}
+          className="relative inline-flex size-8 -ms-2 shrink-0 cursor-pointer items-center justify-center rounded-2lg border-0 bg-transparent text-foreground-icon-primary shadow-none outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring md:hidden"
+        >
+          <RiMenuLine className="size-4 shrink-0" aria-hidden />
+        </button>
         {renaming ? (
           <div className="flex min-w-0 flex-1">
             <input
@@ -945,7 +1074,7 @@ function ChatMain({
           <div className="flex min-w-0 flex-1">
             <button
               type="button"
-              onClick={onOpenEditor}
+              onClick={() => onOpenEditor()}
               className="flex h-[31px] min-w-0 max-w-full cursor-pointer items-center gap-2 rounded-full bg-background-tertiary-default/60 px-2 pe-3 text-body-2-medium text-text-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
               <AgentAvatar agent={agent} size={20} />
@@ -957,16 +1086,10 @@ function ChatMain({
             <span className="truncate text-body-2-medium text-text-secondary">{groupName}</span>
           </div>
         )}
-        {/* REPLICA NOTE: the sidebar is hidden below md, so this header link is
-            the only way out of this page on narrow screens. */}
-        <a
-          href="/templates"
-          aria-label="All templates"
-          title="All templates"
-          className="cursor-pointer rounded p-1 text-foreground-icon-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          <RiLayoutGridLine className="size-4" aria-hidden />
-        </a>
+        {/* REPLICA NOTE: the sidebar is hidden below md, so this header button
+            is the only way out of this page on narrow screens. It used to be
+            an icon-only link; a text button is the findable entry. */}
+        <AllTemplatesButton size="small" />
         <button
           type="button"
           aria-label={copied ? "Copied to clipboard" : "Copy conversation"}
@@ -1037,11 +1160,13 @@ function ChatMain({
       </header>
       <div className="relative min-h-0 flex-1">
         <div
+          ref={listRef}
+          onScroll={onListScroll}
           aria-label="Messages"
           tabIndex={0}
           className="h-full overflow-y-auto overscroll-contain pb-4 pt-2 outline-none [scrollbar-width:none] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
         >
-          {agent === null ? (
+          {agent === null && messages.length === 0 ? (
             <GroupEmptyState />
           ) : (
             <>
@@ -1050,15 +1175,27 @@ function ChatMain({
                   Today
                 </span>
               </div>
-              {messages.map((message) =>
-                message.role === "user" ? (
-                  <div
-                    key={message.id}
-                    className="me-3 ms-auto mt-3 w-fit max-w-[min(520px,calc(100%-24px))] rounded-[var(--radius-2-5xl)] bg-background-primary-default p-3 text-start text-body-regular whitespace-pre-wrap break-words text-text-primary"
-                  >
-                    {message.text}
-                  </div>
-                ) : (
+              {messages.map((message, messageIdx) => {
+                if (message.role === "user") {
+                  return (
+                    <div
+                      key={message.id}
+                      className="me-3 ms-auto mt-3 w-fit max-w-[min(520px,calc(100%-24px))] rounded-[var(--radius-2-5xl)] bg-background-primary-default p-3 text-start text-body-regular whitespace-pre-wrap break-words text-text-primary"
+                    >
+                      {message.attachment && (
+                        <span className="mb-1.5 flex items-center gap-1.5 text-body-2-medium text-text-secondary">
+                          <RiAttachmentLine className="size-3.5 shrink-0" aria-hidden />
+                          <span className="truncate">{message.attachment}</span>
+                        </span>
+                      )}
+                      {message.text}
+                    </div>
+                  );
+                }
+                const msgAgent =
+                  (message.agentId ? agents.find((a) => a.id === message.agentId) : undefined) ??
+                  agent;
+                return (
                   <article
                     key={message.id}
                     className="group/reply mx-3 mt-3 w-fit max-w-[min(520px,calc(100%-24px))] text-body-regular"
@@ -1072,26 +1209,36 @@ function ChatMain({
                         ))}
                       </div>
                     </div>
-                    <ReplyFooter agent={agent} />
+                    {msgAgent && (
+                      <ReplyFooter
+                        agent={msgAgent}
+                        thinking={thinking && messageIdx === lastAgentIdx}
+                        onOpenEditor={onOpenEditor}
+                        feedback={feedback[message.id] ?? null}
+                        onFeedback={(v) => toggleFeedback(message.id, v)}
+                        copied={copiedResponseId === message.id}
+                        onCopy={() => copyResponse(message)}
+                      />
+                    )}
                   </article>
-                ),
-              )}
+                );
+              })}
             </>
           )}
         </div>
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-10">
           <div
             className="absolute inset-x-0 top-0 h-6 backdrop-blur-[1px]"
-            style={{ opacity: 0, maskImage: "linear-gradient(to bottom, black, transparent)" }}
+            style={{ opacity: fade, maskImage: "linear-gradient(to bottom, black, transparent)" }}
           />
           <div
             className="absolute inset-x-0 top-0 h-4 backdrop-blur-[4px]"
-            style={{ opacity: 0, maskImage: "linear-gradient(to bottom, black, transparent)" }}
+            style={{ opacity: fade, maskImage: "linear-gradient(to bottom, black, transparent)" }}
           />
           <div
             className="absolute inset-x-0 top-0 h-6"
             style={{
-              opacity: 0,
+              opacity: fade,
               background:
                 "linear-gradient(to bottom, var(--color-background-secondary-default), transparent)",
             }}
@@ -1109,73 +1256,175 @@ function Composer({
 }: {
   value: string;
   onValueChange: (v: string) => void;
-  onSubmit: () => void;
+  onSubmit: (attachment?: string) => void;
 }) {
-  const [model, setModel] = useState("Fable 5");
+  const [permission, setPermission] = useState("Bypass all");
+  const [listening, setListening] = useState(false);
+  const [attachment, setAttachment] = useState<{ name: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const pickFile = (accept: string) => {
+    const el = fileRef.current;
+    if (!el) return;
+    el.accept = accept;
+    el.click();
+  };
+
+  const submit = () => {
+    onSubmit(attachment?.name);
+    setAttachment(null);
+  };
+
   return (
     <div className="shrink-0 p-1">
       <div className="flex w-full flex-col">
         <div className="flex w-full flex-col rounded-[var(--radius-2-5xl)] bg-background-primary-default p-2.5 shadow-[0_1px_0.5px_rgba(0,0,0,0.02),0_4px_2px_rgba(0,0,0,0.02)]">
           <div className="flex flex-col gap-5 pt-1.5">
             <div className="px-1.5">
+              {attachment && (
+                <span className="mb-2 flex w-fit max-w-full items-center gap-1.5 rounded-full bg-background-tertiary-default py-1 pe-1 ps-2.5 text-body-2-medium text-text-secondary">
+                  <RiAttachmentLine className="size-3.5 shrink-0" aria-hidden />
+                  <span className="truncate">{attachment.name}</span>
+                  <button
+                    type="button"
+                    aria-label="Remove attachment"
+                    onClick={() => setAttachment(null)}
+                    className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full outline-none hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  >
+                    <RiCloseLine className="size-3.5" aria-hidden />
+                  </button>
+                </span>
+              )}
               <textarea
                 rows={1}
                 aria-label="Message"
-                placeholder="Hi, what do you need today?"
+                placeholder={listening ? "Listening…" : "Hi, what do you need today?"}
                 value={value}
                 onChange={(e) => onValueChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    onSubmit();
+                    submit();
                   }
                 }}
                 className="block max-h-[200px] w-full resize-none bg-transparent p-0 text-body-regular text-text-primary caret-accent-500 outline-none placeholder:text-text-tertiary"
               />
+              <input
+                ref={fileRef}
+                type="file"
+                aria-hidden="true"
+                tabIndex={-1}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setAttachment({ name: file.name });
+                  e.target.value = "";
+                }}
+              />
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Add attachment"
-                  className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-composer-panel-add-background p-2 outline-none transition-colors duration-150 ease hover:bg-composer-panel-add-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                >
-                  <RiAddLine className="size-5 text-foreground-icon-primary transition-transform duration-200 ease" aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Permission: Bypass all"
-                  className="flex h-[30px] min-w-0 cursor-pointer items-center gap-1 rounded-full px-2 py-[5px] pe-2.5 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                >
-                  <RiShieldLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                  <span className="truncate text-body-2-medium text-text-secondary">
-                    Permission: Bypass all
-                  </span>
-                </button>
+                {/* Add attachment — the original opens a menu (items not in
+                    the snapshot); the items below open the real file picker
+                    with a matching filter, and the picked file shows as a
+                    chip that travels with the sent message. */}
+                <Dropdown>
+                  <DropdownTrigger
+                    aria-label="Add attachment"
+                    className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-composer-panel-add-background p-2 outline-none transition-colors duration-150 ease hover:bg-composer-panel-add-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  >
+                    <RiAddLine className="size-5 text-foreground-icon-primary transition-transform duration-200 ease" aria-hidden />
+                  </DropdownTrigger>
+                  <DropdownPopover aria-label="Add attachment" placement="top start" className="w-[190px] p-2">
+                    <DropdownGroup>
+                      <DropdownItem onSelect={() => pickFile("image/*")} className="px-2 py-1.5">
+                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload image</span>
+                      </DropdownItem>
+                      <DropdownItem onSelect={() => pickFile(".pdf,.doc,.docx,.txt,.md")} className="px-2 py-1.5">
+                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload document</span>
+                      </DropdownItem>
+                      <DropdownItem onSelect={() => pickFile("*/*")} className="px-2 py-1.5">
+                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload file</span>
+                      </DropdownItem>
+                    </DropdownGroup>
+                  </DropdownPopover>
+                </Dropdown>
+                {/* Permission — visible text is the mode only ("Bypass all");
+                    "Permission: " lives in the aria-label, as in the
+                    original. The menu items are the standard modes; the
+                    original's menu content is not in the snapshot. */}
+                <Dropdown>
+                  <DropdownTrigger
+                    aria-label={`Permission: ${permission}`}
+                    className="flex h-[30px] min-w-0 cursor-pointer items-center gap-1 rounded-full px-2 py-[5px] pe-2.5 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  >
+                    <RiShieldLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                    <span className="truncate text-body-2-medium text-text-secondary">
+                      {permission}
+                    </span>
+                  </DropdownTrigger>
+                  <DropdownPopover aria-label="Permission" placement="top start" className="w-[190px] p-2">
+                    <DropdownGroup>
+                      {["Bypass all", "Ask every time", "Deny all"].map((mode) => (
+                        <DropdownItem
+                          key={mode}
+                          selected={permission === mode}
+                          onSelect={() => setPermission(mode)}
+                          className="px-2 py-1.5"
+                        >
+                          <span className="truncate text-body-medium whitespace-nowrap text-text-primary">{mode}</span>
+                        </DropdownItem>
+                      ))}
+                    </DropdownGroup>
+                  </DropdownPopover>
+                </Dropdown>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-expanded="false"
-                  onClick={() => setModel(model === "Fable 5" ? "Fable 4" : "Fable 5")}
-                  className="flex cursor-pointer items-center gap-0.5 rounded-full px-1 py-1 text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                >
-                  <span className="whitespace-nowrap px-0.5 text-body-medium text-text-secondary">{model}</span>
-                  <RiArrowDownSLine className="size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease" aria-hidden />
-                </button>
+                {/* Model — a real dropdown, but with only the one model the
+                    snapshot shows ("Fable 5"). The old "Fable 4" toggle
+                    option was invented and is gone; the original's other
+                    options are not in the snapshot. */}
+                <Dropdown>
+                  <DropdownTrigger
+                    aria-label="Model"
+                    className="flex cursor-pointer items-center gap-0.5 rounded-full px-1 py-1 text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  >
+                    <span className="whitespace-nowrap px-0.5 text-body-medium text-text-secondary">Fable 5</span>
+                    <RiArrowDownSLine className="size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease" aria-hidden />
+                  </DropdownTrigger>
+                  <DropdownPopover aria-label="Model" placement="top end" className="w-[190px] p-2">
+                    <DropdownGroup>
+                      <DropdownItem selected onSelect={() => {}} className="px-2 py-1.5">
+                        <span className="flex w-full items-center justify-between gap-2 truncate text-body-medium whitespace-nowrap text-text-primary">
+                          Fable 5
+                          <RiCheckLine className="size-4 shrink-0" aria-hidden />
+                        </span>
+                      </DropdownItem>
+                    </DropdownGroup>
+                  </DropdownPopover>
+                </Dropdown>
                 <div className="flex items-center gap-2">
+                  {/* Voice input — toggles a listening state (pressed +
+                      placeholder). No transcription is wired up: the
+                      original's behaviour here is not in the snapshot. */}
                   <button
                     type="button"
-                    aria-label="Voice input"
-                    aria-pressed="false"
-                    className="relative flex size-9 cursor-pointer items-center justify-center rounded-full border border-border-button-default bg-background-primary-default p-2 shadow-xs outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    aria-label={listening ? "Stop voice input" : "Voice input"}
+                    aria-pressed={listening}
+                    onClick={() => setListening((v) => !v)}
+                    className={cx(
+                      "relative flex size-9 cursor-pointer items-center justify-center rounded-full border p-2 shadow-xs outline-none transition-colors duration-150 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                      listening
+                        ? "border-accent-500 bg-accent-500 hover:bg-accent-600"
+                        : "border-border-button-default bg-background-primary-default hover:bg-background-primary-hover",
+                    )}
                   >
-                    <RiMicLine className="size-5 text-foreground-icon-primary" aria-hidden />
+                    <RiMicLine className={cx("size-5", listening ? "text-white" : "text-foreground-icon-primary")} aria-hidden />
                   </button>
                   <button
                     type="button"
                     aria-label="Send message"
-                    onClick={onSubmit}
+                    onClick={submit}
                     className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-button-primary p-2 outline-none transition-opacity duration-200 ease hover:opacity-90 focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
                   >
                     <RiArrowUpLine className="size-5 text-white" aria-hidden />
@@ -1190,18 +1439,15 @@ function Composer({
   );
 }
 
-/* ------------------------------------------------------------------ */
 /* Agent editor (right panel)                                          */
 /* ------------------------------------------------------------------ */
 
 function AgentEditor({
   agent,
-  agents,
   onSave,
   onClose,
 }: {
   agent: Agent;
-  agents: Agent[];
   /** Persists the edited fields back to the page's agent list. */
   onSave: (patch: Partial<Agent>) => void;
   onClose: () => void;
@@ -1209,34 +1455,35 @@ function AgentEditor({
   const [name, setName] = useState(agent.name);
   const [label, setLabel] = useState(agent.label);
   const [desc, setDesc] = useState(agent.desc);
-  const [language, setLanguage] = useState("Auto-detect");
-  const [voice, setVoice] = useState("System voice");
+  // Language codes match the original's native select: "" + auto/en/tr/es/
+  // fr/de/ja/pt. Voice is disabled in the original (Off / System voice).
+  const [language, setLanguage] = useState("auto");
+  const [voice] = useState("system");
+  const [speed, setSpeed] = useState("1");
   const [notify, setNotify] = useState(true);
   const [colorIdx, setColorIdx] = useState(() => {
     const i = AVATAR_COLORS.findIndex((c) => c.from.toLowerCase() === agent.body.toLowerCase());
-    return i >= 0 ? i : 0;
+    return i >= 0 ? i : -1;
   });
-  const [shapeIdx, setShapeIdx] = useState(0);
+  const [customColor, setCustomColor] = useState("#437EF7");
   const [avatar, setAvatar] = useState({ body: agent.body, shape: agent.shape });
   const [expression, setExpression] = useState<AvatarExpression>(agent.expression ?? "Neutral");
-
-  /* Ring variants: the 7 roster agents + one variant per original colour,
-     cycling through the 9 shapes. */
-  const variants: { body: string; shape: Agent["shape"]; name: string }[] = [
-    ...agents.map((a) => ({ body: a.body, shape: a.shape, name: a.name })),
-    ...AVATAR_COLORS.map((c, i) => ({
-      body: c.from,
-      shape: AVATAR_SHAPES[i % AVATAR_SHAPES.length],
-      name: `${c.label} ${AVATAR_SHAPES[i % AVATAR_SHAPES.length]}`,
-    })),
-  ];
-  const ringR = 41.5;
+  const [dragOver, setDragOver] = useState(false);
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   /* REPLICA NOTE: the original editor has no visible save affordance in the
      public template, but edits here used to be discarded on close — every
      field above was local useState with no callback. Save persists name,
      label, description and the picked avatar (body + shape + expression) to the page's
      agent list; closing via X saves too, so edits are never lost. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") saveAndClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const saveAndClose = () => {
     onSave({
       name: name.trim() || agent.name,
@@ -1276,62 +1523,100 @@ function AgentEditor({
           </div>
         </div>
 
-        {/* Avatar picker: large avatar in the centre, variants in a ring */}
-        <div className="relative mx-auto shrink-0" style={{ width: 300, height: 300 }}>
-          {variants.map((v, i) => {
-            const angle = (i / variants.length) * Math.PI * 2 - Math.PI / 2;
-            const x = 50 + ringR * Math.cos(angle);
-            const y = 50 + ringR * Math.sin(angle);
-            return (
-              <button
-                key={v.name}
-                type="button"
-                aria-label={`Use ${v.name} avatar`}
-                onClick={() => {
-                  setShapeIdx(i);
-                  setAvatar({ body: v.body, shape: v.shape });
-                }}
-                className={cx(
-                  "absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full p-0.5 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                  i === shapeIdx ? "ring-2 ring-accent-500" : "hover:ring-2 hover:ring-border-button-default",
-                )}
-                style={{ left: `${x}%`, top: `${y}%` }}
-              >
-                <AgentAvatar agent={{ body: v.body, shape: v.shape, name: v.name, expression }} size={28} />
-              </button>
-            );
-          })}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <AgentAvatar agent={{ ...agent, body: avatar.body, shape: avatar.shape, expression }} size={150} turnable />
+        {/* Avatar: the original's 360px region — a 268px emotion ring of 16
+            coloured dots around a large central avatar. The replica's old
+            16-variant avatar ring was invented UI and is gone; the dots are
+            plain 34px circles (all hsl(181 49% 80%) in the snapshot), not
+            mini faces. Shapes can also be dragged from the row below onto
+            the central preview. */}
+        <div className="relative h-[360px] shrink-0 overflow-hidden">
+          <div className="pointer-events-none absolute left-1/2 top-[30px] z-10 -translate-x-1/2">
+            <div role="group" aria-label="Agent emotion" className="pointer-events-auto relative size-[268px] touch-none rounded-full">
+              <div className="pointer-events-none absolute inset-0">
+                {EXPRESSION_ORDER.map((e, i) => (
+                  <div
+                    key={e}
+                    className="absolute left-1/2 top-1/2 -ml-[17px] -mt-[17px] size-[34px]"
+                    style={{ transform: `rotate(${i * 22.5}deg) translateY(-116px)` }}
+                  >
+                    <button
+                      type="button"
+                      aria-label={e}
+                      aria-pressed={expression === e}
+                      title={e}
+                      onClick={() => setExpression(e)}
+                      className={cx(
+                        "pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                        expression === e ? "border-foreground-icon-secondary" : "border-transparent",
+                      )}
+                      style={{ backgroundColor: "hsl(181 49% 80%)" }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div
+            className={cx(
+              "absolute left-1/2 top-[164px] z-0 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition-shadow",
+              dragOver && "ring-2 ring-accent-500",
+            )}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              const shape = e.dataTransfer.getData("text/plain") as AvatarShape;
+              if ((AVATAR_SHAPES as string[]).includes(shape)) {
+                setAvatar((prev) => ({ ...prev, shape }));
+              }
+            }}
+          >
+            <AgentAvatar agent={{ ...agent, body: avatar.body, shape: avatar.shape, expression }} size={150} />
           </div>
         </div>
 
         {/* Shape options + colour dots */}
         <div className="flex shrink-0 flex-col items-center gap-3 pb-1">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {AVATAR_SHAPES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                aria-label={`Shape ${s}`}
-                onClick={() => setAvatar((prev) => ({ ...prev, shape: s }))}
-                className={cx(
-                  "flex size-9 cursor-pointer items-center justify-center rounded-xl border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                  avatar.shape === s
-                    ? "border-border-button-default bg-background-primary-default"
-                    : "border-transparent bg-transparent hover:bg-background-tertiary-default",
-                )}
-              >
-                <AgentAvatar agent={{ body: "#d7d7d7", shape: s, name: s, expression }} size={24} />
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-2" role="listbox" aria-label="Agent shape">
+            {AVATAR_SHAPES.map((s) => {
+              const cap = s[0].toUpperCase() + s.slice(1);
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  role="option"
+                  aria-selected={avatar.shape === s}
+                  aria-label={`${cap} shape`}
+                  title={`${cap} shape — drag onto the preview to apply`}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", s);
+                    e.dataTransfer.effectAllowed = "copy";
+                  }}
+                  onClick={() => setAvatar((prev) => ({ ...prev, shape: s }))}
+                  className={cx(
+                    "flex size-14 cursor-grab items-center justify-center rounded-2xl border outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing",
+                    avatar.shape === s
+                      ? "border-border-button-default bg-background-primary-default"
+                      : "border-transparent bg-transparent",
+                  )}
+                >
+                  <AgentAvatar agent={{ body: "#d7d7d7", shape: s, name: s, expression }} size={40} />
+                </button>
+              );
+            })}
           </div>
           <div className="flex items-center gap-1.5">
             {AVATAR_COLORS.map((c, i) => (
               <button
                 key={c.id}
                 type="button"
-                aria-label={`Color ${c.label}`}
+                aria-label={`${c.label} avatar`}
+                title={c.id}
                 aria-pressed={i === colorIdx}
                 onClick={() => {
                   setColorIdx(i);
@@ -1344,40 +1629,34 @@ function AgentEditor({
                 style={{ background: `radial-gradient(closest-side circle at 50% 50%, ${c.from} 0%, ${c.to} 100%)` }}
               />
             ))}
-            <span
-              className="flex size-5 items-center justify-center rounded-full text-[10px]"
+            {/* Custom avatar colour — the original opens a colour picker
+                (aria-expanded). This opens the native colour picker; the
+                picked colour applies to the avatar immediately. */}
+            <button
+              type="button"
+              aria-label="Custom avatar color"
+              title="Custom avatar color"
+              onClick={() => colorInputRef.current?.click()}
+              className={cx(
+                "flex size-5 cursor-pointer items-center justify-center rounded-full outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                colorIdx === -1 && "scale-110 ring-2 ring-offset-2 ring-border-focus-ring",
+              )}
               style={{ background: "conic-gradient(#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444)" }}
-              aria-label="Rainbow"
+            />
+            <input
+              ref={colorInputRef}
+              type="color"
+              aria-hidden="true"
+              tabIndex={-1}
+              value={customColor}
+              onChange={(e) => {
+                setCustomColor(e.target.value);
+                setColorIdx(-1);
+                setAvatar((prev) => ({ ...prev, body: e.target.value }));
+              }}
+              className="sr-only"
             />
           </div>
-        </div>
-
-        {/* Expression picker: the original's 16-name ring, as a compact
-            grid of live mini previews. Only the names are evidence — the
-            faces are our reading of each name, not a pixel copy. */}
-        <div className="flex shrink-0 flex-col gap-2 pb-1">
-          <p className="text-body-medium text-text-primary">Expression</p>
-          <div className="grid grid-cols-8 gap-1.5" role="group" aria-label="Agent emotion">
-            {EXPRESSION_ORDER.map((e) => (
-              <button
-                key={e}
-                type="button"
-                aria-label={`Expression ${e}`}
-                aria-pressed={expression === e}
-                title={e}
-                onClick={() => setExpression(e)}
-                className={cx(
-                  "flex size-[34px] cursor-pointer items-center justify-center rounded-full outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                  expression === e ? "bg-background-tertiary-default ring-2 ring-accent-500" : "hover:bg-background-tertiary-default",
-                )}
-              >
-                <AgentAvatar agent={{ body: avatar.body, shape: avatar.shape, name: e, expression: e }} size={30} />
-              </button>
-            ))}
-          </div>
-          <p className="text-caption-1-regular text-text-tertiary">
-            16 expressions, drawn from the name list in the original editor — our interpretation, not a pixel copy. Click the large preview to turn it around.
-          </p>
         </div>
 
         {/* Form: label left, value in a grey box right */}
@@ -1389,7 +1668,9 @@ function AgentEditor({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 aria-label="Agent name"
-                className="w-[62%] min-w-0 rounded-2lg bg-background-tertiary-default px-2.5 py-1.5 text-body-regular text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                placeholder="Michael Scott"
+                maxLength={48}
+                className="w-[62%] min-w-0 rounded-2lg bg-background-tertiary-default px-2.5 py-1.5 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
               />
             </label>
             <label className="flex min-h-14 items-center justify-between gap-3 border-b border-separator-border py-3">
@@ -1398,17 +1679,21 @@ function AgentEditor({
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 aria-label="Agent label"
-                className="w-[62%] min-w-0 rounded-2lg bg-background-tertiary-default px-2.5 py-1.5 text-body-regular text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                placeholder="Manager, marketing, painter"
+                maxLength={60}
+                className="w-[62%] min-w-0 rounded-2lg bg-background-tertiary-default px-2.5 py-1.5 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
               />
             </label>
             <label className="flex flex-col items-start gap-2 py-3">
               <span className="text-body-medium text-text-primary">Description</span>
               <textarea
-                rows={4}
+                rows={2}
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 aria-label="Agent description"
-                className="w-full resize-none rounded-2lg bg-background-tertiary-default p-2.5 text-body-regular text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                placeholder="Details for the agent"
+                maxLength={500}
+                className="w-full resize-none rounded-2lg bg-background-tertiary-default p-2.5 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
               />
             </label>
           </div>
@@ -1419,15 +1704,28 @@ function AgentEditor({
                 <RiEarthLine className="size-5 text-foreground-icon-secondary" aria-hidden />
                 Language
               </span>
-              <button
-                type="button"
-                aria-label="Agent language"
-                onClick={() => setLanguage(language === "Auto-detect" ? "English" : "Auto-detect")}
-                className="flex cursor-pointer items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-[7px] py-1 text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <span className="truncate">{language}</span>
-                <RiArrowDownSLine className="size-3.5 shrink-0 text-text-secondary" aria-hidden />
-              </button>
+              {/* Native select, exactly like the original: an empty option
+                  plus Auto-detect, English, Turkish, Spanish, French,
+                  German, Japanese, Portuguese. */}
+              <span className="relative flex items-center">
+                <select
+                  aria-label="Agent language"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <option value="">{" "}</option>
+                  <option value="auto">Auto-detect</option>
+                  <option value="en">English</option>
+                  <option value="tr">Turkish</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="ja">Japanese</option>
+                  <option value="pt">Portuguese</option>
+                </select>
+                <RiArrowDownSLine className="pointer-events-none absolute end-1.5 size-3.5 shrink-0 text-text-secondary" aria-hidden />
+              </span>
             </div>
             <div className="flex items-center gap-3 py-3">
               <RiNotification3Line className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
@@ -1447,19 +1745,57 @@ function AgentEditor({
                 <RiVolumeUpLine className="size-5 text-foreground-icon-secondary" aria-hidden />
                 Voice
               </span>
-              <button
-                type="button"
-                aria-label="Agent voice"
-                onClick={() => setVoice(voice === "System voice" ? "Voice 1" : "System voice")}
-                className="flex cursor-pointer items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-[7px] py-1 text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <span className="truncate">{voice}</span>
-                <RiArrowDownSLine className="size-3.5 shrink-0 text-text-secondary" aria-hidden />
-              </button>
+              <span className="flex items-center gap-1.5">
+                {/* Preview voice — present but disabled in the original
+                    (it enables once a voice is picked). */}
+                <button
+                  type="button"
+                  aria-label="Preview voice"
+                  disabled
+                  className="flex size-7 cursor-pointer items-center justify-center rounded-2lg border border-border-button-default bg-background-primary-default text-text-secondary shadow-xs outline-none transition-colors hover:bg-background-primary-hover disabled:cursor-not-allowed disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <RiPlayFill className="size-[18px] shrink-0" aria-hidden />
+                </button>
+                {/* Agent voice — disabled in the original, options only Off /
+                    System voice (currently System voice). The old "Voice 1"
+                    option was invented and is gone. */}
+                <span className="relative flex items-center">
+                  <select
+                    aria-label="Agent voice"
+                    disabled
+                    value={voice}
+                    onChange={() => {}}
+                    className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  >
+                    <option value="">{" "}</option>
+                    <option value="off">Off</option>
+                    <option value="system">System voice</option>
+                  </select>
+                  <RiArrowDownSLine className="pointer-events-none absolute end-1.5 size-3.5 shrink-0 text-text-secondary" aria-hidden />
+                </span>
+              </span>
             </div>
             <div className="flex items-center justify-between gap-3 py-3">
               <span className="text-body-medium text-text-primary">Playback speed</span>
-              <span className="text-body-2-medium text-text-secondary">1.0×</span>
+              <div role="radiogroup" aria-label="Playback speed" className="relative inline-flex items-start gap-0.5 rounded-2lg">
+                {(["0.75", "1", "1.25", "1.5"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="radio"
+                    aria-checked={speed === v}
+                    onClick={() => setSpeed(v)}
+                    className={cx(
+                      "relative z-10 inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center rounded-md px-1 py-1 text-center whitespace-nowrap outline-none transition-colors duration-200 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                      speed === v
+                        ? "bg-background-primary-default text-body-medium text-text-primary shadow-xs"
+                        : "text-body-regular text-text-secondary hover:text-text-primary",
+                    )}
+                  >
+                    {v}×
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1473,48 +1809,15 @@ function AgentEditor({
 /* page. Lists the addable agents; Add appends one to the sidebar.    */
 /* ------------------------------------------------------------------ */
 
-function MarketplacePane({
-  agents,
-  onAdd,
-}: {
-  agents: Agent[];
-  onAdd: (agent: Agent) => void;
-}) {
+function MarketplacePane() {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-body-regular text-text-secondary">
-        Meet your next teammate. Add an agent to start a conversation with it.
+        The Marketplace listing is not included in the original page&apos;s
+        server-rendered snapshot, so no agent list can be shown here yet.
+        The roster that used to appear here was invented and has been
+        removed; it will be restored from the live page once verified.
       </p>
-      {MARKETPLACE_AGENTS.map((a) => {
-        const added = agents.some((x) => x.id === a.id);
-        return (
-          <div
-            key={a.id}
-            className="flex items-center gap-3 rounded-2xl border border-border-button-default bg-background-primary-default p-3"
-          >
-            <AgentAvatar agent={a} size={40} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-body-medium text-text-primary">{a.name}</p>
-              <p className="truncate text-body-regular text-text-tertiary">
-                {a.label} — {a.desc}
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={added}
-              onClick={() => onAdd(a)}
-              className={cx(
-                "flex h-8 shrink-0 cursor-pointer items-center rounded-full px-3 text-body-2-medium outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                added
-                  ? "cursor-default bg-background-tertiary-default text-text-tertiary"
-                  : "bg-button-primary text-text-white shadow-xs",
-              )}
-            >
-              {added ? "Added" : "Add"}
-            </button>
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -1532,16 +1835,20 @@ function seedMessages(agent: Agent): ChatMsg[] {
 
 export default function MultiAgentChatTemplatePage() {
   /* REPLICA NOTE: the roster is state, not the module const — the editor
-     saves name/avatar/description here, the Marketplace appends here, and
-     the options menu renames/deletes here, so every change is visible in
-     the sidebar and the chat header immediately. Nothing is persisted
-     beyond the session (the original template is a demo the same way). */
+     saves name/avatar/description here, and the options menu renames/
+     deletes here, so every change is visible in the sidebar and the chat
+     header immediately. Nothing is persisted beyond the session (the
+     original template is a demo the same way). */
   const [agents, setAgents] = useState<Agent[]>(AGENTS);
   const [groupName, setGroupName] = useState(GROUP.name);
   const [selectedId, setSelectedId] = useState("landing");
   const [editorOpen, setEditorOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [marketplaceOpen, setMarketplaceOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPage, setSettingsPage] = useState<SettingsPage>("general");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [groupMsgs, setGroupMsgs] = useState<ChatMsg[]>([]);
+  const [thinking, setThinking] = useState(false);
   const [input, setInput] = useState("");
   const [convs, setConvs] = useState<Record<string, ChatMsg[]>>(() => {
     const init: Record<string, ChatMsg[]> = {};
@@ -1553,19 +1860,55 @@ export default function MultiAgentChatTemplatePage() {
 
   const agent =
     selectedId === GROUP.id ? null : (agents.find((a) => a.id === selectedId) ?? agents[0] ?? null);
-  const messages = agent ? (convs[agent.id] ?? seedMessages(agent)) : [];
+  const messages = agent ? (convs[agent.id] ?? seedMessages(agent)) : groupMsgs;
 
   const saveAgent = (patch: Partial<Agent>) => {
     if (!agent) return;
     setAgents((prev) => prev.map((a) => (a.id === agent.id ? { ...a, ...patch } : a)));
   };
 
-  const addAgent = (added: Agent) => {
-    setAgents((prev) => (prev.some((a) => a.id === added.id) ? prev : [...prev, added]));
-    setConvs((prev) => (prev[added.id] ? prev : { ...prev, [added.id]: seedMessages(added) }));
-    setSelectedId(added.id);
+  const openEditor = (agentId?: string) => {
+    if (agentId) setSelectedId(agentId);
+    setEditorOpen(true);
+  };
+
+  const openSettings = (page: SettingsPage) => {
+    setSettingsPage(page);
+    setSettingsOpen(true);
+  };
+
+  /* Create menu actions. The original's menu items are not in the
+     snapshot, so these are the expected New agent / New chat / New group
+     set — the labels are pending live verification. */
+  const createAgent = () => {
+    const id = `custom-${Date.now()}`;
+    const created: Agent = {
+      id,
+      name: "New agent",
+      label: "Custom",
+      desc: "A new agent. Give it a name, a label and a description in the editor.",
+      intro: "A new agent. Give it a name, a label and a description in the editor.",
+      body: "#437EF7",
+      shape: "star",
+      userMsg: "Hello! What should we work on?",
+      replyP1: "Hi — I'm a new agent. Tell me what you'd like me to help with and I'll get started.",
+      replyP2: "You can change my name, label, description and appearance in the editor on the right.",
+    };
+    setAgents((prev) => [...prev, created]);
+    setConvs((prev) => ({ ...prev, [id]: seedMessages(created) }));
+    setSelectedId(id);
+    setEditorOpen(true);
+  };
+
+  const newChat = () => {
+    if (agent) setConvs((prev) => ({ ...prev, [agent.id]: [] }));
+    else setGroupMsgs([]);
     setEditorOpen(false);
-    setMarketplaceOpen(false);
+  };
+
+  const newGroup = () => {
+    setSelectedId(GROUP.id);
+    setEditorOpen(false);
   };
 
   const renameCurrent = (name: string) => {
@@ -1591,25 +1934,66 @@ export default function MultiAgentChatTemplatePage() {
   };
 
   const clearCurrent = () => {
-    if (!agent) return;
+    if (!agent) {
+      setGroupMsgs([]);
+      return;
+    }
     setConvs((prev) => ({ ...prev, [agent.id]: [] }));
   };
 
-  const submit = () => {
+  const nextFollowUp = (member: Agent) => {
+    const followUps = FOLLOW_UPS[member.id] ?? [genericFollowUp(member)];
+    const idx = replyIdx.current[member.id] ?? 0;
+    replyIdx.current[member.id] = idx + 1;
+    return followUps[idx % followUps.length];
+  };
+
+  const submit = (attachment?: string) => {
     const text = input.trim();
-    if (!text || !agent) return;
-    const userMsg: ChatMsg = { id: nextId.current++, role: "user", text };
-    setConvs((prev) => ({ ...prev, [agent.id]: [...(prev[agent.id] ?? []), userMsg] }));
+    if (!text) return;
+    const userMsg: ChatMsg = {
+      id: nextId.current++,
+      role: "user",
+      text,
+      ...(attachment ? { attachment } : {}),
+    };
     setInput("");
+    if (!agent) {
+      // Group chat — this used to be dead (submit() returned early when no
+      // agent was selected). Each roster member of the group now replies in
+      // its own voice, staggered: "按 agent 回复". "Product planner" is
+      // named in the group empty state but has no agent record in the
+      // snapshot, so it does not reply.
+      setGroupMsgs((prev) => [...prev, userMsg]);
+      const members = ["landing", "marketing"]
+        .map((id) => agents.find((a) => a.id === id))
+        .filter((a): a is Agent => Boolean(a));
+      if (members.length === 0) return;
+      setThinking(true);
+      members.forEach((member, i) => {
+        const replyText = nextFollowUp(member);
+        window.setTimeout(() => {
+          const reply: ChatMsg = {
+            id: nextId.current++,
+            role: "agent",
+            text: replyText,
+            agentId: member.id,
+          };
+          setGroupMsgs((prev) => [...prev, reply]);
+          if (i === members.length - 1) setThinking(false);
+        }, 700 * (i + 1));
+      });
+      return;
+    }
+    setConvs((prev) => ({ ...prev, [agent.id]: [...(prev[agent.id] ?? []), userMsg] }));
     /* Per-agent follow-ups, cycling — the seeded first exchange is verbatim
        from the original page; later replies come from this agent's voice. */
-    const followUps = FOLLOW_UPS[agent.id] ?? [genericFollowUp(agent)];
-    const idx = replyIdx.current[agent.id] ?? 0;
-    replyIdx.current[agent.id] = idx + 1;
-    const replyText = followUps[idx % followUps.length];
+    setThinking(true);
+    const replyText = nextFollowUp(agent);
     window.setTimeout(() => {
       const reply: ChatMsg = { id: nextId.current++, role: "agent", text: replyText };
       setConvs((prev) => ({ ...prev, [agent.id]: [...(prev[agent.id] ?? []), reply] }));
+      setThinking(false);
     }, 700);
   };
 
@@ -1625,17 +2009,53 @@ export default function MultiAgentChatTemplatePage() {
         searchOpen={searchOpen}
         setSearchOpen={setSearchOpen}
         agents={agents}
-        onOpenMarketplace={() => setMarketplaceOpen(true)}
+        onOpenMarketplace={() => openSettings("marketplace")}
+        onOpenSettings={() => openSettings("general")}
+        onCreateAgent={createAgent}
+        onNewChat={newChat}
+        onNewGroup={newGroup}
       />
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <button
+            type="button"
+            aria-label="Close conversations"
+            onClick={() => setMobileNavOpen(false)}
+            className="absolute inset-0 cursor-pointer bg-black/40"
+          />
+          <div className="relative flex h-full p-3">
+            <Sidebar
+              selectedId={selectedId}
+              onSelect={(id) => {
+                setSelectedId(id);
+                setEditorOpen(false);
+                setMobileNavOpen(false);
+              }}
+              searchOpen={searchOpen}
+              setSearchOpen={setSearchOpen}
+              agents={agents}
+              onOpenMarketplace={() => openSettings("marketplace")}
+              onOpenSettings={() => openSettings("general")}
+              onCreateAgent={createAgent}
+              onNewChat={newChat}
+              onNewGroup={newGroup}
+              forceVisible
+            />
+          </div>
+        </div>
+      )}
       <main
         aria-label="Agent conversation"
         className="flex min-h-0 min-w-0 flex-1 flex-col rounded-3xl bg-background-secondary-default"
       >
         <ChatMain
           agent={agent}
+          agents={agents}
           messages={messages}
           groupName={groupName}
-          onOpenEditor={() => setEditorOpen(true)}
+          thinking={thinking}
+          onOpenEditor={openEditor}
+          onOpenMobileNav={() => setMobileNavOpen(true)}
           onRename={renameCurrent}
           onDelete={deleteCurrent}
           onClear={clearCurrent}
@@ -1643,19 +2063,14 @@ export default function MultiAgentChatTemplatePage() {
         <Composer value={input} onValueChange={setInput} onSubmit={submit} />
       </main>
       {editorOpen && agent && (
-        <AgentEditor
-          agent={agent}
-          agents={agents}
-          onSave={saveAgent}
-          onClose={() => setEditorOpen(false)}
-        />
+        <AgentEditor agent={agent} onSave={saveAgent} onClose={() => setEditorOpen(false)} />
       )}
       <SettingsModal
-        isOpen={marketplaceOpen}
-        onClose={() => setMarketplaceOpen(false)}
-        defaultPage="marketplace"
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        defaultPage={settingsPage}
         planArtSrc="/templates/settings-plan-art.png"
-        marketplace={<MarketplacePane agents={agents} onAdd={addAgent} />}
+        marketplace={<MarketplacePane />}
       />
     </div>
   );

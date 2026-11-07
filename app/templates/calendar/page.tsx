@@ -9,7 +9,7 @@ import {
   RiDeleteBinLine,
   RiInboxLine,
 } from "@remixicon/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
 import { Button } from "@/components/base/buttons/button";
@@ -122,6 +122,22 @@ export default function CalendarTemplatePage() {
   const [formTone, setFormTone] = useState<Tone>("blue");
   const idRef = useRef(100);
 
+  // Esc closes the detail dialog, the new-event dialog, the inbox popover
+  // and the month picker (the original's react-aria popups close on Esc).
+  useEffect(() => {
+    if (!detail && !newOpen && !inboxOpen && !pickerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setDetail(null);
+        setNewOpen(false);
+        setInboxOpen(false);
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [detail, newOpen, inboxOpen, pickerOpen]);
+
   const cells = useMemo(() => buildCells(year, month), [year, month]);
   const byDate = useMemo(() => {
     const map = new Map<string, CalEvent[]>();
@@ -137,7 +153,6 @@ export default function CalendarTemplatePage() {
   }, [events]);
 
   const monthLabel = `${MONTHS[month]} ${year}`;
-  const selectedEvents = byDate.get(selectedKey) ?? [];
   const inboxItems = useMemo(() => {
     const from = new Date(year, month, 1).getTime();
     return events
@@ -246,11 +261,10 @@ export default function CalendarTemplatePage() {
       }
     >
       {/* Month switcher — original: 320px wide, chevrons + centred label */}
-      <div className="flex w-full items-center justify-between gap-2">
-        <div
-          className="relative h-9 min-w-0 flex-1 sm:w-[320px] sm:flex-none"
-          style={{ ["--month-switcher-width" as string]: "320px" }}
-        >
+      <div
+        className="relative h-9 min-w-0 flex-1 sm:w-[320px] sm:flex-none"
+        style={{ ["--month-switcher-width" as string]: "320px" }}
+      >
           <div className="absolute top-0 end-0 start-0 z-10 flex w-full flex-col overflow-hidden rounded-2lg border border-border-button-default bg-background-primary-default shadow-dropdown transition-[width] duration-300 ease-in-out sm:end-auto sm:w-[320px]">
             <div className="flex w-full shrink-0 items-center justify-between p-2">
               <button type="button" aria-label="Previous month" onClick={() => shiftMonth(-1)} className={NAV_CHEVRON}>
@@ -301,18 +315,6 @@ export default function CalendarTemplatePage() {
               </div>
             )}
           </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setYear(2026);
-            setMonth(7);
-            setSelectedKey("2026-08-02");
-          }}
-          className="shrink-0 cursor-pointer rounded-full border border-border-button-default bg-background-primary-default px-3 py-1.5 text-body-2-medium text-text-secondary outline-none transition-colors hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-        >
-          Today · Aug 2026
-        </button>
       </div>
 
       {/* Month grid — original classes: 7 cols, 6 rows, mobile hairline
@@ -331,22 +333,20 @@ export default function CalendarTemplatePage() {
         <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-[repeat(6,minmax(0,1fr))] gap-0 sm:flex-none sm:grid-rows-[repeat(6,minmax(0,auto))] sm:gap-2 sm:p-2">
           {cells.map((cell) => {
             const dayEvents = byDate.get(cell.key) ?? []; // original shows Jul 28/30 + Sep 1/2/4 chips too
-            const isSelected = cell.key === selectedKey;
-            const shown = dayEvents.slice(0, 2);
-            const extra = dayEvents.length - shown.length;
+            const extra = dayEvents.length - 2;
             return (
               <div
                 key={cell.key}
                 className="relative h-full border-e border-b border-separator-border-strong last:border-b-0 nth-[7n]:border-e-0 nth-[n+36]:border-b-0 sm:border-0"
               >
-                <button
-                  type="button"
-                  onClick={() => setSelectedKey(cell.key)}
-                  aria-label={`${prettyDate(cell.key)}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}` : ""}`}
+                {/* Plain div, as in the original: date cells are not clickable
+                    and have no selected/hover state. */}
+                <div
                   className={cx(
-                    "relative flex h-full min-h-[72px] w-full flex-col overflow-hidden text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring sm:min-h-[94px] sm:rounded-xl lg:min-h-[105px] xl:min-h-[128px] 2xl:min-h-[164px]",
-                    cell.inMonth ? "bg-background-secondary-default sm:bg-background-tertiary-default" : "bg-background-secondary-default opacity-60 sm:bg-background-tertiary-default",
-                    isSelected && "ring-2 ring-inset ring-accent-500",
+                    "relative flex h-full min-h-[72px] w-full flex-col overflow-hidden sm:min-h-[94px] sm:rounded-xl lg:min-h-[105px] xl:min-h-[128px] 2xl:min-h-[164px]",
+                    cell.inMonth
+                      ? "bg-background-primary-default max-sm:dark:bg-background-secondary-default sm:shadow-card"
+                      : "bg-background-secondary-default sm:bg-background-tertiary-default",
                   )}
                 >
                   <span
@@ -358,18 +358,19 @@ export default function CalendarTemplatePage() {
                     {cell.day}
                   </span>
                   <span className="mt-auto flex w-full flex-col gap-0.5 px-1 pb-1 sm:gap-[5px] sm:px-2 sm:pb-2">
-                    {shown.map((e) => (
+                    {extra > 0 && (
+                      <span className="text-[10px] leading-3 font-medium text-text-secondary sm:text-body-2-medium">
+                        +{extra} more
+                      </span>
+                    )}
+                    {dayEvents.map((e) => (
                       <span
                         key={e.id}
                         role="button"
                         tabIndex={0}
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          setDetail(e);
-                        }}
+                        onClick={() => setDetail(e)}
                         onKeyDown={(ev) => {
                           if (ev.key === "Enter" || ev.key === " ") {
-                            ev.stopPropagation();
                             setDetail(e);
                           }
                         }}
@@ -388,66 +389,12 @@ export default function CalendarTemplatePage() {
                         )}
                       </span>
                     ))}
-                    {extra > 0 && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(ev) => {
-                          ev.stopPropagation();
-                          setSelectedKey(cell.key);
-                          const first = dayEvents[0];
-                          if (first) setDetail(first);
-                        }}
-                        onKeyDown={(ev) => {
-                          if (ev.key === "Enter") {
-                            ev.stopPropagation();
-                            const first = dayEvents[0];
-                            if (first) setDetail(first);
-                          }
-                        }}
-                        className="cursor-pointer px-1 text-start text-[10px] leading-3 font-medium text-text-secondary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring sm:text-body-2-medium"
-                      >
-                        + {extra} more
-                      </span>
-                    )}
                   </span>
-                </button>
+                </div>
               </div>
             );
           })}
         </div>
-      </section>
-
-      {/* Selected day — events of the selected date, click opens the detail */}
-      <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-title-3-semibold text-text-primary">{prettyDate(selectedKey)}</p>
-          <span className="text-body-2-medium text-text-tertiary">
-            {selectedEvents.length} event{selectedEvents.length === 1 ? "" : "s"}
-          </span>
-        </div>
-        {selectedEvents.length === 0 ? (
-          <p className="text-body-regular text-text-secondary">No events on this day.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {selectedEvents.map((e) => (
-              <button
-                key={e.id}
-                type="button"
-                onClick={() => setDetail(e)}
-                className="flex w-full cursor-pointer items-center justify-between rounded-xl bg-background-inner-default px-3 py-2.5 text-start outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <span className={cx("size-2 shrink-0 rounded-full", TONE_DOT[e.tone])} aria-hidden />
-                  <span className="truncate text-body-medium text-text-primary">{e.title}</span>
-                </span>
-                <span className="shrink-0 text-body-2-medium text-text-secondary tabular-nums">
-                  {e.time ?? "All day"}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* Event detail dialog */}
@@ -464,7 +411,7 @@ export default function CalendarTemplatePage() {
             <p className="mt-2 text-title-2-medium text-text-primary">{detail.title}</p>
             <p className="mt-1 text-body-regular text-text-secondary">{prettyDate(detail.date)}</p>
             <p className="mt-0.5 text-body-regular text-text-secondary tabular-nums">
-              {detail.time ? `${detail.time} – 1 hour` : "All day"}
+              {detail.time ?? "All day"}
             </p>
             <div className="mt-5 flex gap-2">
               <Button variant="secondary" size="medium" leadingIcon={RiDeleteBinLine} onClick={() => deleteEvent(detail.id)}>

@@ -15,8 +15,10 @@ import {
 } from "recharts";
 import {
   RiAddFill,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
+  RiArrowDownSLine,
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiDeleteBinLine,
   RiDownload2Line,
   RiEditLine,
   RiFileCopyLine,
@@ -341,11 +343,11 @@ const PURCHASE_META: Record<Purchase, { label: string; dot: "green" | "yellow" |
   processing: { label: "Processing", dot: "indigo" },
 };
 
-const STATUS_DOT: Record<CustStatus, "green" | "yellow" | "indigo"> = {
-  Shipped: "green",
-  Confirmed: "indigo",
-  "Delivery waiting": "yellow",
-  "Delivery failed": "yellow",
+const STATUS_CHIP: Record<CustStatus, string> = {
+  Shipped: "bg-status-lime-background text-status-lime-text",
+  Confirmed: "bg-status-cyan-background text-status-cyan-text",
+  "Delivery failed": "bg-status-rose-background text-status-rose-text",
+  "Delivery waiting": "bg-status-yellow-background text-status-yellow-text",
 };
 
 /* ------------------------------------------------------------------ */
@@ -435,8 +437,8 @@ function PeriodChartCard({
 
   return (
     <section className={cx("flex h-[337px] min-w-0 flex-col gap-6 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3", flexGrow && "flex-1", className)}>
-      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 flex-col gap-0.5">
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-0.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="w-full text-body-medium text-text-secondary">{point ? point.label : label}</p>
           <div className="flex w-full items-center gap-2">
             <p key={activeIndex ?? "total"} className="animate-number-fade text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">
@@ -444,9 +446,6 @@ function PeriodChartCard({
             </p>
             <DeltaChip current={headline} previous={comparison} />
           </div>
-          <p className="text-body-2-medium text-text-tertiary tabular-nums">
-            {fmtMoney(comparison)} {point ? "previous period" : "previous total"}
-          </p>
         </div>
         <SegmentedControl
           aria-label={periodLabel}
@@ -524,52 +523,66 @@ function PeriodChartCard({
 function RecentHiresCard() {
   const hires = useMemo(() => buildHires(), []);
   const [page, setPage] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [teamOpen, setTeamOpen] = useState(false);
   const perPage = 4;
   const totalPages = Math.ceil(hires.length / perPage);
   const visible = hires.slice(page * perPage, page * perPage + perPage);
   return (
     <section className="relative flex h-[329px] min-w-0 flex-1 flex-col rounded-2xl bg-background-secondary-default p-2">
-      <div className="flex w-full items-center justify-between px-2 pt-2">
-        <div className="flex items-baseline gap-2">
-          <p className="text-title-3-semibold text-text-primary">Recent hires</p>
-          <span className="text-body-medium text-text-secondary tabular-nums">{hires.length}</span>
+      <div className="flex items-start justify-between px-2 pt-2">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <p className="text-body-medium text-text-secondary">Recent hires</p>
+          <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">{hires.length}</p>
         </div>
-        <div className="flex items-center gap-1">
-          <IconButton icon={RiArrowLeftSLine} size="small" aria-label="Previous hires" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} />
-          <IconButton icon={RiArrowRightSLine} size="small" aria-label="Next hires" disabled={page >= totalPages - 1} onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} />
-        </div>
-      </div>
-      <p className="px-2 pt-0.5 text-body-2-regular text-text-tertiary">Board team</p>
-      <div className="flex w-full flex-1 flex-col justify-center px-2">
-        {visible.map((hire, hi) => (
-          <button
-            key={`${hire.name}-${page * perPage + hi}`}
-            type="button"
-            onClick={() => setSelected(selected === hire.name ? null : hire.name)}
-            aria-pressed={selected === hire.name}
-            className={cx(
-              "flex w-full cursor-pointer items-center gap-3 rounded-xl border-b border-separator-border px-1 py-2.5 text-start last:border-b-0",
-              selected === hire.name && "bg-background-secondary-hover",
-            )}
+        <Dropdown isOpen={teamOpen} onOpenChange={setTeamOpen}>
+          <DropdownTrigger
+            aria-label="Board team"
+            aria-expanded={teamOpen}
+            className="flex cursor-pointer items-center gap-1.5 rounded-2lg px-0.5"
           >
-            {hire.avatar ? (
-              <Avatar size="md" src={hire.avatar} alt="" />
-            ) : (
-              <Avatar size="md" color={hire.color} initials={hire.initials} />
-            )}
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-body-medium text-text-primary">{hire.name}</span>
-              <span className="truncate text-body-2-regular text-text-secondary">{hire.role}</span>
+            <span className="text-body-medium whitespace-nowrap text-text-primary">Board team</span>
+            <RiArrowDownSLine className="size-4 shrink-0 text-text-secondary" aria-hidden />
+          </DropdownTrigger>
+          <DropdownPopover aria-label="Board team" placement="bottom end" className="w-[200px] p-2">
+            <DropdownGroup>
+              <DropdownItem selected onSelect={() => setTeamOpen(false)} className="px-2 py-1.5">
+                <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Board team</span>
+              </DropdownItem>
+            </DropdownGroup>
+          </DropdownPopover>
+        </Dropdown>
+      </div>
+      <div className="mt-[11px] grid flex-1 grid-cols-2 grid-rows-2 gap-2">
+        {visible.map((hire, hi) => (
+          <div
+            key={`${hire.name}-${page * perPage + hi}`}
+            className="flex min-w-0 flex-col items-start justify-between rounded-2lg bg-background-inner-default p-2.5 shadow-card"
+          >
+            <div className="flex w-full min-w-0 items-center gap-2">
+              {hire.avatar ? (
+                <Avatar size="lg" src={hire.avatar} alt={hire.name} />
+              ) : (
+                <Avatar size="lg" color={hire.color} initials={hire.initials} />
+              )}
+              <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
+                <p className="w-full truncate text-body-medium text-text-primary">{hire.name}</p>
+                <p className="w-full truncate text-body-2-medium text-text-secondary">{hire.joined}</p>
+              </div>
+            </div>
+            <span className="inline-flex w-full items-center justify-center rounded-md bg-background-recent-hire-role px-1.5 py-1 text-caption-1-medium text-text-secondary">
+              {hire.role}
             </span>
-            <span className="shrink-0 text-body-2-regular whitespace-nowrap text-text-tertiary">{hire.joined}</span>
-          </button>
+          </div>
         ))}
       </div>
-      <p className="px-2 pb-1 text-caption-1-regular text-text-tertiary">
-        Page {page + 1} of {totalPages}
-        {selected ? ` · Selected: ${selected}` : ""}
-      </p>
+      <div className="mt-2 flex w-full items-center gap-2">
+        <Button variant="secondary" size="small" className="flex-1" leadingIcon={RiArrowLeftLine} disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+          Previous
+        </Button>
+        <Button variant="secondary" size="small" className="flex-1" trailingIcon={RiArrowRightLine} disabled={page >= totalPages - 1} onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}>
+          Next
+        </Button>
+      </div>
     </section>
   );
 }
@@ -582,7 +595,6 @@ function RecentHiresCard() {
 function ContributionsCard() {
   const { cells } = useMemo(() => buildContributions(), []);
   const [period, setPeriod] = useState<Period>("weekly");
-  const [hovered, setHovered] = useState<HeatCell | null>(null);
   const monthMarks = useMemo(() => {
     const marks: { col: number; label: string }[] = [];
     let last = "";
@@ -655,28 +667,12 @@ function ContributionsCard() {
                 <button
                   key={i}
                   type="button"
+                  tabIndex={-1}
                   data-tier={cell.tier}
                   aria-label={readout(cell)}
-                  onMouseEnter={() => setHovered(cell)}
-                  onMouseLeave={() => setHovered(null)}
-                  onFocus={() => setHovered(cell)}
-                  onBlur={() => setHovered(null)}
-                  onClick={() => setHovered(cell)}
-                  className="contribution-cell aspect-square w-full cursor-pointer rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  className="contribution-cell aspect-square w-full cursor-default rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                 />
               ))}
-            </div>
-            <div className="flex w-full items-center justify-between">
-              <p className="min-h-4 text-caption-1-regular text-text-tertiary" aria-live="polite">
-                {hovered ? readout(hovered) : `Showing ${period === "weekly" ? "this week" : period === "monthly" ? "this month" : "this year"} · hover a day for its count`}
-              </p>
-              <p className="flex shrink-0 items-center gap-1 text-caption-1-regular text-text-tertiary">
-                Less
-                {[0, 1, 2, 3, 4, 5].map((tier) => (
-                  <span key={tier} className="contribution-cell inline-block size-2.5 rounded-[2px]" data-tier={tier} />
-                ))}
-                More
-              </p>
             </div>
           </div>
         </div>
@@ -750,7 +746,7 @@ function CreateTicketModal({
 
 type Filters = { price: string; product: string; region: string; query: string };
 
-function RowMoreMenu({ onAction }: { onAction: (label: string) => void }) {
+function RowMoreMenu({ customerName, onAction }: { customerName: string; onAction: (label: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const items = [
     { icon: RiUserLine, label: "View profile" },
@@ -761,7 +757,7 @@ function RowMoreMenu({ onAction }: { onAction: (label: string) => void }) {
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger
-        aria-label="More actions"
+        aria-label={`More actions for ${customerName}`}
         className={cx(
           "relative inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-primary shadow-xs",
           "hover:border-border-button-hover hover:bg-background-primary-hover",
@@ -905,11 +901,11 @@ function CustomersTable({
                 }}
               />
             </span>
-            <button type="button" onClick={() => toggleSort("name")} className="w-[240px] shrink-0 cursor-pointer text-start hover:text-text-primary">Customer name{sortMark("name")}</button>
+            <button type="button" onClick={() => toggleSort("name")} aria-label="Sort by Customer name" className="w-[240px] shrink-0 cursor-pointer text-start hover:text-text-primary">Customer name{sortMark("name")}</button>
             <span className="w-[172px] shrink-0">Purchase</span>
             <span className="w-[168px] shrink-0">Status</span>
-            <button type="button" onClick={() => toggleSort("updatedTs")} className="w-[160px] shrink-0 cursor-pointer text-start hover:text-text-primary">Last updated{sortMark("updatedTs")}</button>
-            <button type="button" onClick={() => toggleSort("price")} className="w-[140px] shrink-0 cursor-pointer text-start hover:text-text-primary">Price{sortMark("price")}</button>
+            <button type="button" onClick={() => toggleSort("updatedTs")} aria-label="Sort by Last updated" className="w-[160px] shrink-0 cursor-pointer text-start hover:text-text-primary">Last updated{sortMark("updatedTs")}</button>
+            <button type="button" onClick={() => toggleSort("price")} aria-label="Sort by Price" className="w-[140px] shrink-0 cursor-pointer text-start hover:text-text-primary">Price{sortMark("price")}</button>
             <span className="w-[132px] shrink-0">Actions</span>
           </div>
           {pageRows.map((c) => (
@@ -928,19 +924,14 @@ function CustomersTable({
                   }}
                 />
               </span>
-              <button
-                type="button"
-                onClick={() => onEdit(c)}
-                className="flex w-[240px] min-w-0 shrink-0 cursor-pointer items-center gap-2 text-start"
-                aria-label={`Open ${c.name}`}
-              >
+              <span className="flex w-[240px] min-w-0 shrink-0 items-center gap-2">
                 {c.avatar ? (
                   <Avatar size="sm" src={c.avatar} alt="" />
                 ) : (
                   <Avatar size="sm" color={c.initialsColor} initials={c.initials} />
                 )}
                 <span className="truncate text-body-medium text-text-primary">{c.name}</span>
-              </button>
+              </span>
               <span className="w-[172px] shrink-0 pe-3">
                 <Select
                   aria-label={`Purchase status for ${c.name}`}
@@ -957,27 +948,26 @@ function CustomersTable({
                   ))}
                 </Select>
               </span>
-              <span className="w-[168px] shrink-0 pe-3">
-                <Select
-                  aria-label={`Delivery status for ${c.name}`}
-                  size="sm"
-                  className="w-[142px]"
-                  selectedKey={c.status}
-                  onSelectionChange={(k) => updateRow(c.id, { status: String(k) as CustStatus })}
-                >
-                  {(["Shipped", "Confirmed", "Delivery failed", "Delivery waiting"] as CustStatus[]).map((s) => (
-                    <SelectItem key={s} id={s} textValue={s}>
-                      <StatusDot color={STATUS_DOT[s]} />
-                      {s}
-                    </SelectItem>
-                  ))}
-                </Select>
+              <span className="flex w-[168px] shrink-0 items-center pe-3">
+                <span className={cx("inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-body-medium whitespace-nowrap", STATUS_CHIP[c.status])}>
+                  {c.status}
+                </span>
               </span>
               <span className="w-[160px] shrink-0 text-body-medium whitespace-nowrap text-text-secondary tabular-nums">{c.updated}</span>
               <span className="w-[140px] shrink-0 text-body-medium whitespace-nowrap text-text-primary tabular-nums">{fmtPrice(c.price)}</span>
               <span className="flex w-[132px] shrink-0 items-center gap-1.5">
                 <IconButton icon={RiEditLine} size="small" aria-label={`Edit ${c.name}`} onClick={() => onEdit(c)} />
+                <IconButton
+                  icon={RiDeleteBinLine}
+                  size="small"
+                  aria-label={`Delete ${c.name}`}
+                  onClick={() => {
+                    setRows(rows.filter((r) => r.id !== c.id));
+                    showToast(`Deleted ${c.name}`);
+                  }}
+                />
                 <RowMoreMenu
+                  customerName={c.name}
                   onAction={(label) => {
                     if (label === "Duplicate row") {
                       const copy: Customer = { ...c, id: `copy-${c.id}-${Date.now()}`, name: `${c.name} (copy)` };
@@ -1001,9 +991,6 @@ function CustomersTable({
       </div>
 
       <div className="flex w-full flex-col items-center gap-3 px-3 pt-3 sm:flex-row sm:justify-between">
-        <p className="text-body-2-medium text-text-tertiary">
-          Page {safePage + 1} of {totalPages} · {filtered.length.toLocaleString()} customers
-        </p>
         <Pagination page={safePage + 1} totalPages={totalPages} onChange={(p) => setPage(p - 1)} aria-label="Customers pagination" />
       </div>
     </section>

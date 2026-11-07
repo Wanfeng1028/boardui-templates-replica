@@ -2,7 +2,7 @@
 
 > **这不是官方原版。** BoardUI Pro 是付费内容（Pro 一次性买断，1 年 €149 / 终身 €199 / 5 人团队 €349），源码不在免费仓库、不在公开 registry，无法免费获取。本项目是**用免费的 BoardUI 组件（MIT，已存档）+ mock 数据复刻**出来的全部 Pro 内容，布局与官网演示尽量接近，供参考学习用。
 
-## 内容总览（2026-11-06 晚全部完成；2026-11-07 残留项收尾：暗色模式验收、图表逐项转录、头像行为对齐、AI Image 占位图卡、HR 数字修正、导航补齐、Multi-Agent Chat 功能补齐，见下）
+## 内容总览（2026-11-06 晚全部完成；2026-11-07 残留项收尾：暗色模式验收、图表逐项转录、头像行为对齐、AI Image 占位图卡、HR 数字修正、导航补齐、Multi-Agent Chat 功能补齐；2026-11-07 交互全量对齐：10 套模板逐项盘点可点击/其他交互/静态内容并全部修掉，见"交互对齐"一节）
 
 Pro 注册表确认正好 **40 项：30 个 Pro 组件 + 10 套 Pro 模板**，本仓库全部复刻，外加 Calendar 演示页：
 
@@ -74,13 +74,21 @@ npm run build    # 生产构建（静态导出到 out/）
 ## 与官网原版的差异（诚实说明）
 
 - **不是官方源码。** 布局、文案、数据是按官网公开演示页复刻的，组件是免费版，代码结构与官方 Pro 模板不同。
-- **图片是占位。** AI Image Generation 的 7 张图用的是免费仓库里的 carousel 素材，不是官方生成的原图；提示词与原版一致（20 条全录）。其余 13 条提示词做成主题色渐变占位图卡（标明 Placeholder，不假装是原图），页面视觉完整。AI Profile 封面是 CSS 渐变（原版封面图属 Pro，不能用）。
+- **图片已换成原图。** AI Image Generation 的 20 张原图已从 boardui.com/ai-chat/gallery/*.webp 下载（全部 HTTP 200、校验为 WebP），存于 `public/ai-chat/gallery/` 并按原版双列 masonry 与逐张宽高比展示；AI Profile 封面图已从 boardui.com 下载原图（80,403 字节、1024×248），替换了此前的 CSS 渐变。Project Board 的 18 张人像已从 randomuser.me 下载原图（`public/avatars/randomuser/`）。Medical Profile 前 8 名患者用上了仓库里已有的 `public/avatars/` 照片。
 - **数据是 mock。** 所有数字（营收、订单、步数、代币等）都是按官网演示页的公开数字写的占位数据，不接真实后端。图表月度序列：Dashboard Contributions 热力图已逐格转录（259 格，见 `chart-data-report.md`）；其余 Recharts 图表在原版 HTML 里是空 SSR 容器、无 `__NEXT_DATA__`/JSON 数据源，无法逐项转录，仍为反推重建值（逐项证据见 `chart-data-report.md`）。注意原版自身不一致：259 格真实值合计 1,721，卡片标题却写 958，本复刻保留真实格值并在代码注释中注明，未按标题缩放。
 - **HR Management 无原版演示对照。** 官方 /templates/hr-management 是 404，该页按 llms.txt 的官方描述搭建，页顶已注明。2026-11-07 已修三处数字自相矛盾（季度招聘数与 KPI/漏斗对不上、敬业度雷达均值与 KPI 对不上），见 `pages-fix-report.md`。
 - **头像是原版 canvas 脸的 SVG/CSS 重建，行为对齐、像素近似。** 见上节引文；折叠层质感、morph 中间帧、16 种表情的具体画法无公开像素数据，无法做到逐像素 1:1。
 - **聊天是本地 demo，与原版行为一致。** AI Chat 与 Multi-Agent Chat 发送后均为示例回复，不接模型；原版预览同样如此（官方文档："The preview uses labeled sample replies. Supply `onRespond` to connect your service"），接真实模型需另行提供 `onRespond`。免费模型直连方案见 `investigation-report.md`（未实施、未申请 key）。
-- **负责人头像是首字母彩色头像。** 原版用 randomuser.me 真人照片，沙箱 egress 代理连不上该站，已改成 BoardUI 首字母彩色头像。
+- **负责人头像是首字母彩色头像。** Dashboard 等页的负责人头像仍用 BoardUI 首字母彩色头像（原版用 randomuser.me 真人照片）；Project Board 与 Medical Profile 前 8 名患者已换成下载的原图/仓库照片。
 - **暗色模式已专项验收（2026-11-07）。** 12 个 URL × 1440/768/390 共 39 张截图，`.dark` 全部生效、无横向溢出；修了 2 处缺陷（Agent Creator 语音行选中态、chart-neutral token 在暗色下近黑不可见），见 `dark-mode-report.md` 与 `shots/dark/`。
+
+## 交互对齐（2026-11-07，用户要求：原版长什么样、能干什么，我们就要长什么样、能干什么，一处都不能少）
+
+- **盘点方法**：10 套有原版的模板逐个解析原版 SSR 快照（`tpl-pages/`）的全部可点击元素，并按三类对照复刻——①可点击（按钮/链接/卡片/tab/筛选/下拉/开关/菜单）、②其他交互（hover、拖拽、键盘、输入、滚动、动画、toggle）、③静态内容（文字一字不差、数字、图片、图标、颜色、字体、间距、布局）。HR Management 无原版（官方 404），只做内部自查。盘点清单在 `audit/*-gaps.md`（10 份，共 2459 行），每份末尾有"修复结论"。
+- **盘点规模（原版逻辑元素，去重移动/桌面双份后）**：Dashboard 348、Project Board 59、Marketing 129、Calendar 68、Finance 209+、Medical Profile 503、AI Chat 48、AI Image Generation 107、AI Profile 310、Multi-Agent Chat 78。
+- **修掉的（摘要）**：死按钮全部补上真实反应（Multi-Agent Chat 9 处、Medical Add profile photo、AI Chat Add attachment 等）；缺失入口补齐（Project Board 工具栏 4 入口、Marketing 周期切换/搜索框/checkbox/行内删除编辑、Medical 患者搜索框/行内 View chart 与 Edit patient、Calendar 与 Finance 的 Change period 等）；标错/多做的改回原版（Marketing 10 行渠道改图标+title、Calendar 日期格改回不可点 div、Finance 热力图图例 5 块原版数值、AI Profile 默认 Weekly 且不切片热力图、AI Chat 侧栏恢复 agent 侧栏与 11 条线程）；拖拽改指针拖拽（Project Board，去掉 HTML5 draggable）；模板切换入口做到一眼能找到（每模板页顶栏"全部模板"文字按钮、侧栏首行入口、首页横条、总览页标题"全部模板 · 11 套"，三档宽度 48 项自查通过，见 `audit/template-switching.md`）。
+- **仍修不了 / 待实测确认**：原版弹窗/菜单/抽屉的真实内容与客户端渲染图表（Sankey/donut/气泡/Steps/睡眠环）的数值与 hover 行为在 SSR 里不存在，复刻按"去掉自加行为、留最小可信实现"处理，各清单末尾的"待实测确认"逐项列出，需真机浏览器打开原版线上页核对后才能定稿；字体 JetBrains Mono 本机无文件，仍为系统等宽栈；分页省略号存在清单冲突（Dashboard 原版含 "…"，Finance/Medical 原版无），本轮按共享 Pagination 去掉 "…"，Dashboard 因此偏离其原版一处，如需恢复应给 Dashboard 单独加变体。
+- **验证**：`npm run build` 通过（21/21 页静态生成）、`npx tsc --noEmit` 干净；模板切换入口三档宽度 48 项自查通过。逐元素点击实测需真机浏览器完成，本轮未做——清单里标"待实测确认"的项即为未实测项，不要把本轮理解为"每个按钮都已在真机上点过"。线上验证见下节。
 
 ## 免费组件来源
 

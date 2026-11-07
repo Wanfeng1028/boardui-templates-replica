@@ -17,18 +17,16 @@ import {
   RiChatAiLine,
   RiCloseLine,
   RiCustomerServiceLine,
-  RiGroupLine,
   RiHomeLine,
   RiImageAiLine,
   RiKanbanView2,
+  RiLayoutGridLine,
   RiMegaphoneLine,
   RiSearchLine,
   RiSettings4Line,
   RiSideBarFill,
-  RiTeamLine,
   RiUserSmileLine,
 } from "@remixicon/react";
-import { SettingsModal } from "@/components/application/settings/settings-modal";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { Badge } from "@/components/base/badges/badge";
 import { CloseButton } from "@/components/base/buttons/close-button";
@@ -155,19 +153,27 @@ export interface DashboardNavItem {
 /** Kept as a name for callers that typed their `selected` prop; any key works. */
 export type DashboardNavKey = string;
 
-/** The Pro dashboard's navigation, the default set. */
+/** The Pro dashboard's navigation, the default set: the original 9 rows
+ * plus the replica's "全部模板" first row (kept per user instruction).
+ * HR Management and Multi-Agent Chat are intentionally NOT here — the
+ * original sidebar has no such rows; both pages are reached from the
+ * /templates index instead. */
 export const DASHBOARD_NAV: DashboardNavItem[] = [
+  // Replica addition, first so it is seen before any single template: the
+  // index at /templates is the only place that lists all 11 templates, and
+  // without this row a visitor entering one template directly had no labelled
+  // way to reach it (the sidebar below lg is a drawer, so this row is the
+  // mobile entry too). Same label as the "全部模板" top-bar button.
+  { key: "all-templates", label: "全部模板", icon: RiLayoutGridLine, href: "/templates" },
   { key: "home", label: "Home", icon: RiHomeLine, href: "/templates/dashboard", badge: 152 },
   { key: "project-board", label: "Project board", icon: RiKanbanView2, href: "/templates/project-board" },
   { key: "marketing", label: "Marketing", icon: RiMegaphoneLine, href: "/templates/marketing" },
   { key: "calendar", label: "Calendar", icon: RiCalendarLine, href: "/templates/calendar" },
   { key: "finance", label: "Finance", icon: RiBankLine, href: "/templates/finance" },
   { key: "medical", label: "Medical Report", icon: RiAsterisk, href: "/templates/medical-profile" },
-  { key: "hr-management", label: "HR Management", icon: RiTeamLine, href: "/templates/hr-management" },
   { key: "ai-chat", label: "AI Chat", icon: RiChatAiLine, href: "/templates/ai-chat" },
   { key: "ai-image", label: "AI Image Generation", icon: RiImageAiLine, href: "/templates/ai-image-generation" },
   { key: "profile", label: "Profile", icon: RiUserSmileLine, href: "/templates/ai-profile" },
-  { key: "multi-agent-chat", label: "Multi-Agent Chat", icon: RiGroupLine, href: "/templates/multi-agent-chat" },
 ];
 
 /**
@@ -246,7 +252,6 @@ export function DashboardSidebar({
 } = {}) {
   const localize = useTemplateCopy();
   const [collapsedState, setCollapsed] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [suppressUserHover, setSuppressUserHover] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [query, setQuery] = useState("");
@@ -467,7 +472,7 @@ export function DashboardSidebar({
                     deactivateSearch(true);
                   }
                 }}
-                placeholder="Search navigation…"
+                placeholder="Search..."
                 className="min-w-0 flex-1 bg-transparent text-body-medium text-text-primary outline-none placeholder:text-text-tertiary"
               />
               <CloseButton
@@ -538,12 +543,9 @@ export function DashboardSidebar({
             <NavItem icon={RiCustomerServiceLine} label="Support" collapsed={collapsed} />
           )}
           {matches("Settings") && (
-            <NavItem
-              icon={RiSettings4Line}
-              label="Settings"
-              collapsed={collapsed}
-              onClick={() => setSettingsOpen(true)}
-            />
+            // Original is a dead link (href="#", no modal): NavItem with no
+            // onClick renders exactly that. Do not re-attach a popup here.
+            <NavItem icon={RiSettings4Line} label="Settings" collapsed={collapsed} />
           )}
         </nav>
 
@@ -553,12 +555,6 @@ export function DashboardSidebar({
           className={flat ? "!bg-background-secondary-default" : undefined}
         />
       </div>
-
-      <SettingsModal
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        planArtSrc="/templates/settings-plan-art.png"
-      />
     </aside>
   ));
 }

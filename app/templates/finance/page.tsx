@@ -5,6 +5,7 @@ import {
   RiAddFill,
   RiBankLine,
   RiCoinsFill,
+  RiDeleteBinLine,
   RiEditLine,
   RiExchangeLine,
   RiFileCopyLine,
@@ -60,7 +61,7 @@ function mulberry32(seed: number) {
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
 const fmtMoney = (n: number) => `$${fmtInt(n)}`;
-const fmtSigned = (n: number) => `${n >= 0 ? "+" : "−"}$${fmtInt(Math.abs(n))}`;
+const fmtSigned = (n: number) => `${n >= 0 ? "+" : "-"}$${fmtInt(Math.abs(n))}`;
 
 const FINANCE_STATS: Stat[] = [
   { icon: RiWalletLine, label: "Total balance", value: "$84,230", delta: "+3.2%", deltaColor: "lime" },
@@ -113,8 +114,7 @@ const DONUT = [
   { label: "Utilities", value: 407, color: "var(--color-chart-1)" },
   { label: "Travel", value: 349, color: "var(--color-chart-8)" },
   { label: "Health", value: 234, color: "var(--color-chart-7)" },
-];
-const DONUT_TOTAL = DONUT.reduce((s, d) => s + d.value, 0); // 5,810
+]; // 8 categories summing to the verified This-month total $5,810
 
 /* ------------------------------------------------------------------ */
 /* Daily spending heatmap: exact cell values from the official page's   */
@@ -245,8 +245,10 @@ function Toast({ message }: { message: string | null }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Cash-flow Sankey card (h-480px). Hover/click a node to isolate its  */
-/* flows; period select rescales every flow.                            */
+/* Cash-flow Sankey card (h-480px). Period select rescales every flow. */
+/* Hover/click isolation + pinning were replica-added: the original     */
+/* SSR HTML shows no such behaviour, so it is removed (pending live     */
+/* verification of the original chart); flows render statically.        */
 /* ------------------------------------------------------------------ */
 
 type Flow = { id: string; from: string; to: string; value: number; color: string; y1t: number; y1b: number; y2t: number; y2b: number; x1: number; x2: number };
@@ -286,23 +288,11 @@ function buildSankey(factor: number) {
 function CashFlowCard() {
   const [periodId, setPeriodId] = useState<string>("month");
   const period = CASHFLOW_PERIODS.find((p) => p.id === periodId) ?? CASHFLOW_PERIODS[0];
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [pinned, setPinned] = useState<string | null>(null);
-  const active = hovered ?? pinned;
   const s = useMemo(() => buildSankey(period.factor), [period.factor]);
 
   const flowPath = (f: Flow) => {
     const mx = (f.x1 + f.x2) / 2;
     return `M ${f.x1} ${f.y1t} C ${mx} ${f.y1t}, ${mx} ${f.y2t}, ${f.x2} ${f.y2t} L ${f.x2} ${f.y2b} C ${mx} ${f.y2b}, ${mx} ${f.y1b}, ${f.x1} ${f.y1b} Z`;
-  };
-  const flowActive = (f: Flow) => !active || f.id === active || f.from === active || f.to === active;
-  const caption = () => {
-    if (active) {
-      const f = s.flows.find((fl) => fl.id === active || fl.from === active || fl.to === active);
-      if (f) return `${f.from} → ${f.to} · ${fmtMoney(f.value)}`;
-      return active;
-    }
-    return `Income ${fmtMoney(period.income)} · Spending ${fmtMoney(Math.round(9140 * period.factor))} · Savings ${fmtMoney(Math.round(9280 * period.factor))}`;
   };
 
   return (
@@ -324,31 +314,22 @@ function CashFlowCard() {
       <div className="relative min-h-0 w-full flex-1 overflow-x-auto">
         <svg viewBox="0 0 800 320" className="h-full min-w-[560px] w-full" role="img" aria-label={`Cash flow Sankey: income ${fmtMoney(period.income)} split into savings and spending`}>
           {s.flows.map((f) => (
-            <path
-              key={f.id}
-              d={flowPath(f)}
-              fill={f.color}
-              opacity={flowActive(f) ? 0.55 : 0.1}
-              onMouseEnter={() => setHovered(f.id)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => setPinned(pinned === f.id ? null : f.id)}
-              className="cursor-pointer transition-opacity duration-150"
-            />
+            <path key={f.id} d={flowPath(f)} fill={f.color} opacity={0.55} />
           ))}
           {s.inNodes.map((n, i) => (
-            <g key={n.id} onMouseEnter={() => setHovered(n.label)} onMouseLeave={() => setHovered(null)} onClick={() => setPinned(pinned === n.label ? null : n.label)} className="cursor-pointer">
+            <g key={n.id}>
               <rect x={120} y={s.inY[i]} width={52} height={Math.max(6, s.inH[i])} rx={8} fill={n.color} />
               <text x={112} y={s.inY[i] + s.inH[i] / 2 - 1} textAnchor="end" fontSize={12} fill="var(--color-text-primary)">{n.label}</text>
               <text x={112} y={s.inY[i] + s.inH[i] / 2 + 13} textAnchor="end" fontSize={11} fill="var(--color-text-tertiary)">{fmtMoney(n.value)}</text>
             </g>
           ))}
-          <g onMouseEnter={() => setHovered("Income")} onMouseLeave={() => setHovered(null)} onClick={() => setPinned(pinned === "Income" ? null : "Income")} className="cursor-pointer">
+          <g>
             <rect x={354} y={s.centerY} width={52} height={s.centerH} rx={8} fill="var(--color-chart-2)" />
             <text x={380} y={s.centerY + s.centerH / 2 - 2} textAnchor="middle" fontSize={12} fontWeight={600} fill="#fff">Income</text>
             <text x={380} y={s.centerY + s.centerH / 2 + 13} textAnchor="middle" fontSize={10} fill="#fff">{fmtMoney(period.income)}</text>
           </g>
           {s.outNodes.map((n, i) => (
-            <g key={n.id} onMouseEnter={() => setHovered(n.label)} onMouseLeave={() => setHovered(null)} onClick={() => setPinned(pinned === n.label ? null : n.label)} className="cursor-pointer">
+            <g key={n.id}>
               <rect x={588} y={s.outY[i]} width={52} height={Math.max(6, s.outH[i])} rx={8} fill={n.color} />
               <text x={648} y={s.outY[i] + s.outH[i] / 2 + 4} fontSize={12} fill="var(--color-text-primary)">{n.label} · <tspan fill="var(--color-text-tertiary)">{fmtMoney(n.value)}</tspan></text>
             </g>
@@ -356,7 +337,7 @@ function CashFlowCard() {
         </svg>
       </div>
       <div className="flex w-full items-center justify-between gap-2">
-        <p className="min-h-4 text-caption-1-regular text-text-tertiary" aria-live="polite">{caption()}</p>
+        <p className="min-h-4 text-caption-1-regular text-text-tertiary">{`Income ${fmtMoney(period.income)} · Spending ${fmtMoney(Math.round(9140 * period.factor))} · Savings ${fmtMoney(Math.round(9280 * period.factor))}`}</p>
         <p className="flex shrink-0 gap-6 text-caption-1-medium text-text-tertiary">
           <span>Income</span>
           <span>Spending</span>
@@ -367,32 +348,46 @@ function CashFlowCard() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Spending donut card (h-329px): hover a segment or legend row.       */
+/* Spending donut card (h-329px). Period trigger restored (original   */
+/* is a <button aria-label="Change period">); hover/click highlight +  */
+/* centre-value switching were replica-added and are removed (original */
+/* behaviour not visible in SSR — pending live verification).           */
+/* Per-period splits are not in the original SSR HTML either: values   */
+/* below are the verified This-month split scaled by the period factor.*/
 /* ------------------------------------------------------------------ */
 
 function SpendingDonutCard() {
-  const [active, setActive] = useState<string | null>(null);
+  const [periodId, setPeriodId] = useState<string>("month");
+  const period = CASHFLOW_PERIODS.find((p) => p.id === periodId) ?? CASHFLOW_PERIODS[0];
+  const scaled = useMemo(
+    () => DONUT.map((d) => ({ ...d, value: Math.round((d.value * period.factor) / 10) * 10 })),
+    [period.factor],
+  );
+  const total = scaled.reduce((s, d) => s + d.value, 0);
   const r = 62;
   const c = 2 * Math.PI * r;
   let offset = 0;
-  const segments = DONUT.map((d) => {
-    const len = (d.value / DONUT_TOTAL) * c;
+  const segments = scaled.map((d) => {
+    const len = (d.value / total) * c;
     const seg = { ...d, len: Math.max(0, len - 2), offset };
     offset += len;
     return seg;
   });
-  const current = active ? DONUT.find((d) => d.label === active) : null;
   return (
     <section className="flex h-auto min-h-[329px] w-full min-w-0 flex-col gap-4 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3 sm:h-[329px]">
       <div className="flex w-full items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="w-full truncate text-body-medium text-text-secondary">Spending by category</p>
           <div className="flex w-full items-center gap-2">
-            <p className="animate-number-fade text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">{fmtMoney(DONUT_TOTAL)}</p>
+            <p className="animate-number-fade text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">{fmtMoney(total)}</p>
             <Chip variant="bold" color="lime">+2.4%</Chip>
           </div>
         </div>
-        <span className="shrink-0 text-body-2-medium text-text-tertiary">This month</span>
+        <Select aria-label="Change period" className="w-[140px] shrink-0" selectedKey={periodId} onSelectionChange={(k) => setPeriodId(String(k))}>
+          {CASHFLOW_PERIODS.map((p) => (
+            <SelectItem key={p.id} id={p.id} textValue={p.label}>{p.label}</SelectItem>
+          ))}
+        </Select>
       </div>
       <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-4 sm:flex-row">
         <div className="relative size-32 shrink-0 sm:size-36">
@@ -406,36 +401,27 @@ function SpendingDonutCard() {
                 r={r}
                 fill="none"
                 stroke={seg.color}
-                strokeWidth={active === seg.label ? 30 : 26}
+                strokeWidth={26}
                 strokeDasharray={`${seg.len} ${c - seg.len}`}
                 strokeDashoffset={-seg.offset}
-                opacity={!active || active === seg.label ? 1 : 0.35}
-                onMouseEnter={() => setActive(seg.label)}
-                onMouseLeave={() => setActive(null)}
-                onClick={() => setActive(active === seg.label ? null : seg.label)}
-                className="cursor-pointer transition-all duration-150"
               />
             ))}
           </svg>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-title-3-semibold text-text-primary tabular-nums">{current ? fmtMoney(current.value) : fmtMoney(DONUT_TOTAL)}</p>
-            <p className="text-caption-1-regular text-text-tertiary">{current ? `${current.label} · ${Math.round((current.value / DONUT_TOTAL) * 100)}%` : "This month"}</p>
+            <p className="text-title-3-semibold text-text-primary tabular-nums">{fmtMoney(total)}</p>
+            <p className="text-caption-1-regular text-text-tertiary">{period.label}</p>
           </div>
         </div>
         <div className="flex w-full min-w-0 flex-1 flex-col">
-          {DONUT.map((d) => (
-            <button
+          {scaled.map((d) => (
+            <div
               key={d.label}
-              type="button"
-              onMouseEnter={() => setActive(d.label)}
-              onMouseLeave={() => setActive(null)}
-              onClick={() => setActive(active === d.label ? null : d.label)}
-              className={cx("flex w-full cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-start", active === d.label && "bg-background-secondary-hover")}
+              className="flex w-full items-center gap-2 rounded-lg px-1 py-1 text-start"
             >
               <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} aria-hidden />
               <span className="min-w-0 flex-1 truncate text-body-2-regular text-text-primary">{d.label}</span>
               <span className="shrink-0 text-body-2-medium text-text-secondary tabular-nums">{fmtMoney(d.value)}</span>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -444,7 +430,11 @@ function SpendingDonutCard() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Portfolio bubbles card (h-329px): Return vs Risk score.             */
+/* Portfolio bubbles card (h-329px): Return vs Risk score. Bubble       */
+/* hover/click enlarge + dimming were replica-added and are removed     */
+/* (original behaviour not visible in SSR — pending live verification). */
+/* Period trigger restored (original: <button aria-label="Change        */
+/* period"> showing "Year to date").                                     */
 /* ------------------------------------------------------------------ */
 
 const BUBBLES = [
@@ -453,11 +443,19 @@ const BUBBLES = [
   { name: "Crypto", ret: 12, risk: 9.1, r: 40, color: "var(--color-chart-3)" },
 ];
 
+/* Period menu options are not in the original SSR HTML (待实测确认);
+   switching currently only updates the displayed period label — the
+   per-period returns are not in the SSR HTML either. */
+const PORTFOLIO_PERIODS = [
+  { id: "ytd", label: "Year to date" },
+  { id: "12m", label: "Last 12 months" },
+  { id: "all", label: "All time" },
+] as const;
+
 function PortfolioCard() {
-  const [active, setActive] = useState<string | null>(null);
+  const [periodId, setPeriodId] = useState<string>("ytd");
   const px = (risk: number) => 46 + (risk / 10) * 248;
   const py = (ret: number) => 172 - (ret / 14) * 150;
-  const current = active ? BUBBLES.find((b) => b.name === active) : null;
   return (
     <section className="flex h-[329px] w-full min-w-0 flex-col gap-4 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3">
       <div className="flex w-full items-start justify-between gap-3">
@@ -467,8 +465,12 @@ function PortfolioCard() {
             <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">7%</p>
             <Chip variant="bold" color="lime">+6.2%</Chip>
           </div>
-          <p className="text-body-2-medium text-text-tertiary">Year to date</p>
         </div>
+        <Select aria-label="Change period" className="w-[140px] shrink-0" selectedKey={periodId} onSelectionChange={(k) => setPeriodId(String(k))}>
+          {PORTFOLIO_PERIODS.map((p) => (
+            <SelectItem key={p.id} id={p.id} textValue={p.label}>{p.label}</SelectItem>
+          ))}
+        </Select>
       </div>
       <div className="relative min-h-0 w-full flex-1">
         <svg viewBox="0 0 340 190" className="h-full w-full" role="img" aria-label="Portfolio bubbles: Stocks 8 percent, Funds 3 percent, Crypto 12 percent return by risk score">
@@ -484,23 +486,16 @@ function PortfolioCard() {
           <text x={185} y={188} textAnchor="middle" fontSize={11} fill="var(--color-text-secondary)">Risk score</text>
           <text x={10} y={95} textAnchor="middle" fontSize={11} fill="var(--color-text-secondary)" transform="rotate(-90 10 95)">Return</text>
           {BUBBLES.map((b) => (
-            <g
-              key={b.name}
-              opacity={!active || active === b.name ? 1 : 0.35}
-              onMouseEnter={() => setActive(b.name)}
-              onMouseLeave={() => setActive(null)}
-              onClick={() => setActive(active === b.name ? null : b.name)}
-              className="cursor-pointer transition-opacity duration-150"
-            >
-              <circle cx={px(b.risk)} cy={py(b.ret)} r={active === b.name ? b.r + 4 : b.r} fill={b.color} fillOpacity={0.85} stroke="var(--color-background-secondary-default)" strokeWidth={2} />
+            <g key={b.name}>
+              <circle cx={px(b.risk)} cy={py(b.ret)} r={b.r} fill={b.color} fillOpacity={0.85} stroke="var(--color-background-secondary-default)" strokeWidth={2} />
               <text x={px(b.risk)} y={py(b.ret) - 1} textAnchor="middle" fontSize={11} fontWeight={600} fill="#fff">{b.name}</text>
               <text x={px(b.risk)} y={py(b.ret) + 13} textAnchor="middle" fontSize={11} fill="#fff">{b.ret}%</text>
             </g>
           ))}
         </svg>
       </div>
-      <p className="min-h-4 text-caption-1-regular text-text-tertiary" aria-live="polite">
-        {current ? `${current.name} · Return ${current.ret}% · Risk ${current.risk}/10` : "Stocks 8% · Funds 3% · Crypto 12%"}
+      <p className="min-h-4 text-caption-1-regular text-text-tertiary">
+        Stocks 8% · Funds 3% · Crypto 12%
       </p>
     </section>
   );
@@ -508,10 +503,23 @@ function PortfolioCard() {
 
 /* ------------------------------------------------------------------ */
 /* Daily spending heatmap card (h-329px): exact values, Less → More.    */
+/* Cells are static divs in the original (role="img", not clickable);  */
+/* the replica's button cells + hover caption are removed. Legend is   */
+/* the original 5 blocks: 8 / 31 / 54 / 77 / 100%. Period trigger      */
+/* restored (original: <button aria-label="Change period"> showing     */
+/* "Last 12 weeks"); switching slices the verified week columns.       */
 /* ------------------------------------------------------------------ */
 
+const HEATMAP_PERIODS = [
+  { id: "12w", label: "Last 12 weeks", weeks: 12 },
+  { id: "8w", label: "Last 8 weeks", weeks: 8 },
+  { id: "4w", label: "Last 4 weeks", weeks: 4 },
+] as const;
+
 function DailySpendingCard() {
-  const [hovered, setHovered] = useState<{ day: string; week: number; value: number } | null>(null);
+  const [periodId, setPeriodId] = useState<string>("12w");
+  const period = HEATMAP_PERIODS.find((p) => p.id === periodId) ?? HEATMAP_PERIODS[0];
+  const weekIdxs = Array.from({ length: period.weeks }, (_, i) => 12 - period.weeks + i);
   const pct = (v: number) => Math.min(100, Math.round(7.5 + v * 0.75));
   return (
     <section className="flex h-[329px] w-full min-w-0 flex-col gap-4 rounded-2xl bg-background-secondary-default px-4 pt-4 pb-3">
@@ -522,46 +530,43 @@ function DailySpendingCard() {
             <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">$4,390</p>
             <Chip variant="bold" color="lime">+3.6%</Chip>
           </div>
-          <p className="text-body-2-medium text-text-tertiary">Last 12 weeks</p>
         </div>
+        <Select aria-label="Change period" className="w-[140px] shrink-0" selectedKey={periodId} onSelectionChange={(k) => setPeriodId(String(k))}>
+          {HEATMAP_PERIODS.map((p) => (
+            <SelectItem key={p.id} id={p.id} textValue={p.label}>{p.label}</SelectItem>
+          ))}
+        </Select>
       </div>
       <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-1">
         <div className="flex items-center gap-1">
           <span className="w-8 shrink-0" />
-          {Array.from({ length: 12 }, (_, w) => (
+          {weekIdxs.map((w) => (
             <span key={w} className="flex-1 text-center text-[10px] text-text-tertiary">W{w + 1}</span>
           ))}
         </div>
         {DAYS.map((day) => (
           <div key={day} className="flex items-center gap-1">
             <span className="w-8 shrink-0 text-end text-[11px] text-text-tertiary">{day}</span>
-            {DAILY[day].map((v, w) => (
-              <button
-                key={w}
-                type="button"
-                aria-label={`${day} W${w + 1}: $${v}`}
-                onMouseEnter={() => setHovered({ day, week: w + 1, value: v })}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered({ day, week: w + 1, value: v })}
-                onBlur={() => setHovered(null)}
-                onClick={() => setHovered({ day, week: w + 1, value: v })}
-                className="h-4 min-w-0 flex-1 rounded-[4px] outline-none transition-transform duration-100 focus-visible:ring-2 focus-visible:ring-border-focus-ring hover:scale-110"
-                style={{ backgroundColor: `color-mix(in srgb, var(--color-chart-6) ${pct(v)}%, var(--color-chart-track))` }}
-              />
-            ))}
+            {weekIdxs.map((w) => {
+              const v = DAILY[day][w];
+              return (
+                <div
+                  key={w}
+                  role="img"
+                  aria-label={`${day} W${w + 1}: $${v}`}
+                  className="h-4 min-w-0 flex-1 rounded-[4px]"
+                  style={{ backgroundColor: `color-mix(in srgb, var(--color-chart-6) ${pct(v)}%, var(--color-chart-track))` }}
+                />
+              );
+            })}
           </div>
         ))}
-        <div className="flex w-full items-center justify-between pt-1">
-          <p className="min-h-4 text-caption-1-regular text-text-tertiary" aria-live="polite">
-            {hovered ? `${hovered.day} W${hovered.week}: $${hovered.value}` : "Hover a day for its spend"}
-          </p>
-          <p className="flex shrink-0 items-center gap-1 text-caption-1-regular text-text-tertiary">
-            Less
-            {[15, 40, 65, 90].map((p) => (
-              <span key={p} className="inline-block size-2.5 rounded-[2px]" style={{ backgroundColor: `color-mix(in srgb, var(--color-chart-6) ${p}%, var(--color-chart-track))` }} />
-            ))}
-            More
-          </p>
+        <div className="flex w-full items-center justify-end gap-1.5 pt-1 text-caption-1-regular text-text-tertiary">
+          Less
+          {[8, 31, 54, 77, 100].map((p) => (
+            <span key={p} className="inline-block size-3 rounded-[3px]" style={{ backgroundColor: `color-mix(in srgb, var(--color-chart-6) ${p}%, var(--color-chart-track))` }} />
+          ))}
+          More
         </div>
       </div>
     </section>
@@ -712,7 +717,8 @@ function TransactionsTable({
 }) {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<{ key: "name" | "dateTs" | "amount"; dir: "asc" | "desc" } | null>(null);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Original SSR ships Acme Corp payroll (id "2") and Electric utility (id "4") pre-checked.
+  const [selected, setSelected] = useState<Set<string>>(new Set(["2", "4"]));
   const perPage = 10;
 
   useEffect(() => {
@@ -837,9 +843,9 @@ function TransactionsTable({
                   }}
                 />
               </span>
-              <button type="button" onClick={() => onEdit(t)} className="flex w-[240px] min-w-0 shrink-0 cursor-pointer items-center text-start" aria-label={`Edit ${t.name}`}>
+              <span className="flex w-[240px] min-w-0 shrink-0 items-center text-start">
                 <span className="truncate text-body-medium text-text-primary">{t.name}</span>
-              </button>
+              </span>
               <span className="w-[150px] shrink-0 pe-3">
                 <Select aria-label={`Account for ${t.name}`} size="sm" className="w-[128px]" selectedKey={t.account} onSelectionChange={(k) => updateRow(t.id, { account: String(k) as Account })}>
                   {ACCOUNTS.map((a) => (
@@ -847,13 +853,7 @@ function TransactionsTable({
                   ))}
                 </Select>
               </span>
-              <span className="w-[170px] shrink-0 pe-3">
-                <Select aria-label={`Category for ${t.name}`} size="sm" className="w-[148px]" selectedKey={t.category} onSelectionChange={(k) => updateRow(t.id, { category: String(k) })}>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} id={c} textValue={c}>{c}</SelectItem>
-                  ))}
-                </Select>
-              </span>
+              <span className="w-[170px] shrink-0 pe-3 text-body-medium whitespace-nowrap text-text-secondary">{t.category}</span>
               <span className="w-[140px] shrink-0 text-body-medium whitespace-nowrap text-text-secondary tabular-nums">{t.date}</span>
               <span className="w-[120px] shrink-0">
                 {t.amount > 0 ? (
@@ -863,6 +863,15 @@ function TransactionsTable({
                 )}
               </span>
               <span className="flex w-[110px] shrink-0 items-center gap-1.5">
+                <IconButton
+                  icon={RiDeleteBinLine}
+                  size="small"
+                  aria-label="Delete"
+                  onClick={() => {
+                    setRows(rows.filter((r) => r.id !== t.id));
+                    showToast(`Deleted ${t.name}`);
+                  }}
+                />
                 <IconButton icon={RiEditLine} size="small" aria-label={`Edit ${t.name}`} onClick={() => onEdit(t)} />
                 <TxMoreMenu
                   onAction={(label) => {

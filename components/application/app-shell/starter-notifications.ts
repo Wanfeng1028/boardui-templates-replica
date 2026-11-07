@@ -2,7 +2,9 @@ import { RiDownloadCloud2Line, RiGitPullRequestLine, RiShieldCheckLine } from "@
 
 import type { NotificationCenterItem } from "@/components/application/notification-center/notification-center";
 
-/** The starter's inbox. Three unread, matching the sidebar badge and the bell. */
+/** The starter's inbox. Five unread, matching the original template's
+ * notification badge (5). All five items are unread; the bell count and
+ * the notification center's "N unread" line both derive from this. */
 export const STARTER_NOTIFICATIONS: NotificationCenterItem[] = [
   {
     id: "mention-notes",
@@ -48,6 +50,7 @@ export const STARTER_NOTIFICATIONS: NotificationCenterItem[] = [
     title: "API key rotated",
     description: "The model provider key was replaced. Deployments pick it up on the next build.",
     timestamp: "1d",
+    unread: true,
     status: "information",
     icon: RiShieldCheckLine,
   },
@@ -58,6 +61,7 @@ export const STARTER_NOTIFICATIONS: NotificationCenterItem[] = [
     title: "Aspen mentioned you",
     description: "The launch checklist is done on my side. Anything left from yours?",
     timestamp: "1d",
+    unread: true,
     avatar: { initials: "AL", alt: "Aspen Lubin", color: "blue" },
   },
 ];

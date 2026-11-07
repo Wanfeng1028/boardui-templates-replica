@@ -18,8 +18,8 @@ import Link from "next/link";
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
 
 /**
- * Templates index — a hub listing the 10 replica templates.
- * All 10 are built only from free BoardUI components + mock data.
+ * Templates index — a hub listing the 11 replica templates.
+ * All 11 are built only from free BoardUI components + mock data.
  * This is a replica. It is not the official BoardUI Pro templates.
  */
 
@@ -41,15 +41,19 @@ export default function TemplatesIndexPage() {
   return (
     <TemplateShell
       title="Templates"
-      heading="BoardUI Templates — Replica"
+      heading="全部模板 · 11 套"
       icon={RiDashboardLine}
-      selected="home"
+      selected="all-templates"
       actions={null}
+      hideAllTemplatesButton
     >
+      <p className="px-1 text-body-regular text-text-secondary">
+        共 <span className="text-body-medium text-text-primary">11 套模板</span>，每套一张卡片，点击任意卡片打开对应模板。
+      </p>
       <p className="px-1 text-body-regular text-text-secondary">
         11 template routes replicated with free BoardUI components (MIT) and mock
         data — the 10 Pro templates plus the Calendar demo page. This is a replica
-        for reference — it is not the official Pro source. Pick one to open it.
+        for reference — it is not the official Pro source.
         The 30 Pro components are showcased separately at{" "}
         <Link href="/pro-components" className="text-accent-600 underline">
           /pro-components

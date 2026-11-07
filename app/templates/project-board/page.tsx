@@ -1,13 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   RiAddFill,
+  RiAddLine,
   RiArrowRightSLine,
   RiCloseLine,
+  RiEqualizerLine,
+  RiFolderLine,
+  RiInboxLine,
   RiKanbanView2,
+  RiLayoutLeftLine,
   RiMoreFill,
   RiSendPlaneFill,
+  RiSortDesc,
 } from "@remixicon/react";
 
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
@@ -54,15 +61,15 @@ type Ticket = {
   tokens: number[];
 };
 
-// Initials avatars (not the official page's randomuser.me photos): the photo
-// host is unreachable from this sandbox's egress proxy and renders broken
-// images, so the replica uses tinted initials instead.
-const PEOPLE: Record<string, { initials: string; color: "neutral" | "blue" | "lime" | "pink" }> = {
-  "Maya Chen": { initials: "MC", color: "blue" },
-  "Priya Shah": { initials: "PS", color: "pink" },
-  "Elif Kaya": { initials: "EK", color: "lime" },
-  "Daniel Kim": { initials: "DK", color: "neutral" },
-  "Noah Williams": { initials: "NW", color: "blue" },
+// Assignee photos: the official page serves these from randomuser.me; the
+// five portraits are downloaded into public/avatars/randomuser/ (same
+// person -> same file the original uses) so the board works offline too.
+const PEOPLE: Record<string, { initials: string; color: "neutral" | "blue" | "lime" | "pink"; photo: string }> = {
+  "Maya Chen": { initials: "MC", color: "blue", photo: "/avatars/randomuser/44.jpg" },
+  "Priya Shah": { initials: "PS", color: "pink", photo: "/avatars/randomuser/65.jpg" },
+  "Elif Kaya": { initials: "EK", color: "lime", photo: "/avatars/randomuser/68.jpg" },
+  "Daniel Kim": { initials: "DK", color: "neutral", photo: "/avatars/randomuser/46.jpg" },
+  "Noah Williams": { initials: "NW", color: "blue", photo: "/avatars/randomuser/32.jpg" },
 };
 
 const COLUMNS: { id: ColumnId; name: string; limit: number }[] = [
@@ -79,11 +86,6 @@ const PRIORITY_PILL: Record<Priority, string> = {
   Medium: "bg-status-yellow-background text-status-yellow-text",
   High: "bg-status-orange-background text-status-orange-text",
   Urgent: "bg-status-rose-background text-status-rose-text",
-};
-const APP_DOT: Record<AppName, string> = {
-  vibl: "bg-chart-5-active",
-  firstview: "bg-chart-4-active",
-  BoardUI: "bg-chart-neutral",
 };
 const APP_PREFIX: Record<AppName, string> = { BoardUI: "DS", firstview: "FE", vibl: "BE" };
 
@@ -125,7 +127,7 @@ const labelClass = "text-caption-1-semibold text-text-tertiary uppercase trackin
 
 function AvatarStack({ names }: { names: string[] }) {
   return (
-    <div className="flex items-center" aria-label={names.join(", ")}>
+    <div className="flex items-center ps-1" aria-label={names.join(", ")}>
       {names.map((name) => {
         const person = PEOPLE[name];
         return (
@@ -134,6 +136,7 @@ function AvatarStack({ names }: { names: string[] }) {
             size="xs"
             color={person?.color ?? "neutral"}
             initials={person?.initials ?? name.slice(0, 2)}
+            src={person?.photo}
             alt={name}
             className="size-[22px] ring-2 ring-background-primary-default [&:not(:first-child)]:-ms-1.5"
           />
@@ -179,22 +182,42 @@ export default function ProjectBoardTemplatePage() {
   const [newColumn, setNewColumn] = useState<ColumnId>("backlog");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropColumn, setDropColumn] = useState<ColumnId | null>(null);
-  const [menuFor, setMenuFor] = useState<string | null>(null);
   const [sortFor, setSortFor] = useState<ColumnId | null>(null);
   const [commentDraft, setCommentDraft] = useState("");
   const [createdCount, setCreatedCount] = useState(0);
+  const [toolbarMenu, setToolbarMenu] = useState<"inbox" | "sort" | "filter" | "display" | null>(null);
+  const [priorityFilter, setPriorityFilter] = useState<Set<Priority>>(new Set());
+  const [displayOpts, setDisplayOpts] = useState({ assignees: true, dates: true, apps: true });
+  // Keyboard drag (dnd-kit style): Space lifts the focused card, Left/Right
+  // move it between columns, Space/Enter drops, Escape cancels.
+  const [grabbed, setGrabbed] = useState<{ id: string; column: ColumnId } | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const reduceMotion = useReducedMotion();
+  const columnRefs = useRef<Record<string, HTMLElement | null>>({});
+  const grabSnapshot = useRef<Record<ColumnId, Ticket[]> | null>(null);
+  const dragRef = useRef<{ id: string; from: ColumnId; startX: number; startY: number; active: boolean } | null>(null);
+  const lastDragEndRef = useRef(0);
 
   const [form, setForm] = useState({ title: "", app: "vibl" as AppName, priority: "Medium" as Priority, assignees: [] as string[] });
+
+  // Esc closes the detail / new-ticket panels (the Dashboard modals do this;
+  // the board panels previously had no Esc handling).
+  useEffect(() => {
+    if (!selected && !newOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelected(null);
+        setNewOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selected, newOpen]);
 
   const selectedTicket = useMemo(() => {
     if (!selected) return null;
     return board[selected.column].find((t) => t.id === selected.id) ?? null;
   }, [board, selected]);
-
-  const totalTickets = useMemo(
-    () => Object.values(board).reduce((sum, list) => sum + list.length, 0),
-    [board],
-  );
 
   function updateTicket(column: ColumnId, id: string, patch: Partial<Ticket>) {
     setBoard((prev) => ({
@@ -232,6 +255,104 @@ export default function ProjectBoardTemplatePage() {
       return { ...prev, [column]: sorted };
     });
     setSortFor(null);
+  }
+
+  function sortBoard(mode: "priority" | "newest" | "title") {
+    (Object.keys(board) as ColumnId[]).forEach((c) => sortColumn(c, mode));
+    setToolbarMenu(null);
+    setAnnouncement(`Board sorted by ${mode === "priority" ? "priority" : mode === "newest" ? "newest" : "title A to Z"}.`);
+  }
+
+  function columnName(id: ColumnId) {
+    return COLUMNS.find((c) => c.id === id)?.name ?? id;
+  }
+
+  function visibleTickets(list: Ticket[]) {
+    return priorityFilter.size === 0 ? list : list.filter((t) => priorityFilter.has(t.priority));
+  }
+
+  /* Pointer drag (no `draggable` attribute, like the original's dnd-kit
+     cards): press and move >6px to lift, the column under the pointer
+     highlights, release drops the card at the end of that column. A plain
+     click (no movement) still opens the detail panel. */
+  function onCardPointerDown(event: React.PointerEvent, ticket: Ticket, column: ColumnId) {
+    if (event.button !== 0 || grabbed) return;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    dragRef.current = { id: ticket.id, from: column, startX, startY, active: false };
+    const onMove = (ev: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      if (!d.active) {
+        if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return;
+        d.active = true;
+        setDraggedId(ticket.id);
+        setAnnouncement(`Picked up ${ticket.id}. Drag to a column to move it.`);
+      }
+      const el = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.("[data-column-id]") as HTMLElement | null;
+      setDropColumn((el?.dataset.columnId as ColumnId | undefined) ?? null);
+    };
+    const onUp = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      const d = dragRef.current;
+      dragRef.current = null;
+      setDraggedId(null);
+      setDropColumn(null);
+      if (!d?.active) return;
+      lastDragEndRef.current = Date.now();
+      const el = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.("[data-column-id]") as HTMLElement | null;
+      const over = el?.dataset.columnId as ColumnId | undefined;
+      if (over && over !== d.from) {
+        moveTicket(d.id, d.from, over);
+        setAnnouncement(`Moved ${d.id} to ${columnName(over)}.`);
+      } else {
+        setAnnouncement(`Moved ${d.id} back to ${columnName(d.from)}.`);
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  /* Keyboard drag: Space lifts / drops the focused card, ArrowLeft /
+     ArrowRight move it live between columns, Escape cancels (restores the
+     board snapshot taken on lift). Enter still opens the detail panel. */
+  function onCardKeyDown(event: React.KeyboardEvent, ticket: Ticket, column: ColumnId) {
+    if (grabbed && grabbed.id === ticket.id) {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        const idx = COLUMNS.findIndex((c) => c.id === grabbed.column);
+        const next = COLUMNS[idx + (event.key === "ArrowRight" ? 1 : -1)];
+        if (!next) {
+          setAnnouncement(`Already at the ${event.key === "ArrowRight" ? "last" : "first"} column.`);
+          return;
+        }
+        moveTicket(ticket.id, grabbed.column, next.id);
+        setGrabbed({ id: ticket.id, column: next.id });
+        setAnnouncement(`Moved ${ticket.id} to ${next.name}.`);
+      } else if (event.key === " " || event.key === "Enter") {
+        event.preventDefault();
+        setGrabbed(null);
+        grabSnapshot.current = null;
+        setAnnouncement(`Dropped ${ticket.id} in ${columnName(grabbed.column)}.`);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        if (grabSnapshot.current) setBoard(grabSnapshot.current);
+        grabSnapshot.current = null;
+        setGrabbed(null);
+        setAnnouncement(`Move cancelled. ${ticket.id} is back in ${columnName(column)}.`);
+      }
+      return;
+    }
+    if (event.key === " ") {
+      event.preventDefault();
+      grabSnapshot.current = board;
+      setGrabbed({ id: ticket.id, column });
+      setAnnouncement(`Picked up ${ticket.id}. Use Left and Right arrow keys to move, Space to drop, Escape to cancel.`);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      setSelected({ column, id: ticket.id });
+    }
   }
 
   function createTicket() {
@@ -291,15 +412,162 @@ export default function ProjectBoardTemplatePage() {
       actions={
         <>
           <NotificationBell />
+          <div className="relative">
+            <IconButton
+              icon={RiInboxLine}
+              size="medium"
+              aria-label="Open project inbox"
+              aria-expanded={toolbarMenu === "inbox"}
+              aria-haspopup="menu"
+              onClick={() => setToolbarMenu((cur) => (cur === "inbox" ? null : "inbox"))}
+            />
+            {toolbarMenu === "inbox" && (
+              <div className="absolute right-0 z-30 mt-1 w-56 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
+                <p className="px-2.5 pt-1.5 pb-1 text-caption-1-semibold text-text-tertiary uppercase">Project inbox</p>
+                {COLUMNS.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      columnRefs.current[c.id]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                      setToolbarMenu(null);
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                  >
+                    {c.name}
+                    <span className="text-text-tertiary tabular-nums">{board[c.id].length}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <IconButton
+              icon={RiSortDesc}
+              size="medium"
+              aria-label="Sort tickets"
+              aria-expanded={toolbarMenu === "sort"}
+              aria-haspopup="menu"
+              onClick={() => setToolbarMenu((cur) => (cur === "sort" ? null : "sort"))}
+            />
+            {toolbarMenu === "sort" && (
+              <div className="absolute right-0 z-30 mt-1 w-48 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
+                {(
+                  [
+                    ["priority", "Sort by priority"],
+                    ["newest", "Sort by newest"],
+                    ["title", "Sort by title A–Z"],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => sortBoard(mode)}
+                    className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <IconButton
+              icon={RiEqualizerLine}
+              size="medium"
+              aria-label="Filter tickets"
+              aria-expanded={toolbarMenu === "filter"}
+              aria-haspopup="menu"
+              onClick={() => setToolbarMenu((cur) => (cur === "filter" ? null : "filter"))}
+            />
+            {toolbarMenu === "filter" && (
+              <div className="absolute right-0 z-30 mt-1 w-52 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
+                <p className="px-2.5 pt-1.5 pb-1 text-caption-1-semibold text-text-tertiary uppercase">Filter by priority</p>
+                {(["Urgent", "High", "Medium", "Low"] as Priority[]).map((p) => {
+                  const active = priorityFilter.has(p);
+                  const count = Object.values(board).flat().filter((t) => t.priority === p).length;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        setPriorityFilter((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(p)) next.delete(p);
+                          else next.add(p);
+                          return next;
+                        })
+                      }
+                      className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                    >
+                      <span>{active ? "✓ " : ""}{p}</span>
+                      <span className="text-text-tertiary tabular-nums">{count}</span>
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  disabled={priorityFilter.size === 0}
+                  onClick={() => {
+                    setPriorityFilter(new Set());
+                    setToolbarMenu(null);
+                  }}
+                  className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <IconButton
+              icon={RiLayoutLeftLine}
+              size="medium"
+              aria-label="Display options"
+              aria-expanded={toolbarMenu === "display"}
+              aria-haspopup="menu"
+              onClick={() => setToolbarMenu((cur) => (cur === "display" ? null : "display"))}
+            />
+            {toolbarMenu === "display" && (
+              <div className="absolute right-0 z-30 mt-1 w-52 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
+                <p className="px-2.5 pt-1.5 pb-1 text-caption-1-semibold text-text-tertiary uppercase">Display options</p>
+                {(
+                  [
+                    ["assignees", "Show assignees"],
+                    ["dates", "Show dates"],
+                    ["apps", "Show app chips"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={displayOpts[key]}
+                    onClick={() => setDisplayOpts((prev) => ({ ...prev, [key]: !prev[key] }))}
+                    className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                  >
+                    {displayOpts[key] ? "✓ " : ""}{label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setToolbarMenu(null)}
+                  className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                >
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
           <Button variant="primary" size="medium" leadingIcon={RiAddFill} onClick={() => openNew("backlog")}>
             New ticket
           </Button>
         </>
       }
     >
-      <p className="px-1 text-body-2-regular text-text-secondary">
-        {totalTickets} tickets across {COLUMNS.length} columns · drag a card to another column, or open it to edit.
-      </p>
+      <div id="board-live-region" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
 
       {/* Board: horizontal-scroll strip, 273px columns, exact original geometry */}
       <div
@@ -311,26 +579,18 @@ export default function ProjectBoardTemplatePage() {
         <div className="grid h-full w-max grid-flow-col auto-cols-[273px] gap-2 px-3 sm:px-6 lg:pe-7 max-lg:h-auto">
           {COLUMNS.map((column) => {
             const tickets = board[column.id];
+            const visible = visibleTickets(tickets);
             const isDropTarget = dropColumn === column.id;
             return (
               <section
                 key={column.id}
-                aria-label={`${column.name} column`}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  if (draggedId) setDropColumn(column.id);
+                ref={(el) => {
+                  columnRefs.current[column.id] = el;
                 }}
-                onDragLeave={() => setDropColumn((cur) => (cur === column.id ? null : cur))}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  if (!draggedId) return;
-                  const from = (Object.keys(board) as ColumnId[]).find((key) =>
-                    board[key].some((t) => t.id === draggedId),
-                  );
-                  if (from) moveTicket(draggedId, from, column.id);
-                  setDraggedId(null);
-                  setDropColumn(null);
-                }}
+                data-column-id={column.id}
+                role="region"
+                aria-label={`${column.name} tickets`}
+                tabIndex={0}
                 className={cx(
                   "relative flex h-full min-h-0 flex-col overflow-hidden rounded-2-5xl bg-background-secondary-default pt-3 ring-2 ring-inset transition-[box-shadow,background-color] duration-150 ease-out",
                   isDropTarget ? "bg-background-secondary-hover ring-accent-500" : "ring-transparent",
@@ -340,76 +600,81 @@ export default function ProjectBoardTemplatePage() {
                   <div className="flex min-w-0 items-center gap-1.5">
                     <h2 className="truncate text-body-medium text-text-primary">{column.name}</h2>
                     <span className="text-body-medium text-text-secondary tabular-nums">
-                      {tickets.length} / {column.limit}
+                      {tickets.length}/{column.limit}
                     </span>
                   </div>
-                  <div className="relative">
+                  <div className="flex items-center gap-1 text-foreground-icon-secondary">
+                    <div className="relative">
+                      <button
+                        type="button"
+                        aria-label={`More options for ${column.name}`}
+                        onClick={() => setSortFor((cur) => (cur === column.id ? null : column.id))}
+                        className="flex size-5 cursor-pointer items-center justify-center rounded-md text-foreground-icon-secondary transition-colors hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                      >
+                        <RiMoreFill className="size-4" aria-hidden />
+                      </button>
+                      {sortFor === column.id && (
+                        <div className="absolute right-0 z-30 mt-1 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
+                          {(
+                            [
+                              ["priority", "Sort by priority"],
+                              ["newest", "Sort by newest"],
+                              ["title", "Sort by title A–Z"],
+                            ] as const
+                          ).map(([mode, label]) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => sortColumn(column.id, mode)}
+                              className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <button
                       type="button"
-                      aria-label={`More options for ${column.name}`}
-                      onClick={() => setSortFor((cur) => (cur === column.id ? null : column.id))}
-                      className="flex size-5 cursor-pointer items-center justify-center rounded-md text-foreground-icon-secondary transition-colors hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                      aria-label={`Add ticket to ${column.name}`}
+                      onClick={() => openNew(column.id)}
+                      className="flex size-5 cursor-pointer items-center justify-center rounded-md text-foreground-icon-secondary transition-colors duration-150 hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                     >
-                      <RiMoreFill className="size-4" aria-hidden />
+                      <RiAddLine className="size-5" aria-hidden />
                     </button>
-                    {sortFor === column.id && (
-                      <div className="absolute right-0 z-30 mt-1 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
-                        {(
-                          [
-                            ["priority", "Sort by priority"],
-                            ["newest", "Sort by newest"],
-                            ["title", "Sort by title A–Z"],
-                          ] as const
-                        ).map(([mode, label]) => (
-                          <button
-                            key={mode}
-                            type="button"
-                            onClick={() => sortColumn(column.id, mode)}
-                            className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
 
                 <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-2 py-2 max-lg:overflow-visible">
-                  {tickets.length === 0 && (
+                  {visible.length === 0 && (
                     <p className="rounded-xl border border-dashed border-border-button-default px-3 py-6 text-center text-body-2-regular text-text-tertiary">
-                      No tickets — drop one here or add a new ticket.
+                      {tickets.length === 0
+                        ? "No tickets — drop one here or add a new ticket."
+                        : "No tickets match the current filter."}
                     </p>
                   )}
-                  {tickets.map((ticket) => (
+                  {visible.map((ticket) => (
                     <div key={ticket.id} className="group relative shrink-0 pb-1.5">
-                      <article
+                      <motion.article
                         role="button"
                         tabIndex={0}
+                        aria-roledescription="sortable"
+                        aria-haspopup="dialog"
+                        aria-describedby="board-live-region"
                         aria-label={`Open ${ticket.id}: ${ticket.title}`}
-                        draggable
-                        onDragStart={(event) => {
-                          event.dataTransfer.setData("text/plain", ticket.id);
-                          event.dataTransfer.effectAllowed = "move";
-                          setDraggedId(ticket.id);
-                        }}
-                        onDragEnd={() => {
-                          setDraggedId(null);
-                          setDropColumn(null);
-                        }}
+                        initial={reduceMotion ? false : { opacity: 0, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, filter: "blur(0px)" }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        onPointerDown={(event) => onCardPointerDown(event, ticket, column.id)}
                         onClick={() => {
-                          setMenuFor(null);
+                          if (Date.now() - lastDragEndRef.current < 300) return;
                           setSelected({ column: column.id, id: ticket.id });
                         }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            setSelected({ column: column.id, id: ticket.id });
-                          }
-                        }}
+                        onKeyDown={(event) => onCardKeyDown(event, ticket, column.id)}
                         className={cx(
-                          "relative flex w-full cursor-grab flex-col gap-2 rounded-xl bg-background-primary-default p-3 text-start shadow-[0_1px_1px_rgb(0_0_0/0.05)] ring-[2.5px] ring-transparent transition-[box-shadow,opacity] duration-200 ease-out motion-reduce:transition-none hover:shadow-sm hover:ring-border-button-hover active:cursor-grabbing",
+                          "relative flex w-full cursor-grab touch-manipulation flex-col gap-2 rounded-xl bg-background-primary-default p-3 text-start shadow-[0_1px_1px_rgb(0_0_0/0.05)] ring-[2.5px] ring-transparent transition-[box-shadow,opacity] duration-200 ease-out motion-reduce:transition-none hover:shadow-sm hover:ring-border-button-hover active:cursor-grabbing dark:bg-background-primary-default/60",
                           draggedId === ticket.id && "opacity-40",
+                          grabbed?.id === ticket.id && "ring-accent-500",
                         )}
                       >
                         <div className="flex min-h-[22px] items-start justify-between gap-3">
@@ -418,77 +683,33 @@ export default function ProjectBoardTemplatePage() {
                             <RiArrowRightSLine className="size-[15px] shrink-0 text-foreground-icon-tertiary" aria-hidden />
                             <span className="truncate">{ticket.tag}</span>
                           </div>
-                          <div className="flex shrink-0 items-center gap-1">
-                            <AvatarStack names={ticket.assignees} />
-                            <button
-                              type="button"
-                              aria-label={`Actions for ${ticket.id}`}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setMenuFor((cur) => (cur === ticket.id ? null : ticket.id));
-                              }}
-                              className="flex size-5 cursor-pointer items-center justify-center rounded-md text-foreground-icon-secondary opacity-0 transition-opacity hover:bg-background-tertiary-default focus-visible:opacity-100 group-hover:opacity-100"
-                            >
-                              <RiMoreFill className="size-4" aria-hidden />
-                            </button>
-                          </div>
+                          {displayOpts.assignees && (
+                            <div className="flex shrink-0 items-center gap-1">
+                              <AvatarStack names={ticket.assignees} />
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col items-start gap-2">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span className={cx("inline-flex items-center justify-center rounded-md px-1.5 py-0.5 text-body-2-medium", PRIORITY_PILL[ticket.priority])}>
                               {ticket.priority}
                             </span>
-                            <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-body-2-medium text-text-primary ring-1 ring-inset ring-border-button-default">
-                              <span className={cx("size-1.5 rounded-full", APP_DOT[ticket.app])} aria-hidden />
-                              {ticket.app}
-                            </span>
+                            {displayOpts.apps && (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-background-primary-default px-1.5 py-0.5 text-body-2-medium text-text-primary ring-1 ring-inset ring-border-button-default">
+                                <RiFolderLine className="size-[13px] shrink-0 opacity-30" aria-hidden />
+                                <span className="text-text-secondary">{ticket.app}</span>
+                              </span>
+                            )}
                           </div>
                           <div className="flex w-full flex-col gap-[5px]">
                             <h3 className="text-body-medium text-text-primary">{ticket.title}</h3>
-                            <p className="text-body-2-medium text-text-secondary">{ticket.dateLabel}</p>
+                            {displayOpts.dates && <p className="text-body-2-medium text-text-secondary">{ticket.dateLabel}</p>}
                           </div>
                         </div>
-                      </article>
-                      {menuFor === ticket.id && (
-                        <div className="absolute right-2 top-10 z-30 w-48 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg">
-                          <p className="px-2.5 pt-1.5 pb-1 text-caption-1-semibold text-text-tertiary uppercase">Move to</p>
-                          {COLUMNS.filter((c) => c.id !== column.id).map((target) => (
-                            <button
-                              key={target.id}
-                              type="button"
-                              onClick={() => {
-                                moveTicket(ticket.id, column.id, target.id);
-                                setMenuFor(null);
-                              }}
-                              className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
-                            >
-                              {target.name}
-                            </button>
-                          ))}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMenuFor(null);
-                              setSelected({ column: column.id, id: ticket.id });
-                            }}
-                            className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
-                          >
-                            Open details
-                          </button>
-                        </div>
-                      )}
+                      </motion.article>
                     </div>
                   ))}
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => openNew(column.id)}
-                  className="mx-2 mb-2 flex shrink-0 cursor-pointer items-center gap-1 rounded-xl px-2 py-2 text-start text-body-medium text-text-secondary transition-colors hover:bg-background-tertiary-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                >
-                  <RiAddFill className="size-4" aria-hidden />
-                  Add ticket
-                </button>
               </section>
             );
           })}
@@ -586,7 +807,7 @@ export default function ProjectBoardTemplatePage() {
                           : "bg-background-secondary-default text-text-secondary ring-border-button-default hover:bg-background-secondary-hover",
                       )}
                     >
-                      <Avatar size="xs" color={PEOPLE[name].color} initials={PEOPLE[name].initials} alt="" className="size-5" />
+                      <Avatar size="xs" color={PEOPLE[name].color} initials={PEOPLE[name].initials} src={PEOPLE[name].photo} alt="" className="size-5" />
                       {name}
                     </button>
                   );
@@ -617,7 +838,7 @@ export default function ProjectBoardTemplatePage() {
               )}
               {selectedTicket.comments.map((comment, i) => (
                 <div key={`${comment.author}-${i}`} className="flex gap-2.5 rounded-xl bg-background-secondary-default p-3">
-                  <Avatar size="xs" color={comment.author === "Mertcan Esmergul" ? "neutral" : (PEOPLE[comment.author]?.color ?? "neutral")} initials={comment.author.split(" ").map((w) => w[0]).join("")} alt={comment.author} />
+                  <Avatar size="xs" color={comment.author === "Mertcan Esmergul" ? "neutral" : (PEOPLE[comment.author]?.color ?? "neutral")} initials={comment.author.split(" ").map((w) => w[0]).join("")} src={PEOPLE[comment.author]?.photo} alt={comment.author} />
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <p className="text-body-2-medium text-text-primary">
                       {comment.author} <span className="font-normal text-text-tertiary">· {comment.when}</span>
@@ -731,7 +952,7 @@ export default function ProjectBoardTemplatePage() {
                           : "bg-background-secondary-default text-text-secondary ring-border-button-default hover:bg-background-secondary-hover",
                       )}
                     >
-                      <Avatar size="xs" color={PEOPLE[name].color} initials={PEOPLE[name].initials} alt="" className="size-5" />
+                      <Avatar size="xs" color={PEOPLE[name].color} initials={PEOPLE[name].initials} src={PEOPLE[name].photo} alt="" className="size-5" />
                       {name}
                     </button>
                   );

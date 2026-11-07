@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  RiCalendarLine,
   RiCheckLine,
   RiArrowLeftSLine,
   RiArrowRightSLine,
@@ -30,8 +29,12 @@ import { cx } from "@/utils/cx";
  * Every number below is taken from the original page's server-rendered HTML:
  * all 266 heatmap cells (date, count, tier), all 30 agent-bar heights, the
  * exact stat values and labels. Built only from free BoardUI components +
- * hand-drawn SVG. The original cover photo is Pro content, so the cover is a
- * CSS gradient. Not the official Pro source.
+ * hand-drawn SVG. The cover photo is the original file
+ * (/templates/ai-profile-cover.png, downloaded from www.boardui.com).
+ * Not the official Pro source: the Tokens chart's daily values are not in
+ * the original's server-rendered HTML (Recharts renders client-side), so
+ * the curve below is redrawn from the visible totals only — its exact
+ * shape is unverified, pending a live screenshot.
  */
 
 // [date, count, tier] for all 266 heatmap cells, in the original's DOM order.
@@ -51,19 +54,20 @@ const STATS = [
   { value: "62 days", label: "Top streak" },
 ];
 
-const TOTAL_CONTRIBUTIONS = HEATMAP.reduce((sum, [, count]) => sum + count, 0);
-
 function barSet(monthIndex: number): number[] {
   const shift = ((monthIndex - CURRENT_MONTH_INDEX) * 7 + AGENT_BARS.length) % AGENT_BARS.length;
   return AGENT_BARS.map((_, i) => AGENT_BARS[(i + shift) % AGENT_BARS.length]);
 }
 
 export default function AiProfileTemplatePage() {
-  const [range, setRange] = useState<"weekly" | "monthly" | "yearly">("yearly");
+  // The original defaults to Weekly (aria-checked="true" in the snapshot)
+  // and still renders all 266 heatmap cells under Weekly — the period
+  // selector does not slice the grid into 7/35 cells. What Weekly/Monthly
+  // actually change in the original (aggregation? range?) is not visible
+  // in the static HTML, so the selection is state only; the grid always
+  // shows the full year.
+  const [range, setRange] = useState<"weekly" | "monthly" | "yearly">("weekly");
   const [monthIndex, setMonthIndex] = useState(CURRENT_MONTH_INDEX);
-  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
-  const [hoveredBar, setHoveredBar] = useState<{ day: number; value: number } | null>(null);
-  const [hoveredToken, setHoveredToken] = useState<{ label: string; value: string } | null>(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("Mertcan Esmergül");
   const [handle, setHandle] = useState("sitenley");
@@ -71,21 +75,22 @@ export default function AiProfileTemplatePage() {
   const [draftHandle, setDraftHandle] = useState(handle);
   const [shared, setShared] = useState(false);
 
-  const cells = useMemo(() => {
-    if (range === "weekly") return HEATMAP.slice(-7);
-    if (range === "monthly") return HEATMAP.slice(-35);
-    return HEATMAP;
-  }, [range]);
-
   const bars = useMemo(() => barSet(monthIndex), [monthIndex]);
   const month = MONTHS[monthIndex];
 
   // Token trend: 60 points, Jun 14 → Today (Dec 31), scaled so the total is
-  // the original's 667.7M. Deterministic — no random values at render time.
+  // the original's 667.7M. The original renders this chart with Recharts on
+  // the client, so its daily values are NOT in the server-rendered HTML and
+  // the true curve shape cannot be recovered from the snapshot. This redraw
+  // follows only what the snapshot shows: a rising trend (+9.4%) across the
+  // period, ending higher than it starts. Shape unverified — needs a live
+  // screenshot to confirm.
   const tokens = useMemo(() => {
     const raw: number[] = [];
     for (let i = 0; i < 60; i++) {
-      raw.push(9 + 3.5 * Math.sin(i / 4.5) + i * 0.07 + ((i * 37) % 7) * 0.35);
+      const t = i / 59;
+      const noise = (((i * 41) % 7) - 3) * 0.35;
+      raw.push(8.5 + t * 8 + 1.6 * Math.sin(i / 11) + noise);
     }
     const sum = raw.reduce((a, b) => a + b, 0);
     const scale = 667.7 / sum;
@@ -135,6 +140,8 @@ export default function AiProfileTemplatePage() {
       heading={name}
       icon={RiUserSmileLine}
       selected="profile"
+      hideBreadcrumb
+      hideHeading
       actions={
         editing ? (
           <>
@@ -157,13 +164,12 @@ export default function AiProfileTemplatePage() {
         )
       }
     >
-      {/* Cover card */}
+      {/* Cover card — the original's photo, downloaded from
+          www.boardui.com/templates/ai-profile-cover.png */}
       <section className="flex w-full flex-col">
-        <div className="relative h-40 w-full overflow-hidden rounded-[20px] bg-linear-to-br from-accent-500 via-accent-600 to-accent-800">
-          <span className="absolute -top-10 -end-10 size-44 rounded-full bg-white/10" aria-hidden />
-          <span className="absolute top-16 end-24 size-24 rounded-full bg-white/10" aria-hidden />
-          <span className="absolute -bottom-12 start-16 size-36 rounded-full bg-white/10" aria-hidden />
-          <span className="absolute top-3 start-4 rounded-full bg-black/25 px-2.5 py-1 text-body-2-medium text-white">BoardUI · AI Profile</span>
+        <div className="relative h-40 w-full overflow-hidden rounded-[20px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/templates/ai-profile-cover.png" alt="" className="size-full object-cover object-[50%_45%]" />
         </div>
         <div className="relative flex w-full items-start gap-[15px] px-1 pt-3">
           <Avatar size="lg" color="blue" initials="M" className="-mt-10 size-16 shrink-0 text-title-1-medium ring-4 ring-background-full" />
@@ -240,35 +246,32 @@ export default function AiProfileTemplatePage() {
         <div className="flex w-full overflow-x-auto sm:overflow-visible">
           <div
             data-accent="violet"
-            className={cx(
-              "contributions-grid grid gap-1 w-max sm:w-full",
-              range === "yearly" ? "grid-cols-[repeat(38,13px)] sm:grid-cols-[repeat(38,minmax(0,1fr))]" : "grid-cols-7",
-            )}
+            className="contributions-grid grid w-max grid-cols-[repeat(38,13px)] gap-1 sm:w-full sm:grid-cols-[repeat(38,minmax(0,1fr))]"
           >
-            {cells.map(([date, count, tier], i) => {
+            {HEATMAP.map(([date, count, tier], i) => {
               const label = count === 0 ? `No contributions on ${date}` : `${count} contribution${count === 1 ? "" : "s"} on ${date}`;
+              // Original cells: tabindex="-1" (not keyboard-focusable), no
+              // title attribute, and animate-cell-pop only on tier > 0
+              // cells (200 of 266). Delays in the original are pseudo-random
+              // 66–778ms; the exact per-cell values are not recoverable, so
+              // a deterministic value in the same range is used.
               return (
                 <button
                   key={`${date}-${i}`}
                   type="button"
                   data-tier={tier}
+                  tabIndex={-1}
                   aria-label={label}
-                  title={label}
-                  onMouseEnter={() => setHoveredDay(label)}
-                  onMouseLeave={() => setHoveredDay(null)}
-                  onFocus={() => setHoveredDay(label)}
-                  onBlur={() => setHoveredDay(null)}
-                  className="contribution-cell aspect-square w-full cursor-default rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring animate-cell-pop"
-                  style={{ animationDelay: `${(i % 13) * 53}ms` }}
+                  className={cx(
+                    "contribution-cell aspect-square w-full cursor-default rounded-[3px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    tier > 0 && "animate-cell-pop",
+                  )}
+                  style={tier > 0 ? { animationDelay: `${66 + ((i * 137) % 713)}ms` } : undefined}
                 />
               );
             })}
           </div>
         </div>
-        <p className="flex w-full flex-col gap-0.5 px-0.5 text-body-2-regular text-text-tertiary sm:flex-row sm:items-center sm:justify-between" role="status">
-          <span>{hoveredDay ?? "Hover a day to see its contributions."}</span>
-          <span className="shrink-0 tabular-nums">{TOTAL_CONTRIBUTIONS.toLocaleString()} contributions in the last year</span>
-        </p>
       </section>
 
       {/* Agents — 30-day bar chart */}
@@ -291,30 +294,19 @@ export default function AiProfileTemplatePage() {
         <div className="flex w-full items-end gap-[7px] px-4 pt-8" style={{ height: 206 }}>
           {bars.map((height, i) => (
             <div key={`${month}-${i}`} className="flex h-full min-w-0 flex-1 items-end rounded-sm">
+              {/* Original bars are plain divs: no title, no hover readout. */}
               <div
-                role="img"
-                aria-label={`${month} ${i + 1}: ${height}`}
-                title={`${month} ${i + 1} · ${height}`}
-                onMouseEnter={() => setHoveredBar({ day: i + 1, value: height })}
-                onMouseLeave={() => setHoveredBar(null)}
                 className={cx("animate-bar-rise w-full rounded-sm transition-[height,background-color] duration-300 ease", height <= 4 ? "bg-chart-track" : "bg-chart-agents-bar hover:bg-chart-agents-bar-active")}
                 style={{ height: `${height}px`, animationDelay: `${i * 22}ms` }}
               />
             </div>
           ))}
         </div>
-        <div className="flex w-full items-center justify-between px-4 pt-2 text-body-2-regular text-text-tertiary">
-          <span className="flex items-center gap-1.5">
-            <RiCalendarLine className="size-4" aria-hidden />
-            {hoveredBar ? `${month} ${hoveredBar.day} · ${hoveredBar.value} agents` : `${month} · 30 days · hover a bar for its value`}
-          </span>
-          <button
-            type="button"
-            onClick={() => setMonthIndex(CURRENT_MONTH_INDEX)}
-            className={cx("cursor-pointer rounded-full border px-2.5 py-1 text-body-2-medium transition-colors", monthIndex === CURRENT_MONTH_INDEX ? "border-accent-500 bg-accent-50 text-text-primary" : "border-border-button-default bg-background-primary-default text-text-secondary hover:text-text-primary")}
-          >
-            Today
-          </button>
+        {/* Original footer: plain "Jun 14" / "Today" text — no calendar icon,
+            no "30 days · hover a bar" copy, no Today button. */}
+        <div className="flex w-full items-start justify-between px-1.5 text-[11px] leading-[15px] font-medium tracking-[0.2px] whitespace-nowrap text-text-tertiary">
+          <p>Jun 14</p>
+          <p>Today</p>
         </div>
       </section>
 
@@ -336,13 +328,6 @@ export default function AiProfileTemplatePage() {
             className="h-full w-full"
             role="img"
             aria-label="Token trend from Jun 14 to Today, 667.7M tokens, up 9.4 percent"
-            onMouseMove={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const ratio = (e.clientX - rect.left) / rect.width;
-              const index = Math.max(0, Math.min(tokens.length - 1, Math.round(ratio * (tokens.length - 1))));
-              setHoveredToken({ label: tokens[index].label, value: `${tokens[index].value.toFixed(1)}M tokens` });
-            }}
-            onMouseLeave={() => setHoveredToken(null)}
           >
             <defs>
               <linearGradient id="tokens-fill" x1="0" y1="0" x2="0" y2="1">
@@ -352,21 +337,11 @@ export default function AiProfileTemplatePage() {
             </defs>
             <path d={tokenPath.area} fill="url(#tokens-fill)" />
             <path d={tokenPath.line} fill="none" stroke="var(--color-chart-agents-bar)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-            {hoveredToken && (
-              <circle
-                cx={(tokens.findIndex((t) => t.label === hoveredToken.label) / (tokens.length - 1)) * 600}
-                cy={200 - 8 - (tokens.find((t) => t.label === hoveredToken.label)!.value / tokenPath.max) * (200 - 24)}
-                r="5"
-                fill="var(--color-chart-agents-bar-active)"
-                stroke="var(--color-background-secondary-default)"
-                strokeWidth="2"
-              />
-            )}
           </svg>
         </div>
+        {/* Original footer: only "Jun 14" and "Today" — no middle readout. */}
         <div className="mt-2 flex w-full items-start justify-between px-4 text-[11px] leading-[15px] font-medium tracking-[0.2px] whitespace-nowrap text-text-tertiary">
           <p>Jun 14</p>
-          <p>{hoveredToken ? `${hoveredToken.label} · ${hoveredToken.value}` : "Hover the chart for a day's tokens"}</p>
           <p>Today</p>
         </div>
       </section>

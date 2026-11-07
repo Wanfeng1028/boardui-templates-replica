@@ -16,6 +16,7 @@ import {
   DASHBOARD_NAV,
   DashboardSidebar,
 } from "@/components/application/dashboard/dashboard-sidebar";
+import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
@@ -46,6 +47,9 @@ export function TemplateShell({
   children,
   className,
   columnClassName,
+  hideAllTemplatesButton = false,
+  hideBreadcrumb = false,
+  hideHeading = false,
 }: {
   /** The page's name, shown as the current breadcrumb item. */
   title: string;
@@ -61,6 +65,12 @@ export function TemplateShell({
   className?: string;
   /** Overrides the 1300px content column. */
   columnClassName?: string;
+  /** Hide the "全部模板" button — only the /templates index itself sets this. */
+  hideAllTemplatesButton?: boolean;
+  /** Hide the breadcrumb trail — pages whose original has no breadcrumb. */
+  hideBreadcrumb?: boolean;
+  /** Hide the big page heading — pages whose original has no shell title. */
+  hideHeading?: boolean;
 }) {
   const localize = useTemplateCopy();
   const [navOpen, setNavOpen] = useState(false);
@@ -97,12 +107,13 @@ export function TemplateShell({
       <main className="relative flex min-h-0 min-w-0 flex-1 justify-center overflow-x-hidden overflow-y-auto bg-background-full sm:pt-3">
         <div className={cx("flex w-full max-w-[1300px] flex-col gap-2.5", columnClassName)}>
           <header className="flex w-full flex-col gap-2">
+            {!hideBreadcrumb && (
             <Breadcrumb>
-              <BreadcrumbItem href="#">
+              <BreadcrumbItem href="/templates/dashboard">
                 <Avatar size="xs" color="blue" initials="B" />
                 Board team
               </BreadcrumbItem>
-              <BreadcrumbItem href="#">
+              <BreadcrumbItem href="/templates/dashboard">
                 <Avatar size="xs" color="neutral" initials="M" />
                 Mertcan
               </BreadcrumbItem>
@@ -110,6 +121,7 @@ export function TemplateShell({
                 {title}
               </BreadcrumbItem>
             </Breadcrumb>
+            )}
             <div className="flex w-full flex-wrap items-end justify-between gap-2">
               <div className="flex min-w-0 items-center gap-1.5">
                 <IconButton
@@ -119,11 +131,16 @@ export function TemplateShell({
                   onClick={() => setNavOpen((open) => !open)}
                   className="lg:hidden"
                 />
+                {!hideHeading && (
                 <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">
                   {heading}
                 </h1>
+                )}
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2.5">
+                {/* Always first in the actions row, on every template page:
+                    the obvious way back to the templates index. */}
+                {!hideAllTemplatesButton && <AllTemplatesButton />}
                 {actions !== undefined ? actions : (
                   <>
                     <NotificationBell />

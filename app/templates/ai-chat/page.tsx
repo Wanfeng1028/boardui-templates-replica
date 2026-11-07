@@ -2,35 +2,38 @@
 
 import {
   RiAddLine,
-  RiAttachment2,
+  RiArrowDownSLine,
+  RiArrowGoBackLine,
+  RiArrowUpLine,
   RiBracesLine,
   RiCloseLine,
   RiCodeSSlashLine,
-  RiDownloadLine,
   RiExpandDiagonalLine,
   RiFileCopyLine,
+  RiGlobalLine,
+  RiHeadphoneLine,
+  RiExpandUpDownLine,
+  RiFolderLine,
+  RiFolderOpenLine,
   RiGitBranchLine,
+  RiLayoutGridLine,
   RiMenuLine,
-  RiMoonLine,
+  RiMicLine,
   RiMore2Fill,
+  RiInfinityLine,
+  RiRobotLine,
   RiSearchLine,
+  RiSettingsLine,
   RiShareLine,
-  RiSparklingLine,
-  RiSunLine,
+  RiShuffleLine,
+  RiSideBarLine,
   RiTerminalBoxLine,
-  RiArrowGoBackLine,
 } from "@remixicon/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
-import {
-  DASHBOARD_NAV,
-  DashboardSidebar,
-} from "@/components/application/dashboard/dashboard-sidebar";
-import { AgentChatHistory, type ChatThreadSummary } from "@/components/application/agent-chat/agent-chat-history";
-import { AgentComposer } from "@/components/application/agent-chat/agent-composer";
-import { AgentMessage } from "@/components/application/agent-chat/agent-chat-message";
-import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
-import { applyTheme, useThemeMode } from "@/components/application/theme/theme-toggle";
+import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
+import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
+import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
 import { cx } from "@/utils/cx";
 
@@ -38,218 +41,213 @@ import { cx } from "@/utils/cx";
  * AI Chat template replica.
  * Official: boardui.com/templates/ai-chat — Agentic chat, "vibl coding
  * project / coding scenario" thread, Fable 5 / Main / project-sea, Code /
- * Changes / Browser panel, 12 uncommitted changes (+156/−23).
+ * Changes / Browser panel, 12 uncommitted changes (+156/−23), 57% ring.
  *
- * Built only from free BoardUI components (AgentComposer, AgentMessage,
- * AgentThinking, AgentChatHistory) + local canned replies — no model key
- * needed. The free AgentChat monolith is NOT used as-is: it hardcodes the
- * starter nav (Chat / Dashboard / Components / Sign in / Sign up), while
- * this template must use the shared dashboard nav that links to the other
- * template routes. Its composer / message / thinking / history pieces are
- * reused here instead.
+ * Source of truth: tpl-pages/ai-chat.html (BoardUI SSR snapshot).
+ * The snapshot freezes the page mid-generation at 57%: exactly one user
+ * message, no assistant reply, no thinking indicator. Anything the snapshot
+ * does not show (avatar menu items, attachment menu items, model options,
+ * Main / project-sea / Agent dropdown contents, More options, Browser tab,
+ * Quick Search panel) is marked "待实测确认" in audit/ai-chat-gaps.md and
+ * is NOT invented here: dropdowns that have no verified content show only
+ * the verified value plus a disabled "待实测确认" row.
  *
- * Geometry follows the original + the free chat: 12px page frame, 16px gap,
- * 260px sidebar card, rounded-3xl chat surface.
+ * The sidebar is the original agent sidebar (New agent / Automations /
+ * Customize + Repositories with 4 collapsible groups + 11 threads), NOT the
+ * all-templates navigation. Template switching is kept only as the
+ * "全部模板" button in the top bar and the first row of the sidebar, as
+ * requested. Sidebar / composer / status row / code panel are all local to
+ * this file on purpose: the shared DashboardSidebar / AgentComposer carry
+ * the wrong nav and the wrong composer behaviour for this template, and
+ * shared components must not be edited by this task.
  */
 
 // Fixed anchor so server and client render the same relative times.
 const NOW = 1794015600000;
 
-type ChatMsg = { id: string; role: "user" | "assistant"; text: string; at: number };
+type ChatMsg = { id: string; role: "user"; text: string; at: number };
 
-type SeedThread = ChatThreadSummary & { messages: ChatMsg[] };
+type ThreadItem = { id: string; title: string; badge: string; messages: ChatMsg[] };
+type RepoGroup = { name: string; open: boolean; threads: ThreadItem[] };
 
-const MODELS = ["Fable 5", "Fable 4", "Fable 3 Mini"];
-const EFFORTS = ["Low", "Medium", "High"] as const;
+const USER_MESSAGE =
+  "update our color tokens for dark mode and add a reusable theme toggle to the registry. run lint and a production build when you're done.";
 
-const SEED_THREADS: SeedThread[] = [
+const REPOS: RepoGroup[] = [
   {
-    id: "coding-scenario",
-    title: "coding scenario",
-    updatedAt: NOW,
-    messages: [
+    name: "boardui",
+    open: false,
+    threads: [
+      { id: "boardui-pro", title: "pro badge restyle", badge: "2h", messages: [] },
+      { id: "installation-docs", title: "installation docs page", badge: "1d", messages: [] },
+    ],
+  },
+  {
+    name: "vibl coding project",
+    open: true,
+    threads: [
+      { id: "vibl-landing", title: "landing page design", badge: "34m", messages: [] },
+      { id: "image-generation", title: "image generation", badge: "now", messages: [] },
       {
-        id: "m-user-1",
-        role: "user",
-        text: "update our color tokens for dark mode and add a reusable theme toggle to the registry. run lint and a production build when you're done.",
-        at: NOW - 1000 * 60 * 4,
+        id: "coding-scenario",
+        title: "coding scenario",
+        badge: "now",
+        messages: [{ id: "m-user-1", role: "user", text: USER_MESSAGE, at: NOW - 1000 * 60 * 4 }],
       },
-      {
-        id: "m-agent-1",
-        role: "assistant",
-        text: "Done — I updated the color tokens for dark mode and added a reusable theme toggle to the registry.\n\n• Tokens: dark-mode values for the surfaces, borders and text tokens now live next to the light values, so every component flips with the .dark class.\n• ThemeToggle: a reusable switch that persists the choice and animates the transition, ready to drop into any page.\n• Lint passed with no errors, and the production build completed successfully.\n\nThe changes are in the code panel — 12 uncommitted changes (+156/−23).",
-        at: NOW - 1000 * 60 * 3,
-      },
+      { id: "mobile-vue", title: "mobile app for vuejs...", badge: "5h", messages: [] },
+      { id: "code-refactor", title: "code refactor dropdo...", badge: "18h", messages: [] },
     ],
   },
   {
-    id: "boardui",
-    title: "boardui · pro badge restyle",
-    updatedAt: NOW - 1000 * 60 * 60 * 2,
-    messages: [
-      { id: "m-user-2", role: "user", text: "restyle the pro badge so it reads better on dark backgrounds.", at: NOW - 1000 * 60 * 60 * 2 },
-      { id: "m-agent-2", role: "assistant", text: "Restyled the Pro badge: higher-contrast fill, tighter tracking, and a subtle border so it holds up on dark surfaces. The change is in boardui/app/components/button.tsx (+74).", at: NOW - 1000 * 60 * 60 * 2 + 45000 },
+    name: "strider landing page work",
+    open: false,
+    threads: [
+      { id: "strider-hero", title: "hero section animation", badge: "3d", messages: [] },
+      { id: "pricing-copy", title: "pricing table copy", badge: "4d", messages: [] },
     ],
   },
   {
-    id: "installation-docs",
-    title: "installation docs page",
-    updatedAt: NOW - 1000 * 60 * 60 * 24,
-    messages: [
-      { id: "m-user-3", role: "user", text: "draft the installation docs page for the new registry.", at: NOW - 1000 * 60 * 60 * 24 },
-      { id: "m-agent-3", role: "assistant", text: "Drafted the installation page: prerequisites, the one-command install, and a troubleshooting section for the common registry errors.", at: NOW - 1000 * 60 * 60 * 24 + 60000 },
-    ],
-  },
-  {
-    id: "vibl-landing",
-    title: "vibl coding project · landing page design",
-    updatedAt: NOW - 1000 * 60 * 34,
-    messages: [
-      { id: "m-user-4", role: "user", text: "tighten the landing page hero — one clear action, less copy.", at: NOW - 1000 * 60 * 34 },
-      { id: "m-agent-4", role: "assistant", text: "Tightened the hero to a single action with the outcome first, the product preview beside it, and the secondary links moved below the fold.", at: NOW - 1000 * 60 * 34 + 50000 },
-    ],
-  },
-  {
-    id: "image-generation",
-    title: "image generation",
-    updatedAt: NOW - 1000 * 60 * 12,
-    messages: [
-      { id: "m-user-5", role: "user", text: "generate a vintage editorial illustration of Messi dribbling in the Argentina home kit.", at: NOW - 1000 * 60 * 12 },
-      { id: "m-agent-5", role: "assistant", text: "Generated it with Fable 5 — vintage editorial style, Argentina home kit, blue background. It is in the gallery on the AI Image Generation page.", at: NOW - 1000 * 60 * 12 + 40000 },
-    ],
-  },
-  {
-    id: "mobile-vue",
-    title: "mobile app for vuejs...",
-    updatedAt: NOW - 1000 * 60 * 60 * 5,
-    messages: [
-      { id: "m-user-6", role: "user", text: "sketch the mobile app structure for the vuejs client.", at: NOW - 1000 * 60 * 60 * 5 },
-      { id: "m-agent-6", role: "assistant", text: "Sketched a three-tab mobile shell — Home, Projects, Profile — with the chat composer reachable from every tab.", at: NOW - 1000 * 60 * 60 * 5 + 55000 },
-    ],
-  },
-  {
-    id: "code-refactor",
-    title: "code refactor dropdo...",
-    updatedAt: NOW - 1000 * 60 * 60 * 18,
-    messages: [
-      { id: "m-user-7", role: "user", text: "refactor the dropdown so it works with keyboard navigation.", at: NOW - 1000 * 60 * 60 * 18 },
-      { id: "m-agent-7", role: "assistant", text: "Refactored the dropdown onto react-aria-components: arrow-key navigation, type-ahead, and focus return on close.", at: NOW - 1000 * 60 * 60 * 18 + 70000 },
-    ],
-  },
-  {
-    id: "strider-hero",
-    title: "strider landing page work · hero section animation",
-    updatedAt: NOW - 1000 * 60 * 60 * 24 * 3,
-    messages: [
-      { id: "m-user-8", role: "user", text: "add a subtle entrance animation to the strider hero section.", at: NOW - 1000 * 60 * 60 * 24 * 3 },
-      { id: "m-agent-8", role: "assistant", text: "Added a staggered fade-and-rise entrance for the hero, with reduced-motion respected.", at: NOW - 1000 * 60 * 60 * 24 * 3 + 50000 },
-    ],
-  },
-  {
-    id: "pricing-copy",
-    title: "pricing table copy",
-    updatedAt: NOW - 1000 * 60 * 60 * 24 * 4,
-    messages: [
-      { id: "m-user-9", role: "user", text: "rewrite the pricing table copy to lead with the free tier.", at: NOW - 1000 * 60 * 60 * 24 * 4 },
-      { id: "m-agent-9", role: "assistant", text: "Rewrote the pricing copy: free tier first, one line per plan, and the upgrade reason stated plainly.", at: NOW - 1000 * 60 * 60 * 24 * 4 + 45000 },
-    ],
-  },
-  {
-    id: "pirate-game",
-    title: "pirate mini game iOS · cannon physics tuning",
-    updatedAt: NOW - 1000 * 60 * 60 * 24 * 7,
-    messages: [
-      { id: "m-user-10", role: "user", text: "the cannon feels floaty — tune the physics.", at: NOW - 1000 * 60 * 60 * 24 * 7 },
-      { id: "m-agent-10", role: "assistant", text: "Tuned the cannon: heavier gravity on the arc, a snappier recoil, and tighter spread at close range.", at: NOW - 1000 * 60 * 60 * 24 * 7 + 60000 },
-    ],
-  },
-  {
-    id: "sprite-cleanup",
-    title: "sprite sheet cleanup",
-    updatedAt: NOW - 1000 * 60 * 60 * 24 * 14,
-    messages: [
-      { id: "m-user-11", role: "user", text: "clean up the sprite sheet — remove unused frames.", at: NOW - 1000 * 60 * 60 * 24 * 14 },
-      { id: "m-agent-11", role: "assistant", text: "Removed 23 unused frames and repacked the sheet; the atlas is 18% smaller with no visual change.", at: NOW - 1000 * 60 * 60 * 24 * 14 + 50000 },
+    name: "pirate mini game iOS",
+    open: false,
+    threads: [
+      { id: "pirate-game", title: "cannon physics tuning", badge: "1w", messages: [] },
+      { id: "sprite-cleanup", title: "sprite sheet cleanup", badge: "2w", messages: [] },
     ],
   },
 ];
 
+const ALL_THREADS = REPOS.flatMap((r) => r.threads.map((t) => ({ ...t, repo: r.name })));
+
+// 44 lines of HomeDashboardDetail source, verbatim from the original SSR
+// snapshot (tpl-pages/ai-chat.html, token-line 1–44; the snapshot renders
+// the same block twice for mobile/desktop).
 const CODE_LINES = [
-  'import { applyTheme } from "@/components/application/theme/theme-toggle";',
-  'import { RiMoonLine, RiSunLine } from "@remixicon/react";',
+  'import type { Metadata } from "next";',
+  'import Link from "next/link";',
+  'import { ComponentDetail } from "@/components/application/docs/component-detail";',
+  'import { DashboardShell } from "@/components/application/dashboard/dashboard-shell";',
   '',
-  '// Reusable theme toggle for the registry.',
-  '// Persists the choice and flips the .dark class,',
-  '// so every token below follows automatically.',
-  'export function ThemeToggleButton() {',
-  '  const mode = useThemeMode();',
-  '  const next = mode === "dark" ? "light" : "dark";',
-  '  return (',
-  '    <button',
-  '      type="button"',
-  '      aria-label={mode === "dark" ? "Use light mode" : "Use dark mode"}',
-  '      onClick={() => applyTheme(next)}',
-  '    >',
-  '      {mode === "dark" ? <RiSunLine /> : <RiMoonLine />}',
-  '    </button>',
-  '  );',
-  '}',
-  '',
-  '// Dark-mode color tokens (excerpt):',
-  '// --color-background-primary-default',
-  '// --color-background-secondary-default',
-  '// --color-text-primary / --color-text-secondary',
-  '// --color-border-button-default',
-  '// --color-accent-500 / --color-accent-600',
-  '',
-  'export const themeToggle = {',
-  '  light: "bg-background-primary-default",',
-  '  dark: "bg-background-secondary-default",',
+  'export const metadata: Metadata = {',
+  '  title: "Home Dashboard Template — React + Tailwind (Pro)",',
+  '  description:',
+  '    "Full admin dashboard template for React + Tailwind CSS — sidebar navigation, KPI cards, bar chart, and a customers data table. A BoardUI Pro template.",',
   '};',
+  '',
+  'const PREVIEW_CODE = `import { DashboardShell } from "@/components/application/dashboard/dashboard-shell";',
+  '',
+  'export default function DashboardPage() {',
+  '  // Full screen: floating sidebar, header, KPI cards,',
+  '  // earnings bar chart, and the customers data table.',
+  '  return <DashboardShell />;',
+  '}`;',
+  '',
+  'export default function HomeDashboardDetail() {',
+  '  return (',
+  '    <ComponentDetail',
+  '      wide',
+  '      breadcrumb={[' ,
+  '        { label: "Board UI", href: "/" },',
+  '        { label: "Components", href: "/components" },',
+  '        { label: "Home Dashboard" },',
+  '      ]}',
+  '      title="Home Dashboard"',
+  '      description="A complete admin dashboard screen — floating sidebar navigation, header with search and notifications, KPI stat cards, an earnings bar chart, and a customers data table."',
+  '      preview={',
+  '        <div className="h-[760px] w-full overflow-hidden rounded-2xl border border-border-button-default">',
+  '          <div className="origin-top-left scale-[0.8] [width:125%]">',
+  '            <DashboardShell />',
+  '          </div>',
+  '        </div>',
+  '      }',
+  '      previewClassName="p-3 sm:p-4"',
+  '      previewCode={PREVIEW_CODE}',
+  '      sections={[' ,
+  '        {',
+  '          id: "full-template",',
+  '          title: "Live template",',
+  '          body: (',
 ];
 
-const CHANGED_FILES = [
-  { path: "boardui/app/components/button.tsx", added: 74, status: "New" },
-  { path: "boardui/app/components/theme-toggle.tsx", added: 41, status: "New" },
-  { path: "boardui/styles/theme.css", added: 29, status: "Modified" },
-];
+// Lines 14–17 sit inside the PREVIEW_CODE template literal in the original
+// (all string-coloured); line 12 opens it, line 18 closes it.
+const TEMPLATE_STRING_LINES = new Set([14, 15, 16, 17]);
 
-const TERMINAL_LINES = [
-  "$ npm run lint",
-  "✓ No errors — 0 warnings",
-  "$ npm run build",
-  "✓ Compiled successfully",
-  "✓ Production build passed in 4.2s",
-];
+const TOKEN_RE =
+  /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|\b(import|type|export|const|function|return|default|from)\b|\b(PREVIEW_CODE)\b|\b([A-Z][A-Za-z0-9]*)\b/g;
 
-function pickReply(prompt: string, model: string, effort: string): string {
-  const text = prompt.toLowerCase();
-  if (/dark mode|theme|token|color/.test(text)) {
-    return `Done — the dark-mode color tokens are updated and the theme toggle is in the registry.\n\n• Tokens: dark values for surfaces, borders and text now sit beside the light values, so the whole UI flips with the .dark class.\n• ThemeToggle: a reusable switch that persists the choice (${model}, ${effort.toLowerCase()} effort).\n\nLint passed, production build passed. The diff is in the code panel.`;
+function highlightLine(line: string, lineNo: number): ReactNode {
+  if (line === "") return "\u00a0";
+  if (TEMPLATE_STRING_LINES.has(lineNo)) {
+    return <span style={{ color: "var(--color-neutral-500)" }}>{line}</span>;
   }
-  if (/lint|build|test/.test(text)) {
-    return `Ran both for you with ${model} (${effort.toLowerCase()} effort).\n\n• Lint: passed with no errors.\n• Production build: compiled successfully.\n\nOpen the terminal strip in the code panel to see the full log.`;
+  if (lineNo === 12) {
+    const tick = line.indexOf("`");
+    return (
+      <>
+        {highlightTokens(line.slice(0, tick))}
+        <span style={{ color: "var(--color-neutral-500)" }}>{line.slice(tick)}</span>
+      </>
+    );
   }
-  if (/image|messi|picture|illustration|generate/.test(text)) {
-    return `That is an image job — the AI Image Generation page handles it. The Messi editorial illustration is already in its gallery (Fable 5, Main, project-sea).\n\nWant me to open it, or tweak the prompt first?`;
+  if (lineNo === 18) {
+    return <span style={{ color: "var(--color-neutral-500)" }}>{line}</span>;
   }
-  if (/^(hi|hello|hey)\b/.test(text.trim())) {
-    return `Hello. I am the demo agent for this template — answers here are canned, no model key needed. Try asking me to update the color tokens, or run lint and a build.`;
+  return highlightTokens(line);
+}
+
+function highlightTokens(line: string): ReactNode {
+  const out: ReactNode[] = [];
+  let last = 0;
+  let key = 0;
+  for (const m of line.matchAll(TOKEN_RE)) {
+    const idx = m.index ?? 0;
+    if (idx > last) out.push(line.slice(last, idx));
+    const [tok, comment, str, keyword, constant, klass] = m;
+    if (comment || str) {
+      out.push(
+        <span key={key++} style={{ color: "var(--color-neutral-500)" }}>
+          {tok}
+        </span>,
+      );
+    } else if (keyword) {
+      out.push(
+        <span key={key++} style={{ color: "#7ccf00" }}>
+          {tok}
+        </span>,
+      );
+    } else if (constant) {
+      out.push(
+        <span key={key++} style={{ color: "#2b7fff" }}>
+          {tok}
+        </span>,
+      );
+    } else if (klass) {
+      out.push(
+        <span key={key++} style={{ color: "#00bc7d" }}>
+          {tok}
+        </span>,
+      );
+    } else {
+      out.push(tok);
+    }
+    last = idx + tok.length;
   }
-  return `Got it — working through that with ${model} (${effort.toLowerCase()} effort).\n\nDemo mode, so this reply is canned: in the real template the agent would edit the code, show the diff in the panel on the right, and report back once lint and the production build pass.`;
+  if (last < line.length) out.push(line.slice(last));
+  return <>{out}</>;
 }
 
 export default function AiChatTemplatePage() {
-  const theme = useThemeMode();
   const [navOpen, setNavOpen] = useState(false);
-  const [threads, setThreads] = useState<SeedThread[]>(SEED_THREADS);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [repos, setRepos] = useState<RepoGroup[]>(REPOS);
   const [activeId, setActiveId] = useState("coding-scenario");
-  const [messages, setMessages] = useState<ChatMsg[]>(SEED_THREADS[0].messages);
+  const [messages, setMessages] = useState<ChatMsg[]>(REPOS[1].threads[2].messages);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [model, setModel] = useState(MODELS[0]);
-  const [effort, setEffort] = useState<(typeof EFFORTS)[number]>("Medium");
-  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [model, setModel] = useState("Fable 5");
+  const [project, setProject] = useState("project-sea");
+  const [voiceOn, setVoiceOn] = useState(false);
+  const [files, setFiles] = useState<string[]>([]);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   // Wide screens open with the code panel visible, like the original;
@@ -257,118 +255,62 @@ export default function AiChatTemplatePage() {
   useEffect(() => {
     if (window.innerWidth >= 1280) setPanelOpen(true);
   }, []);
-  const [panelTab, setPanelTab] = useState<"code" | "changes" | "browser">("code");
-  const [panelWidth, setPanelWidth] = useState(400);
+  const [panelWidth, setPanelWidth] = useState(410);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [terminalOpen, setTerminalOpen] = useState(false);
-  const [changesUndone, setChangesUndone] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [progress, setProgress] = useState(57);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
-  const pendingRef = useRef<{ interval?: number; timeout?: number }>({});
+  const inputRef = useRef<HTMLInputElement>(null);
+  const busyTimer = useRef<number | undefined>(undefined);
 
-  const clearPending = useCallback(() => {
-    if (pendingRef.current.interval !== undefined) window.clearInterval(pendingRef.current.interval);
-    if (pendingRef.current.timeout !== undefined) window.clearTimeout(pendingRef.current.timeout);
-    pendingRef.current = {};
-  }, []);
+  useEffect(() => () => window.clearTimeout(busyTimer.current), []);
 
-  useEffect(() => clearPending, [clearPending]);
-
-  const activeThread = threads.find((t) => t.id === activeId) ?? threads[0];
+  const activeThread =
+    ALL_THREADS.find((t) => t.id === activeId) ?? ALL_THREADS[2];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, busy, terminalOpen]);
 
-  const submit = useCallback(
-    (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed || busy) return;
-      const userMsg: ChatMsg = { id: `u-${Date.now()}`, role: "user", text: trimmed, at: Date.now() };
-      setMessages((prev) => [...prev, userMsg]);
-      setInput("");
-      setBusy(true);
-      setProgress(12);
-      const reply = pickReply(trimmed, model, effort);
-      pendingRef.current.interval = window.setInterval(() => {
-        setProgress((p) => Math.min(96, p + 14));
-      }, 220);
-      pendingRef.current.timeout = window.setTimeout(() => {
-        pendingRef.current = {};
-        setProgress(100);
-        setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: "assistant", text: reply, at: Date.now() }]);
-        setBusy(false);
-      }, 1100);
-    },
-    [busy, model, effort],
-  );
-
-  const stopGenerating = useCallback(() => {
-    clearPending();
-    setBusy(false);
-    setProgress(57);
-  }, [clearPending]);
+  const toggleRepo = useCallback((name: string) => {
+    setRepos((prev) => prev.map((r) => (r.name === name ? { ...r, open: !r.open } : r)));
+  }, []);
 
   const selectThread = useCallback(
     (id: string) => {
       if (busy) return;
-      const thread = threads.find((t) => t.id === id);
+      const thread = ALL_THREADS.find((t) => t.id === id);
       if (!thread) return;
       setActiveId(id);
       setMessages(thread.messages);
-      setProgress(57);
+      setNavOpen(false);
     },
-    [busy, threads],
+    [busy],
   );
 
-  const startNewChat = useCallback(() => {
-    if (busy) return;
-    const id = `t-${Date.now()}`;
-    const thread: SeedThread = { id, title: "New chat", updatedAt: Date.now(), messages: [] };
-    setThreads((prev) => [thread, ...prev]);
-    setActiveId(id);
-    setMessages([]);
-    setProgress(0);
-  }, [busy]);
-
-  const renameThread = useCallback((id: string, title: string) => {
-    setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, title } : t)));
-  }, []);
-
-  const toggleUnread = useCallback((id: string) => {
-    setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, unread: !t.unread } : t)));
-  }, []);
-
-  const deleteThread = useCallback(
-    (id: string) => {
-      const rest = threads.filter((t) => t.id !== id);
-      setThreads(rest);
-      if (id === activeId && rest.length > 0) {
-        setActiveId(rest[0].id);
-        setMessages(rest[0].messages);
-      }
+  const submit = useCallback(
+    (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || busy) return;
+      // The original snapshot freezes at 57% with no assistant reply, so a
+      // submitted prompt only adds the user bubble and runs the composer
+      // loader; no canned assistant reply is invented.
+      setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text: trimmed, at: Date.now() }]);
+      setInput("");
+      setBusy(true);
+      window.clearTimeout(busyTimer.current);
+      busyTimer.current = window.setTimeout(() => setBusy(false), 1400);
     },
-    [activeId, threads],
+    [busy],
   );
 
-  const exportThreads = useCallback(() => {
-    const blob = new Blob([JSON.stringify(threads, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "boardui-chats.json";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-  }, [threads]);
+  const stopGenerating = useCallback(() => {
+    window.clearTimeout(busyTimer.current);
+    setBusy(false);
+  }, []);
 
   const shareChat = useCallback(() => {
-    const transcript = messages
-      .map((m) => `${m.role === "user" ? "You" : "Assistant"}: ${m.text}`)
-      .join("\n\n");
+    const transcript = messages.map((m) => `You: ${m.text}`).join("\n\n");
     const done = () => {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
@@ -380,13 +322,608 @@ export default function AiChatTemplatePage() {
     }
   }, [messages]);
 
+  const sidebarProps = {
+    repos,
+    activeId,
+    onToggleRepo: toggleRepo,
+    onSelectThread: selectThread,
+    collapsed: sidebarCollapsed,
+    onToggleCollapse: () => setSidebarCollapsed((c) => !c),
+  };
+
+  return (
+    <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
+      <style>{`@keyframes agent-msg-in{from{opacity:0;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}`}</style>
+      <div className="hidden xl:flex">
+        <AgentSidebar {...sidebarProps} />
+      </div>
+
+      {navOpen && (
+        <div className="fixed inset-0 z-50 flex xl:hidden">
+          <button type="button" aria-label="Close navigation" onClick={() => setNavOpen(false)} className="absolute inset-0 cursor-pointer bg-black/40" />
+          <div className="relative flex h-full p-3">
+            <AgentSidebar {...sidebarProps} mobile onClose={() => setNavOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      <div className="relative flex min-h-0 min-w-0 flex-1 gap-3 overflow-hidden">
+        {/* Chat surface */}
+        <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background-secondary-default">
+          {/* Mobile top bar (original: xl:hidden) */}
+          <header className="flex h-12 shrink-0 items-center gap-2 px-3 pt-[11px] xl:hidden">
+            <IconButton icon={navOpen ? RiCloseLine : RiMenuLine} size="small" aria-label="Open navigation" onClick={() => setNavOpen((o) => !o)} />
+            <span className="truncate text-headline-medium text-text-primary">Agentic chat</span>
+            <div className="ms-auto flex shrink-0 items-center gap-1">
+              <AllTemplatesButton size="small" />
+              <IconButton icon={RiCodeSSlashLine} size="small" aria-label="Open code" onClick={() => setPanelOpen(true)} />
+            </div>
+          </header>
+
+          {/* Desktop breadcrumb header (original: px-4 pt-4, no border) */}
+          <header className="hidden shrink-0 items-center gap-2 px-4 pt-4 xl:flex">
+            <nav aria-label="Chat location" className="flex min-w-0 items-center gap-1">
+              <button type="button" className="flex min-w-0 cursor-pointer items-center gap-1.5 rounded-lg px-1 py-0.5 text-body-medium text-text-secondary hover:bg-background-secondary-hover">
+                <RiFolderLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                <span className="truncate">vibl coding project</span>
+              </button>
+              <RiArrowDownSLine className="size-4 shrink-0 -rotate-90 text-foreground-icon-tertiary" aria-hidden />
+              <span aria-current="page" className="truncate text-body-medium text-text-primary">{activeThread.title}</span>
+            </nav>
+            <div className="ms-auto flex shrink-0 items-center gap-1">
+              <AllTemplatesButton size="small" />
+              <IconButton icon={RiShareLine} size="small" aria-label="Share chat" onClick={shareChat} />
+              <div className="relative">
+                <IconButton icon={RiMore2Fill} size="small" aria-label="More options" onClick={() => setMoreMenuOpen((o) => !o)} />
+                {moreMenuOpen && (
+                  <>
+                    <button type="button" aria-label="Close menu" onClick={() => setMoreMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+                    <div className="absolute end-0 top-9 z-20 w-56 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
+                      <button type="button" onClick={() => { setMoreMenuOpen(false); shareChat(); }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
+                        <RiFileCopyLine className="size-4 shrink-0" aria-hidden /> Copy chat transcript
+                      </button>
+                      <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多选项待实测确认</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </header>
+          {copied && (
+            <p role="status" className="shrink-0 px-4 pt-2 text-body-2-medium text-text-secondary">Chat copied to clipboard.</p>
+          )}
+
+          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]">
+            <div className="flex min-h-full flex-col justify-end gap-5 px-4 pt-4 pb-6">
+              {messages.map((message) => (
+                <p
+                  key={message.id}
+                  className="ms-auto w-fit max-w-[calc(50%+6px)] rounded-2xl bg-background-primary-default px-3 py-[11px] text-start text-body-regular break-words whitespace-pre-wrap text-text-primary shadow-card"
+                  style={{ animation: "agent-msg-in 0.45s ease-out both" }}
+                >
+                  {message.text}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {terminalOpen && (
+            <div className="mx-3 mb-2 shrink-0 overflow-hidden rounded-xl border border-border-button-default bg-background-primary-default">
+              <div className="flex items-center justify-between border-b border-separator-border px-3 py-1.5">
+                <span className="flex items-center gap-1.5 text-body-2-medium text-text-secondary"><RiTerminalBoxLine className="size-4" aria-hidden /> Terminal</span>
+                <button type="button" aria-label="Close terminal" onClick={() => setTerminalOpen(false)} className="cursor-pointer text-text-tertiary hover:text-text-primary"><RiCloseLine className="size-4" aria-hidden /></button>
+              </div>
+              <p className="px-3 py-2 text-body-2-regular text-text-tertiary">终端内容待实测确认</p>
+            </div>
+          )}
+
+          <div className="shrink-0 px-2.5 pt-3 pb-2.5">
+            <LocalComposer
+              value={input}
+              onValueChange={setInput}
+              onSubmit={() => submit(input)}
+              onStop={stopGenerating}
+              busy={busy}
+              model={model}
+              onModelChange={setModel}
+              project={project}
+              onProjectChange={setProject}
+              voiceOn={voiceOn}
+              onVoiceToggle={() => setVoiceOn((v) => !v)}
+              files={files}
+              onFiles={(names) => setFiles((prev) => [...prev, ...names])}
+              onRemoveFile={(name) => setFiles((prev) => prev.filter((f) => f !== name))}
+              inputRef={inputRef}
+            />
+          </div>
+        </div>
+
+        {/* Code panel */}
+        {panelOpen && (
+          <CodePanel
+            width={panelWidth}
+            expanded={panelExpanded}
+            onExpand={() => {
+              setPanelExpanded((e) => !e);
+              setPanelWidth((w) => (w >= 640 ? 410 : 640));
+            }}
+            onToggle={() => setPanelOpen(false)}
+            onClose={() => setPanelOpen(false)}
+            onResize={(w) => { setPanelExpanded(false); setPanelWidth(w); }}
+            terminalOpen={terminalOpen}
+            onTerminal={() => setTerminalOpen((o) => !o)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Agent sidebar (original) + template-switcher entry (kept)           */
+/* ------------------------------------------------------------------ */
+
+function AgentSidebar({
+  repos,
+  activeId,
+  onToggleRepo,
+  onSelectThread,
+  collapsed,
+  onToggleCollapse,
+  mobile = false,
+  onClose,
+}: {
+  repos: RepoGroup[];
+  activeId: string;
+  onToggleRepo: (name: string) => void;
+  onSelectThread: (id: string) => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  mobile?: boolean;
+  onClose?: () => void;
+}) {
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const hits = ALL_THREADS.filter((t) =>
+    t.title.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+
+  if (collapsed && !mobile) {
+    return (
+      <aside className="flex h-full w-16 shrink-0 flex-col items-center gap-1 overflow-hidden bg-background-full py-3" aria-label="Agent sidebar collapsed">
+        <span className="inline-flex size-8 shrink-0 select-none items-center justify-center rounded-full bg-background-tertiary-default text-headline-semibold text-text-secondary">M</span>
+        <button type="button" aria-label="Expand sidebar" onClick={onToggleCollapse} className="mt-2 flex size-9 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary hover:bg-background-secondary-hover">
+          <RiSideBarLine className="size-5" aria-hidden />
+        </button>
+        <button type="button" aria-label="Quick Search" onClick={() => setQuickOpen(true)} className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-background-tertiary-default text-foreground-icon-secondary hover:bg-background-tertiary-hover/55">
+          <RiSearchLine className="size-5" aria-hidden />
+        </button>
+        <a href="#" aria-label="New agent" className="flex size-9 items-center justify-center rounded-full text-foreground-icon-secondary hover:bg-background-secondary-hover"><RiAddLine className="size-5" aria-hidden /></a>
+        <a href="#" aria-label="Automations" className="flex size-9 items-center justify-center rounded-full text-foreground-icon-secondary hover:bg-background-secondary-hover"><RiRobotLine className="size-5" aria-hidden /></a>
+        <a href="#" aria-label="Customize" className="flex size-9 items-center justify-center rounded-full text-foreground-icon-secondary hover:bg-background-secondary-hover"><RiShuffleLine className="size-5" aria-hidden /></a>
+        <span className="mt-auto inline-flex size-8 shrink-0 select-none items-center justify-center rounded-full bg-blue-300 text-[18px] font-medium text-blue-900">B</span>
+        {quickOpen && (
+          <QuickSearchOverlay query={query} onQuery={setQuery} hits={hits} onSelect={(id) => { setQuickOpen(false); onSelectThread(id); }} onClose={() => setQuickOpen(false)} />
+        )}
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="flex h-full w-[260px] shrink-0 flex-col justify-between overflow-hidden bg-background-full p-3" aria-label="Agent sidebar">
+      <div className="flex min-h-0 w-full flex-col gap-3">
+        <div className="flex w-full flex-row items-center justify-between">
+          <button type="button" aria-label="Mertcan Esmergul" aria-expanded="false" className="relative flex min-w-0 cursor-pointer items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+            <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-background-tertiary-default text-headline-semibold text-text-secondary">M</span>
+            <span className="flex min-w-0 items-center gap-0.5">
+              <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Mertcan Esmergul</span>
+              <RiExpandUpDownLine className="size-4 shrink-0 text-foreground-icon-tertiary" aria-hidden />
+            </span>
+          </button>
+          {mobile ? (
+            <button type="button" aria-label="Search" onClick={() => setQuickOpen(true)} className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-background-tertiary-default text-foreground-icon-secondary transition-colors duration-150 hover:bg-background-tertiary-hover/55">
+              <RiSearchLine className="size-5" aria-hidden />
+            </button>
+          ) : (
+            <button type="button" aria-label="Collapse sidebar" onClick={onToggleCollapse} className="cursor-pointer text-foreground-icon-secondary">
+              <RiSideBarLine className="size-5 -scale-x-100 rtl:scale-x-100" aria-hidden />
+            </button>
+          )}
+        </div>
+
+        {!mobile && (
+          <button type="button" aria-label="Quick Search" onClick={() => setQuickOpen(true)} className="flex w-full cursor-pointer items-center gap-2 rounded-full bg-background-tertiary-default p-2 transition-colors duration-150 hover:bg-background-tertiary-hover/55">
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <RiSearchLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="truncate text-body-medium text-text-secondary">Quick Search</span>
+            </span>
+            <kbd className="shrink-0 rounded-md bg-background-primary-default px-1.5 py-0.5 text-caption-1-medium text-text-tertiary">⌘L</kbd>
+          </button>
+        )}
+
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto [scrollbar-width:none]">
+          <nav className="flex w-full shrink-0 flex-col gap-1">
+            {/* Template-switcher entry, kept as requested (first row). */}
+            <a href="/templates" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+              <RiLayoutGridLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="text-body-medium whitespace-nowrap text-text-secondary">全部模板</span>
+            </a>
+            <a href="#" aria-label="New agent" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+              <RiAddLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="text-body-medium whitespace-nowrap text-text-secondary">New agent</span>
+            </a>
+            <a href="#" aria-label="Automations" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+              <RiRobotLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="text-body-medium whitespace-nowrap text-text-secondary">Automations</span>
+            </a>
+            <a href="#" aria-label="Customize" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+              <RiShuffleLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="text-body-medium whitespace-nowrap text-text-secondary">Customize</span>
+            </a>
+          </nav>
+
+          <div className="flex w-full flex-col gap-2.5">
+            <span className="text-body-medium text-text-secondary">Repositories</span>
+            <nav className="flex w-full flex-col gap-1">
+              {repos.map((repo) => (
+                <div key={repo.name} className="flex w-full flex-col">
+                  <button type="button" aria-expanded={repo.open} onClick={() => onToggleRepo(repo.name)} className="flex w-full cursor-pointer items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+                    {repo.open ? (
+                      <RiFolderOpenLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                    ) : (
+                      <RiFolderLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                    )}
+                    <span className="truncate text-body-medium whitespace-nowrap text-text-secondary">{repo.name}</span>
+                  </button>
+                  <div aria-hidden={!repo.open} className={cx("grid transition-[grid-template-rows,opacity] duration-300 ease-in-out", repo.open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                    <div className="overflow-hidden">
+                      <div className="relative flex w-full flex-col gap-0.5 pt-0.5">
+                        {repo.threads.map((thread) => (
+                          <a
+                            key={thread.id}
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); onSelectThread(thread.id); if (onClose) onClose(); }}
+                            aria-current={thread.id === activeId ? "page" : undefined}
+                            tabIndex={repo.open ? 0 : -1}
+                            className={cx(
+                              "flex w-full items-center gap-2.5 rounded-2lg py-[5px] pe-2 ps-9 transition-colors duration-150 ease hover:bg-background-secondary-hover",
+                              thread.id === activeId && "bg-background-secondary-hover",
+                            )}
+                          >
+                            <span className="min-w-0 flex-1 truncate text-body-medium text-text-secondary">{thread.title}</span>
+                            <span className="inline-flex shrink-0 items-center justify-center rounded-sm bg-background-tertiary-default px-1 py-px text-caption-1-medium whitespace-nowrap text-text-secondary">{thread.badge}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex w-full flex-col gap-3 pt-3">
+        <ThemeToggle appearance="sidebar-segmented" />
+        <nav className="flex w-full flex-col gap-1">
+          <a href="#" aria-label="Support" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+            <RiHeadphoneLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+            <span className="text-body-medium whitespace-nowrap text-text-secondary">Support</span>
+          </a>
+          <a href="#" aria-label="Settings" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+            <RiSettingsLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+            <span className="text-body-medium whitespace-nowrap text-text-secondary">Settings</span>
+          </a>
+        </nav>
+        <div className="flex w-full items-center justify-between rounded-xl bg-background-secondary-default py-2 pe-3 ps-2.5">
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-blue-300 text-[18.824px] leading-[22.588px] font-medium text-blue-900">B</span>
+            <span className="flex min-w-0 flex-col items-start justify-center">
+              <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Board team</span>
+              <span className="truncate text-body-regular whitespace-nowrap text-text-secondary">Pro Plan</span>
+            </span>
+          </span>
+          <a href="#" className="inline-flex h-8 shrink-0 items-center justify-center rounded-lg border border-border-button-default bg-background-primary-default px-2 py-1.5 text-body-medium text-text-primary shadow-xs hover:bg-background-primary-hover">
+            Upgrade
+          </a>
+        </div>
+      </div>
+
+      {quickOpen && (
+        <QuickSearchOverlay query={query} onQuery={setQuery} hits={hits} onSelect={(id) => { setQuickOpen(false); onSelectThread(id); if (onClose) onClose(); }} onClose={() => setQuickOpen(false)} />
+      )}
+    </aside>
+  );
+}
+
+function QuickSearchOverlay({
+  query, onQuery, hits, onSelect, onClose,
+}: {
+  query: string;
+  onQuery: (q: string) => void;
+  hits: { id: string; title: string; badge: string; repo: string }[];
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-start justify-center p-4 pt-[15vh]" role="dialog" aria-modal="true" aria-label="Quick Search">
+      <button type="button" aria-label="Close search" onClick={onClose} className="absolute inset-0 cursor-pointer bg-black/40" />
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border-button-default bg-background-primary-default shadow-card">
+        <div className="flex items-center gap-2 border-b border-separator-border px-3 py-2.5">
+          <RiSearchLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+          <input
+            autoFocus
+            type="text"
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+            placeholder="Quick Search"
+            aria-label="Quick Search"
+            className="min-w-0 flex-1 bg-transparent text-body-regular text-text-primary outline-none placeholder:text-text-tertiary"
+          />
+          <kbd className="shrink-0 rounded-md bg-background-secondary-default px-1.5 py-0.5 text-caption-1-medium text-text-tertiary">ESC</kbd>
+        </div>
+        <div className="max-h-72 overflow-y-auto p-1.5">
+          {hits.length === 0 ? (
+            <p className="px-2 py-3 text-body-regular text-text-tertiary">No matching threads.</p>
+          ) : (
+            hits.map((t) => (
+              <button key={t.id} type="button" onClick={() => onSelect(t.id)} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start hover:bg-background-secondary-hover">
+                <span className="min-w-0 flex-1 truncate text-body-medium text-text-primary">{t.title}</span>
+                <span className="shrink-0 text-body-2-regular text-text-tertiary">{t.repo}</span>
+                <span className="shrink-0 rounded-sm bg-background-tertiary-default px-1 py-px text-caption-1-medium text-text-secondary">{t.badge}</span>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Local composer: original pill + status row (57% ring)               */
+/* ------------------------------------------------------------------ */
+
+function ProgressRing({ progress }: { progress: number }) {
+  const dash = ((progress / 100) * 37.69911184307752).toFixed(3);
+  return (
+    <span className="flex items-center gap-1 rounded-[40px] bg-background-tertiary-default py-1 pe-2 ps-1.5">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" className="shrink-0 -rotate-90">
+        <circle cx="8" cy="8" r="6" fill="none" stroke="var(--color-neutral-300)" strokeWidth="2.5" />
+        <circle cx="8" cy="8" r="6" fill="none" stroke="var(--color-neutral-500)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={`${dash} 37.69911184307752`} />
+      </svg>
+      <span className="text-body-2-medium whitespace-nowrap text-text-secondary">{progress}%</span>
+    </span>
+  );
+}
+
+function LocalComposer({
+  value, onValueChange, onSubmit, onStop, busy, model, onModelChange,
+  project, onProjectChange, voiceOn, onVoiceToggle, files, onFiles, onRemoveFile, inputRef,
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+  onSubmit: () => void;
+  onStop: () => void;
+  busy: boolean;
+  model: string;
+  onModelChange: (m: string) => void;
+  project: string;
+  onProjectChange: (p: string) => void;
+  voiceOn: boolean;
+  onVoiceToggle: () => void;
+  files: string[];
+  onFiles: (names: string[]) => void;
+  onRemoveFile: (name: string) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+}) {
+  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+  const [agentMenuOpen, setAgentMenuOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
+
+  return (
+    <div className="flex w-full flex-col gap-2.5">
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-1">
+          {files.map((f) => (
+            <span key={f} className="flex items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-body-2-medium text-text-secondary">
+              <span className="max-w-40 truncate">{f}</span>
+              <button type="button" aria-label={`Remove ${f}`} onClick={() => onRemoveFile(f)} className="cursor-pointer text-text-tertiary hover:text-text-primary">
+                <RiCloseLine className="size-3.5" aria-hidden />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <ComposerLoader active={busy}>
+        <div className="relative">
+          <div className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-full p-2", busy ? "bg-transparent" : "bg-background-primary-default shadow-xs")}>
+            <input ref={fileRef} type="file" multiple className="hidden" aria-label="Choose files to attach" onChange={(e) => { const names = Array.from(e.target.files ?? []).map((f) => f.name); if (names.length > 0) onFiles(names); e.target.value = ""; }} />
+            <button
+              type="button"
+              aria-label="Add attachment"
+              aria-expanded="false"
+              onClick={() => fileRef.current?.click()}
+              className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-ai-chat-composer-add-background text-foreground-icon-primary transition-colors duration-150 ease hover:bg-ai-chat-composer-add-hover-background"
+            >
+              <RiAddLine className="size-5" aria-hidden />
+            </button>
+
+            <label className="sr-only" htmlFor="agent-composer-input">Message</label>
+            <input
+              id="agent-composer-input"
+              ref={inputRef}
+              type="text"
+              value={value}
+              onChange={(e) => onValueChange(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Ask me anything"
+              autoComplete="off"
+              aria-label="Message"
+              className="h-5 min-w-0 flex-1 bg-transparent text-body-regular text-text-primary caret-accent-500 outline-none placeholder:text-text-tertiary [&:not(:focus)]:[mask-image:linear-gradient(to_right,#000_calc(100%-32px),transparent_100%)] rtl:[&:not(:focus)]:[mask-image:linear-gradient(to_left,#000_calc(100%-32px),transparent_100%)]"
+            />
+
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                aria-expanded={modelMenuOpen}
+                onClick={() => setModelMenuOpen((o) => !o)}
+                className="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl bg-background-primary-default py-1.5 pe-1 ps-2 outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              >
+                <span className="px-0.5 text-body-medium whitespace-nowrap text-text-secondary">{model}</span>
+                <RiArrowDownSLine className={cx("size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", modelMenuOpen && "rotate-180")} aria-hidden />
+              </button>
+              {modelMenuOpen && (
+                <>
+                  <button type="button" aria-label="Close model menu" onClick={() => setModelMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+                  <div className="absolute end-0 bottom-10 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
+                    <button type="button" onClick={() => setModelMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
+                      Fable 5
+                      <span className="text-body-2-medium text-text-tertiary">Active</span>
+                    </button>
+                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多模型待实测确认</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 ps-1.5">
+              <button
+                type="button"
+                aria-label="Voice input"
+                aria-pressed={voiceOn}
+                onClick={onVoiceToggle}
+                className={cx(
+                  "flex size-9 cursor-pointer items-center justify-center rounded-full border border-border-button-default bg-background-primary-default shadow-xs transition-colors duration-150 ease hover:bg-background-primary-hover",
+                  voiceOn && "border-accent-500 bg-accent-50",
+                )}
+              >
+                <RiMicLine className="size-5 text-foreground-icon-primary" aria-hidden />
+              </button>
+              {busy ? (
+                <button type="button" onClick={onStop} aria-label="Stop generating" className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-background-secondary-default text-foreground-icon-secondary transition-colors hover:bg-background-secondary-hover">
+                  <RiCloseLine className="size-5" aria-hidden />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label="Send message"
+                  onClick={onSubmit}
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-button-primary text-white transition-opacity duration-200 ease"
+                >
+                  <RiArrowUpLine className="size-5" aria-hidden />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </ComposerLoader>
+
+      {/* Status row below the pill (original position). */}
+      <div className="px-1.5">
+        <div className="flex h-[26px] w-full items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button type="button" className="flex cursor-pointer items-center gap-1">
+              <RiGitBranchLine className="size-4 shrink-0 -scale-y-100 text-foreground-icon-secondary" aria-hidden />
+              <span className="flex items-center"><span className="text-body-2-medium whitespace-nowrap text-text-secondary">Main</span></span>
+            </button>
+            <div className="relative">
+              <button
+                type="button"
+                aria-expanded={projectMenuOpen}
+                onClick={() => setProjectMenuOpen((o) => !o)}
+                className="flex cursor-pointer items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              >
+                <RiFolderLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                <span className="flex items-center">
+                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">{project}</span>
+                  <RiArrowDownSLine className={cx("size-4 shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", projectMenuOpen && "rotate-180")} aria-hidden />
+                </span>
+              </button>
+              {projectMenuOpen && (
+                <>
+                  <button type="button" aria-label="Close project menu" onClick={() => setProjectMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+                  <div className="absolute start-0 bottom-7 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
+                    <button type="button" onClick={() => { onProjectChange("project-sea"); setProjectMenuOpen(false); }} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
+                      project-sea
+                      <span className="text-body-2-medium text-text-tertiary">Active</span>
+                    </button>
+                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多项目待实测确认</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                aria-expanded={agentMenuOpen}
+                onClick={() => setAgentMenuOpen((o) => !o)}
+                className="flex cursor-pointer items-center gap-1"
+              >
+                <RiInfinityLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                <span className="flex items-center">
+                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">Agent</span>
+                  <RiArrowDownSLine className={cx("size-4 shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", agentMenuOpen && "rotate-180")} aria-hidden />
+                </span>
+              </button>
+              {agentMenuOpen && (
+                <>
+                  <button type="button" aria-label="Close agent menu" onClick={() => setAgentMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
+                  <div className="absolute end-0 bottom-7 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
+                    <button type="button" onClick={() => setAgentMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
+                      Agent
+                      <span className="text-body-2-medium text-text-tertiary">Active</span>
+                    </button>
+                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多选项待实测确认</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <ProgressRing progress={57} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Code panel: 410px, Changes/Browser pills, separator drag            */
+/* ------------------------------------------------------------------ */
+
+function CodePanel({
+  width, expanded, onExpand, onToggle, onClose, onResize, terminalOpen, onTerminal,
+}: {
+  width: number;
+  expanded: boolean;
+  onExpand: () => void;
+  onToggle: () => void;
+  onClose: () => void;
+  onResize: (w: number) => void;
+  terminalOpen: boolean;
+  onTerminal: () => void;
+}) {
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
   const onDragStart = (event: React.PointerEvent) => {
     event.preventDefault();
-    dragRef.current = { startX: event.clientX, startWidth: panelWidth };
+    dragRef.current = { startX: event.clientX, startWidth: width };
     const move = (e: PointerEvent) => {
       if (!dragRef.current) return;
       const next = dragRef.current.startWidth + (dragRef.current.startX - e.clientX);
-      setPanelWidth(Math.min(640, Math.max(320, next)));
+      onResize(Math.min(640, Math.max(320, next)));
     };
     const up = () => {
       dragRef.current = null;
@@ -397,298 +934,195 @@ export default function AiChatTemplatePage() {
     window.addEventListener("pointerup", up);
   };
 
-  const shownChanges = changesUndone ? [] : CHANGED_FILES;
+  const onSeparatorKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowLeft") { event.preventDefault(); onResize(Math.min(640, Math.max(320, width + 16))); }
+    if (event.key === "ArrowRight") { event.preventDefault(); onResize(Math.min(640, Math.max(320, width - 16))); }
+  };
 
   return (
-    <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
-      <DashboardSidebar items={DASHBOARD_NAV} selected="ai-chat" className="hidden lg:flex" />
-
-      {navOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <button type="button" aria-label="Close navigation" onClick={() => setNavOpen(false)} className="absolute inset-0 cursor-pointer bg-black/40" />
-          <div className="relative flex h-full p-3">
-            <DashboardSidebar mobile items={DASHBOARD_NAV} selected="ai-chat" onClose={() => setNavOpen(false)} className="flex" />
-          </div>
+    <>
+      {/* Desktop panel (original: fixed 410px aside, hidden xl:flex) */}
+      <div className="relative hidden h-full shrink-0 xl:flex" style={{ width, minWidth: width, maxWidth: width, flexBasis: width }}>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize panels"
+          tabIndex={0}
+          onKeyDown={onSeparatorKeyDown}
+          onPointerDown={onDragStart}
+          className="group/drag absolute inset-y-0 -start-2.5 z-10 hidden w-5 cursor-col-resize touch-none justify-center outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring xl:flex"
+        >
+          <span className="absolute top-1/2 flex h-[25px] w-[15px] -translate-y-1/2 items-center justify-center gap-0.5 rounded-sm border border-border-button-default bg-background-primary-default shadow-xs transition-opacity duration-150 ease opacity-0 group-hover/drag:opacity-100 group-focus-visible/drag:opacity-100">
+            <span className="h-[13px] w-px bg-foreground-icon-quaternary" />
+            <span className="h-[13px] w-px bg-foreground-icon-quaternary" />
+            <span className="h-[13px] w-px bg-foreground-icon-quaternary" />
+          </span>
         </div>
-      )}
-
-      <div className="relative flex min-h-0 min-w-0 flex-1 gap-3 overflow-hidden">
-        {/* Chat surface */}
-        <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-3xl bg-background-secondary-default">
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-separator-border px-4">
-            <IconButton icon={navOpen ? RiCloseLine : RiMenuLine} size="small" aria-label="Open navigation" onClick={() => setNavOpen((o) => !o)} className="lg:hidden" />
-            <div className="flex min-w-0 flex-col leading-none">
-              <span className="truncate text-headline-medium text-text-primary">Agentic chat</span>
-              <span className="truncate text-body-2-regular text-text-tertiary">vibl coding project / {activeThread.title}</span>
-            </div>
-            <div className="ms-auto flex shrink-0 items-center gap-1">
-              <IconButton icon={theme === "dark" ? RiSunLine : RiMoonLine} size="small" aria-label={theme === "dark" ? "Use light mode" : "Use dark mode"} onClick={() => applyTheme(theme === "dark" ? "light" : "dark")} />
-              <IconButton icon={RiShareLine} size="small" aria-label="Share chat" onClick={shareChat} />
-              <div className="relative">
-                <IconButton icon={RiMore2Fill} size="small" aria-label="More options" onClick={() => setMoreMenuOpen((o) => !o)} />
-                {moreMenuOpen && (
-                  <>
-                    <button type="button" aria-label="Close menu" onClick={() => setMoreMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-                    <div className="absolute end-0 top-9 z-20 w-48 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                      <button type="button" onClick={() => { setMoreMenuOpen(false); exportThreads(); }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                        <RiDownloadLine className="size-4 shrink-0" aria-hidden /> Export chat
-                      </button>
-                      <button type="button" onClick={() => { setMoreMenuOpen(false); toggleUnread(activeId); }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                        <RiFileCopyLine className="size-4 shrink-0" aria-hidden /> {activeThread.unread ? "Mark as read" : "Mark as unread"}
-                      </button>
-                      <button type="button" onClick={() => { setMoreMenuOpen(false); deleteThread(activeId); }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                        <RiCloseLine className="size-4 shrink-0" aria-hidden /> Delete thread
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-              <IconButton icon={RiTerminalBoxLine} size="small" aria-label="Open terminal" onClick={() => setTerminalOpen((o) => !o)} className={cx(terminalOpen && "bg-background-secondary-hover")} />
-              <IconButton icon={RiCodeSSlashLine} size="small" aria-label={panelOpen ? "Close code" : "Open code"} onClick={() => setPanelOpen((o) => !o)} className={cx(panelOpen && "bg-background-secondary-hover")} />
-            </div>
-          </header>
-          {copied && (
-            <p role="status" className="shrink-0 px-4 pt-2 text-body-2-medium text-text-secondary">Chat copied to clipboard.</p>
-          )}
-
-          {/* Model / effort / branch / agent progress row */}
-          <div className="flex shrink-0 flex-wrap items-center gap-2 px-4 pt-3">
-            <div className="relative">
-              <button type="button" onClick={() => setModelMenuOpen((o) => !o)} className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-medium text-text-primary shadow-xs hover:bg-background-primary-hover">
-                <RiSparklingLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                {model}
-              </button>
-              {modelMenuOpen && (
-                <>
-                  <button type="button" aria-label="Close model menu" onClick={() => setModelMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-                  <div className="absolute start-0 top-10 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                    {MODELS.map((m) => (
-                      <button key={m} type="button" onClick={() => { setModel(m); setModelMenuOpen(false); }} className={cx("flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium hover:bg-background-secondary-hover", m === model ? "text-text-primary" : "text-text-secondary")}>
-                        {m}
-                        {m === model && <span className="text-body-2-medium text-text-tertiary">Active</span>}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-0.5 rounded-full border border-border-button-default bg-background-primary-default p-0.5" role="group" aria-label="Effort">
-              {EFFORTS.map((e) => (
-                <button key={e} type="button" aria-pressed={effort === e} onClick={() => setEffort(e)} className={cx("cursor-pointer rounded-full px-2.5 py-1 text-body-2-medium transition-colors", effort === e ? "bg-background-secondary-default text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary")}>
-                  {e}
-                </button>
-              ))}
-            </div>
-            <span className="hidden items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-2-medium text-text-secondary sm:flex">
-              <RiGitBranchLine className="size-3.5 shrink-0" aria-hidden /> Main
-            </span>
-            <span className="hidden rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-2-medium text-text-secondary md:inline">project-sea</span>
-            <span className="ms-auto flex items-center gap-2 text-body-2-medium text-text-secondary">
-              Agent
-              <span className="h-1.5 w-16 overflow-hidden rounded-full bg-background-tertiary-default sm:w-24">
-                <span className="block h-full rounded-full bg-accent-500 transition-[width] duration-300" style={{ width: `${progress}%` }} />
-              </span>
-              {progress >= 100 ? "Done" : `${progress}%`}
-            </span>
-          </div>
-
-          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
-            <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 pt-5 pb-6">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center gap-4 pt-16 text-center">
-                  <h2 className="text-title-2-medium text-text-primary">What can I help with?</h2>
-                  <p className="text-body-regular text-text-secondary">Demo mode: the answers are scripted. No model key needed.</p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {["Update the color tokens for dark mode", "Run lint and a production build", "What can this template do?"].map((s) => (
-                      <button key={s} type="button" onClick={() => submit(s)} className="cursor-pointer rounded-full bg-background-primary-default px-3.5 py-2 text-body-regular text-text-secondary shadow-xs transition-colors hover:bg-background-primary-hover">
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <AgentMessage key={message.id} role={message.role} text={message.text} streaming={busy && message.id === messages[messages.length - 1]?.id && message.role === "assistant"} at={message.at} />
-                ))
-              )}
-              {busy && <AgentThinking variant="wave" label="Thinking" className="px-1" />}
-            </div>
-          </div>
-
-          {terminalOpen && (
-            <div className="mx-3 mb-2 shrink-0 overflow-hidden rounded-xl border border-border-button-default bg-background-primary-default">
-              <div className="flex items-center justify-between border-b border-separator-border px-3 py-1.5">
-                <span className="flex items-center gap-1.5 text-body-2-medium text-text-secondary"><RiTerminalBoxLine className="size-4" aria-hidden /> Terminal</span>
-                <button type="button" aria-label="Close terminal" onClick={() => setTerminalOpen(false)} className="cursor-pointer text-text-tertiary hover:text-text-primary"><RiCloseLine className="size-4" aria-hidden /></button>
-              </div>
-              <pre className="overflow-x-auto px-3 py-2 text-body-2-regular whitespace-pre text-text-secondary">{TERMINAL_LINES.join("\n")}</pre>
-            </div>
-          )}
-
-          <div className="shrink-0 px-3 pb-3">
-            <div className="mx-auto w-full max-w-3xl">
-              <AgentComposer value={input} onValueChange={setInput} onSubmit={() => submit(input)} onStop={stopGenerating} busy={busy} model={model} provider="Demo mode" messageCount={messages.length} />
-            </div>
-          </div>
-        </div>
-
-        {/* Thread rail (original thread list), wide screens only */}
-        <AgentChatHistory threads={threads} activeId={activeId} onSelect={selectThread} onNewChat={startNewChat} onRename={renameThread} onToggleUnread={toggleUnread} onDelete={deleteThread} onExport={exportThreads} disabled={busy} className="hidden 2xl:flex" />
-
-        {/* Code panel */}
-        {panelOpen && (
-          <>
-            <button type="button" aria-label="Close code panel" onClick={() => setPanelOpen(false)} className="absolute inset-0 z-30 cursor-pointer bg-black/40 xl:hidden" />
-            <section aria-label="Code panel" className="absolute inset-y-3 right-3 z-40 flex w-[min(480px,92vw)] flex-col overflow-hidden rounded-3xl border border-border-button-default bg-background-secondary-default shadow-card xl:static xl:inset-auto xl:z-auto xl:w-auto xl:shrink-0 xl:shadow-none">
-              <div className="hidden h-full w-full xl:block" style={{ width: panelExpanded ? 640 : panelWidth }}>
-                <CodePanelInner
-                  tab={panelTab}
-                  onTab={setPanelTab}
-                  undone={changesUndone}
-                  files={shownChanges}
-                  onUndo={() => setChangesUndone(true)}
-                  onRestore={() => setChangesUndone(false)}
-                  onClose={() => setPanelOpen(false)}
-                  onExpand={() => { setPanelExpanded((e) => !e); setPanelWidth((w) => (w >= 640 ? 400 : 640)); }}
-                  expanded={panelExpanded}
-                  onDragStart={onDragStart}
-                  terminalOpen={terminalOpen}
-                  onTerminal={() => setTerminalOpen((o) => !o)}
-                />
-              </div>
-              <div className="flex min-h-0 w-full flex-1 flex-col xl:hidden">
-                <CodePanelInner
-                  tab={panelTab}
-                  onTab={setPanelTab}
-                  undone={changesUndone}
-                  files={shownChanges}
-                  onUndo={() => setChangesUndone(true)}
-                  onRestore={() => setChangesUndone(false)}
-                  onClose={() => setPanelOpen(false)}
-                  onExpand={() => setPanelOpen(false)}
-                  expanded={false}
-                  onDragStart={onDragStart}
-                  terminalOpen={terminalOpen}
-                  onTerminal={() => setTerminalOpen((o) => !o)}
-                />
-              </div>
-            </section>
-          </>
-        )}
+        <aside className="flex h-full w-full shrink-0 flex-col gap-2.5 overflow-hidden pt-2" aria-label="Code panel">
+          <CodePanelInner
+            expanded={expanded}
+            onExpand={onExpand}
+            onToggle={onToggle}
+            onClose={onClose}
+            terminalOpen={terminalOpen}
+            onTerminal={onTerminal}
+            mobile={false}
+          />
+        </aside>
       </div>
-    </div>
+
+      {/* Mobile drawer (original: w-[min(410px,calc(100%_-_12px))]) */}
+      <div className="fixed inset-0 z-50 flex xl:hidden">
+        <button type="button" aria-label="Close code" onClick={onClose} className="absolute inset-0 cursor-pointer bg-black/40" />
+        <div className="absolute inset-y-0 end-0 flex w-[min(410px,calc(100%_-_12px))] flex-col bg-background-full p-3 shadow-sidebar" style={{ animation: "agent-drawer-in 0.3s ease-in-out both" }}>
+          <div className="flex items-center justify-between px-1 pb-2">
+            <span className="text-headline-medium text-text-primary">Code</span>
+            <IconButton icon={RiCloseLine} size="small" aria-label="Close code" onClick={onClose} />
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-border-button-default bg-background-secondary-default">
+            <CodePanelInner
+              expanded={false}
+              onExpand={onClose}
+              onToggle={onClose}
+              onClose={onClose}
+              terminalOpen={terminalOpen}
+              onTerminal={onTerminal}
+              mobile
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
 function CodePanelInner({
-  tab, onTab, undone, files, onUndo, onRestore, onClose, onExpand, expanded, onDragStart, terminalOpen, onTerminal,
+  expanded, onExpand, onToggle, onClose, terminalOpen, onTerminal, mobile,
 }: {
-  tab: "code" | "changes" | "browser";
-  onTab: (t: "code" | "changes" | "browser") => void;
-  undone: boolean;
-  files: typeof CHANGED_FILES;
-  onUndo: () => void;
-  onRestore: () => void;
-  onClose: () => void;
-  onExpand: () => void;
   expanded: boolean;
-  onDragStart: (e: React.PointerEvent) => void;
+  onExpand: () => void;
+  onToggle: () => void;
+  onClose: () => void;
   terminalOpen: boolean;
   onTerminal: () => void;
+  mobile: boolean;
 }) {
-  return (
-    <div className="relative flex h-full min-h-0 w-full flex-col">
-      {/* drag handle (desktop) */}
-      <button type="button" aria-label="Resize code panel" onPointerDown={onDragStart} className="absolute inset-y-0 -left-2 z-10 hidden w-4 cursor-ew-resize xl:block" />
-      <header className="flex h-12 shrink-0 items-center gap-1 border-b border-separator-border px-3">
-        <div className="flex items-center gap-0.5 rounded-full bg-background-primary-default p-0.5" role="tablist" aria-label="Code panel tabs">
-          {([["code", "Code", RiCodeSSlashLine], ["changes", "Changes", RiBracesLine], ["browser", "Browser", RiSearchLine]] as const).map(([key, label, Icon]) => (
-            <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => onTab(key)} className={cx("flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-body-2-medium transition-colors", tab === key ? "bg-background-secondary-default text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary")}>
-              <Icon className="size-3.5" aria-hidden /> {label}
-            </button>
-          ))}
-        </div>
-        <div className="ms-auto flex shrink-0 items-center gap-0.5">
-          <IconButton icon={RiTerminalBoxLine} size="small" aria-label="Open terminal" onClick={onTerminal} className={cx(terminalOpen && "bg-background-secondary-hover")} />
-          <IconButton icon={RiExpandDiagonalLine} size="small" aria-label="Expand panel" onClick={onExpand} className={cx(expanded && "bg-background-secondary-hover")} />
-          <IconButton icon={RiCloseLine} size="small" aria-label="Close code" onClick={onClose} />
-        </div>
-      </header>
+  const [tab, setTab] = useState<"changes" | "browser">("changes");
+  const [undone, setUndone] = useState(false);
 
-      {tab === "code" && (
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="flex items-center justify-between px-4 pt-3 pb-1">
-            <p className="truncate text-body-2-medium text-text-secondary">boardui/app/components/button.tsx</p>
-            <span className="shrink-0 rounded-md bg-status-purple-background px-1.5 py-0.5 text-body-2-medium text-status-purple-text">+74 New</span>
-          </div>
-          <pre className="overflow-x-auto px-4 pb-4 text-body-2-regular leading-6 whitespace-pre text-text-secondary">
-            {CODE_LINES.map((line, i) => (
-              <span key={i} className="block">
-                <span className="me-3 inline-block w-5 text-end text-text-tertiary select-none">{i + 1}</span>
-                <span className="text-text-primary">{line}</span>
-              </span>
-            ))}
-          </pre>
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex h-[30px] w-full shrink-0 items-center justify-between px-1 pt-0">
+        <div role="group" aria-label="Panel view" className="relative inline-flex items-center gap-1">
+          <button
+            type="button"
+            aria-pressed={tab === "changes"}
+            data-pill-selected={tab === "changes" ? "" : undefined}
+            data-pill-variant="blue"
+            onClick={() => setTab("changes")}
+            className="group relative z-10 flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 py-[5px] outline-none transition-colors duration-150 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            <span aria-hidden="true" className={cx("pointer-events-none absolute inset-0 rounded-full bg-pill-tab-blue-hover-background transition-opacity duration-200 ease-out", tab === "changes" ? "opacity-0" : "opacity-0 group-hover:opacity-100")} />
+            <RiBracesLine className={cx("relative z-10 size-5 shrink-0", tab === "changes" ? "text-accent-500" : "text-foreground-icon-secondary")} aria-hidden />
+            <span className={cx("relative z-10 text-body-medium whitespace-nowrap", tab === "changes" ? "text-accent-500" : "text-text-secondary")}>Changes</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={tab === "browser"}
+            data-pill-variant="blue"
+            onClick={() => setTab("browser")}
+            className="group relative z-10 flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 py-[5px] outline-none transition-colors duration-150 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            <span aria-hidden="true" className={cx("pointer-events-none absolute inset-0 rounded-full bg-pill-tab-blue-hover-background transition-opacity duration-200 ease-out", tab === "browser" ? "opacity-0" : "opacity-0 group-hover:opacity-100")} />
+            <RiGlobalLine className={cx("relative z-10 size-5 shrink-0", tab === "browser" ? "text-accent-500" : "text-foreground-icon-secondary")} aria-hidden />
+            <span className={cx("relative z-10 text-body-medium whitespace-nowrap", tab === "browser" ? "text-accent-500" : "text-text-secondary")}>Browser</span>
+          </button>
         </div>
-      )}
+        <div className="flex items-center gap-2 pe-px">
+          <button type="button" aria-label="Open terminal" onClick={onTerminal} className="group cursor-pointer outline-none">
+            <RiTerminalBoxLine className={cx("size-4 transition-colors duration-150 group-hover:text-foreground-icon-hover group-focus-visible:text-foreground-icon-hover", terminalOpen ? "text-foreground-icon-primary" : "text-foreground-icon-secondary")} aria-hidden />
+          </button>
+          <button type="button" aria-label="Expand panel" onClick={onExpand} className="group cursor-pointer outline-none">
+            <RiExpandDiagonalLine className={cx("size-4 transition-colors duration-150 group-hover:text-foreground-icon-hover group-focus-visible:text-foreground-icon-hover", expanded ? "text-foreground-icon-primary" : "text-foreground-icon-secondary")} aria-hidden />
+          </button>
+          {mobile ? (
+            <button type="button" aria-label="Close code" onClick={onClose} className="group cursor-pointer outline-none">
+              <RiCloseLine className="size-4 text-foreground-icon-secondary transition-colors duration-150 group-hover:text-foreground-icon-hover" aria-hidden />
+            </button>
+          ) : (
+            <button type="button" aria-label="Toggle panel" onClick={onToggle} className="group cursor-pointer outline-none">
+              <RiSideBarLine className="size-4 text-foreground-icon-secondary transition-colors duration-150 group-hover:text-foreground-icon-hover group-focus-visible:text-foreground-icon-hover" aria-hidden />
+            </button>
+          )}
+        </div>
+      </div>
 
       {tab === "changes" && (
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-title-3-semibold text-text-primary">{undone ? "0 Uncomitted changes" : "12 Uncomitted changes"}</p>
-            <p className="shrink-0 text-body-2-medium whitespace-nowrap"><span className="text-text-primary">+156</span> <span className="text-text-error-primary">−23</span></p>
+        <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+          <div className="flex w-full flex-col">
+            <div className="flex w-full flex-col justify-center rounded-t-2lg border-x border-t border-background-secondary-default px-2.5 pt-1.5 pb-3.5">
+              <div className="flex w-full items-center gap-1.5">
+                <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">{undone ? "0 Uncomitted changes" : "12 Uncomitted changes"}</span>
+                  {!undone && (
+                    <>
+                      <span className="text-body-regular whitespace-nowrap text-emerald-700">+156</span>
+                      <span className="text-body-regular whitespace-nowrap text-red-600">-23</span>
+                    </>
+                  )}
+                </div>
+                {!undone && (
+                  <button type="button" aria-label="Undo changes" onClick={() => setUndone(true)} className="cursor-pointer">
+                    <RiArrowGoBackLine className="size-4 text-foreground-icon-secondary" aria-hidden />
+                  </button>
+                )}
+              </div>
+            </div>
+            {!undone && (
+              <div className="z-10 -mt-[7px] flex w-full items-center justify-between rounded-2lg bg-background-secondary-default py-1 pe-[5px] ps-1.5">
+                <div className="flex min-w-0 items-center gap-1">
+                  <svg aria-hidden="true" viewBox="0 0 16 15" className="h-[14.25px] w-4 shrink-0">
+                    <g stroke="#149ECA" strokeWidth="0.9" fill="none">
+                      <ellipse cx="8" cy="7.125" rx="7.2" ry="2.85" />
+                      <ellipse cx="8" cy="7.125" rx="7.2" ry="2.85" transform="rotate(60 8 7.125)" />
+                      <ellipse cx="8" cy="7.125" rx="7.2" ry="2.85" transform="rotate(120 8 7.125)" />
+                    </g>
+                    <circle cx="8" cy="7.125" r="1.4" fill="#149ECA" />
+                  </svg>
+                  <p className="truncate text-body-regular text-text-primary">
+                    boardui/app/components/button.tsx <span className="text-emerald-700">+74</span>
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 items-center justify-center rounded-sm bg-background-tertiary-default px-1 py-px text-caption-1-medium whitespace-nowrap text-text-secondary">New</span>
+              </div>
+            )}
           </div>
+          <div className="pt-[3px]" />
           {undone ? (
-            <div className="flex flex-col items-start gap-2 pt-4">
+            <div className="flex flex-col items-start gap-2 px-1.5 pt-2">
               <p className="text-body-regular text-text-secondary">All changes undone. Nothing to commit.</p>
-              <button type="button" onClick={onRestore} className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-medium text-text-primary hover:bg-background-primary-hover">
+              <button type="button" onClick={() => setUndone(false)} className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-medium text-text-primary hover:bg-background-primary-hover">
                 <RiArrowGoBackLine className="size-4" aria-hidden /> Restore changes
               </button>
             </div>
           ) : (
-            <>
-              <div className="flex flex-col gap-1.5 pt-3">
-                {files.map((file) => (
-                  <button key={file.path} type="button" onClick={() => onTab("code")} className="flex w-full cursor-pointer items-center gap-2 rounded-xl border border-border-button-default bg-background-primary-default px-3 py-2 text-start hover:bg-background-primary-hover">
-                    <RiFileCopyLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                    <span className="min-w-0 flex-1 truncate text-body-medium text-text-primary">{file.path}</span>
-                    <span className="shrink-0 text-body-2-medium text-text-secondary">+{file.added}</span>
-                    <span className="shrink-0 rounded-md bg-status-purple-background px-1.5 py-0.5 text-body-2-medium text-status-purple-text">{file.status}</span>
-                  </button>
+            <div className="min-h-0 w-full flex-1 overflow-y-auto ps-1.5 font-mono text-[13px] leading-[23px] [scrollbar-width:thin]">
+              <code dir="ltr" className="block">
+                {CODE_LINES.map((line, i) => (
+                  <span key={i} className="flex min-h-[23px] items-start gap-[13px]" style={{ color: "var(--color-text-secondary)" }}>
+                    <span className="w-5 shrink-0 text-end text-text-tertiary select-none">{i + 1}</span>
+                    <span className="min-w-0 flex-1 break-words whitespace-pre-wrap">{highlightLine(line, i + 1)}</span>
+                  </span>
                 ))}
-              </div>
-              <button type="button" onClick={onUndo} className="mt-3 flex cursor-pointer items-center gap-1.5 rounded-lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5 text-body-medium text-text-primary hover:bg-background-primary-hover">
-                <RiArrowGoBackLine className="size-4" aria-hidden /> Undo changes
-              </button>
-            </>
+              </code>
+            </div>
           )}
         </div>
       )}
 
       {tab === "browser" && (
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
-          <div className="flex items-center gap-2 rounded-lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5">
-            <RiSearchLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-            <span className="min-w-0 flex-1 truncate text-body-2-medium text-text-secondary">localhost:3000</span>
-          </div>
-          <div className="mt-3 overflow-hidden rounded-xl border border-border-button-default bg-background-primary-default">
-            <div className="flex items-center gap-2 border-b border-separator-border px-3 py-2">
-              <span className="size-2.5 rounded-full bg-chart-1" />
-              <span className="size-2.5 rounded-full bg-chart-2" />
-              <span className="size-2.5 rounded-full bg-chart-3" />
-              <span className="ms-2 text-body-2-medium text-text-tertiary">Preview — Home Dashboard</span>
-            </div>
-            <div className="flex flex-col gap-2 p-3">
-              <div className="h-8 w-2/3 rounded-lg bg-background-tertiary-default" />
-              <div className="grid grid-cols-3 gap-2">
-                <div className="h-14 rounded-lg bg-background-tertiary-default" />
-                <div className="h-14 rounded-lg bg-background-tertiary-default" />
-                <div className="h-14 rounded-lg bg-background-tertiary-default" />
-              </div>
-              <div className="h-24 rounded-lg bg-background-tertiary-default" />
-              <p className="pt-1 text-body-2-regular text-text-tertiary">Live preview of the running app after the agent&apos;s edits.</p>
-            </div>
-          </div>
+        <div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-4 py-8">
+          <p className="text-body-regular text-text-tertiary">Browser 视图内容待实测确认</p>
         </div>
       )}
     </div>

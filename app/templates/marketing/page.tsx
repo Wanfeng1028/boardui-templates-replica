@@ -1,18 +1,28 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   RiAddFill,
   RiAdvertisementLine,
   RiArrowDownSLine,
   RiArrowUpSLine,
+  RiCalendarLine,
   RiCloseLine,
   RiCursorLine,
+  RiDeleteBinLine,
   RiFilter3Fill,
+  RiGlobalLine,
+  RiGoogleFill,
+  RiLinkedinFill,
+  RiMailLine,
   RiMegaphoneLine,
+  RiMetaFill,
   RiMoneyDollarCircleLine,
   RiMoreFill,
   RiMouseLine,
+  RiPencilLine,
+  RiSearchLine,
+  RiTwitterXFill,
 } from "@remixicon/react";
 import {
   Area,
@@ -79,20 +89,12 @@ const SESSION_CHANNELS = [
   { name: "LinkedIn", pct: 8, color: "bg-chart-3" },
   { name: "Email", pct: 7, color: "bg-chart-2" },
 ];
-const SESSION_CAMPAIGNS = [
-  { name: "Founder story video · Global", pct: 31 },
-  { name: "Holiday gift guide · Global", pct: 24 },
-  { name: "Newsletter promo · US", pct: 18 },
-  { name: "Webinar signups · UK", pct: 15 },
-  { name: "Spring launch · UK", pct: 12 },
-];
-const SESSION_PAGES = [
-  { name: "/pricing", pct: 32 },
-  { name: "/features", pct: 24 },
-  { name: "/blog", pct: 18 },
-  { name: "/", pct: 14 },
-  { name: "/templates", pct: 12 },
-];
+/**
+ * Sessions — the original SSR only renders the Channels panel. The
+ * Campaigns / Landing pages panels are not in the SSR HTML, so their data
+ * is unknown; those tabs show a "pending live verification" note instead
+ * of invented numbers.
+ */
 
 const ROAS_MONTHS = [
   { label: "Jan", spend: 12.1, roas: 3.1 },
@@ -139,17 +141,29 @@ const CHANNELS = ["Google Ads", "Meta", "X Ads", "LinkedIn", "Email", "Referral"
 const OBJECTIVES = ["Conversions", "Traffic", "Awareness", "Leads", "Retargeting"];
 
 const EXACT_CAMPAIGNS: Campaign[] = [
-  { id: 1, name: "Founder story video · Global", channel: "Meta", delivery: "Active", objective: "Awareness", updated: "Jul 22, 2026", sortDate: "2026-07-22", spend: 34800 },
-  { id: 2, name: "Holiday gift guide · Global", channel: "Google Ads", delivery: "Paused", objective: "Traffic", updated: "Sep 16, 2026", sortDate: "2026-09-16", spend: 30884 },
-  { id: 3, name: "Founder story video · US", channel: "Meta", delivery: "Active", objective: "Conversions", updated: "Dec 24, 2026", sortDate: "2026-12-24", spend: 1330 },
-  { id: 4, name: "Newsletter promo · EU", channel: "Email", delivery: "Paused", objective: "Leads", updated: "Dec 08, 2026", sortDate: "2026-12-08", spend: 34445 },
-  { id: 5, name: "Spring launch · UK", channel: "X Ads", delivery: "Draft", objective: "Awareness", updated: "Oct 04, 2026", sortDate: "2026-10-04", spend: 0 },
-  { id: 6, name: "Brand search · US", channel: "Google Ads", delivery: "Paused", objective: "Leads", updated: "Mar 23, 2026", sortDate: "2026-03-23", spend: 19116 },
-  { id: 7, name: "Cart retargeting · UK", channel: "LinkedIn", delivery: "Draft", objective: "Awareness", updated: "Aug 21, 2026", sortDate: "2026-08-21", spend: 0 },
-  { id: 8, name: "Newsletter promo · US", channel: "Email", delivery: "Active", objective: "Awareness", updated: "Oct 24, 2026", sortDate: "2026-10-24", spend: 28095 },
-  { id: 9, name: "Webinar signups · UK", channel: "LinkedIn", delivery: "Active", objective: "Awareness", updated: "Mar 08, 2026", sortDate: "2026-03-08", spend: 25305 },
-  { id: 10, name: "Case study promo · UK", channel: "Referral", delivery: "Active", objective: "Retargeting", updated: "Mar 01, 2026", sortDate: "2026-03-01", spend: 333 },
+  { id: 1, name: "Founder story video · Global", channel: "Referral", delivery: "Active", objective: "Awareness", updated: "Jul 22, 2026", sortDate: "2026-07-22", spend: 34800 },
+  { id: 2, name: "Holiday gift guide · Global", channel: "Meta", delivery: "Paused", objective: "Traffic", updated: "Sep 16, 2026", sortDate: "2026-09-16", spend: 30884 },
+  { id: 3, name: "Founder story video · US", channel: "LinkedIn", delivery: "Active", objective: "Conversions", updated: "Dec 24, 2026", sortDate: "2026-12-24", spend: 1330 },
+  { id: 4, name: "Newsletter promo · EU", channel: "Referral", delivery: "Paused", objective: "Leads", updated: "Dec 08, 2026", sortDate: "2026-12-08", spend: 34445 },
+  { id: 5, name: "Spring launch · UK", channel: "Referral", delivery: "Draft", objective: "Awareness", updated: "Oct 04, 2026", sortDate: "2026-10-04", spend: 0 },
+  { id: 6, name: "Brand search · US", channel: "Referral", delivery: "Paused", objective: "Leads", updated: "Mar 23, 2026", sortDate: "2026-03-23", spend: 19116 },
+  { id: 7, name: "Cart retargeting · UK", channel: "Referral", delivery: "Draft", objective: "Awareness", updated: "Aug 21, 2026", sortDate: "2026-08-21", spend: 0 },
+  { id: 8, name: "Newsletter promo · US", channel: "Meta", delivery: "Active", objective: "Awareness", updated: "Oct 24, 2026", sortDate: "2026-10-24", spend: 28095 },
+  { id: 9, name: "Webinar signups · UK", channel: "X Ads", delivery: "Active", objective: "Awareness", updated: "Mar 08, 2026", sortDate: "2026-03-08", spend: 25305 },
+  { id: 10, name: "Case study promo · UK", channel: "Google Ads", delivery: "Active", objective: "Retargeting", updated: "Mar 01, 2026", sortDate: "2026-03-01", spend: 333 },
 ];
+
+// Channel brand mark, as in the original: a 32px rounded tile with the
+// channel's brand glyph, `title` set to the channel name. The original
+// shows no channel text next to the campaign name.
+const CHANNEL_ICON: Record<string, typeof RiMetaFill> = {
+  Referral: RiGlobalLine,
+  Meta: RiMetaFill,
+  LinkedIn: RiLinkedinFill,
+  "X Ads": RiTwitterXFill,
+  "Google Ads": RiGoogleFill,
+  Email: RiMailLine,
+};
 
 const GENERATED_NAMES = [
   "Product demo reel", "Black Friday teaser", "Onboarding email drip", "Feature announcement",
@@ -196,7 +210,8 @@ function formatMoney(n: number) {
   return `$${n.toLocaleString("en-US")}`;
 }
 
-function Donut({ active, onSelect }: { active: string | null; onSelect: (name: string | null) => void }) {
+// Static donut: the original chart and legend are not clickable.
+function Donut() {
   const r = 64;
   const circumference = 2 * Math.PI * r;
   let offset = 0;
@@ -215,12 +230,9 @@ function Donut({ active, onSelect }: { active: string | null; onSelect: (name: s
               r={r}
               fill="none"
               stroke={channel.color}
-              strokeWidth={active === channel.name ? 26 : 22}
+              strokeWidth={22}
               strokeDasharray={`${Math.max(dash - 2, 1)} ${circumference - Math.max(dash - 2, 1)}`}
               strokeDashoffset={-offset}
-              opacity={active && active !== channel.name ? 0.3 : 1}
-              className="cursor-pointer transition-opacity"
-              onClick={() => onSelect(active === channel.name ? null : channel.name)}
             >
               <title>{`${channel.name}: ${formatMoney(channel.value)}`}</title>
             </circle>
@@ -234,6 +246,77 @@ function Donut({ active, onSelect }: { active: string | null; onSelect: (name: s
         <p className="text-body-2-regular text-text-tertiary">Paid search</p>
       </div>
     </div>
+  );
+}
+
+const PERIOD_OPTIONS = ["Last 7 days", "Last 30 days", "Last 90 days", "This year"];
+
+/**
+ * "Change period" button, as in the original: calendar icon + current
+ * period label + chevron, opening a period menu. The menu's option list is
+ * NOT in the original SSR HTML (menus render client-side), so the options
+ * here are provisional and need live verification against the original.
+ */
+function PeriodButton({
+  id,
+  label,
+  open,
+  onToggle,
+  onPick,
+}: {
+  id: string;
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  onPick: (value: string) => void;
+}) {
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        aria-label="Change period"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={onToggle}
+        className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-2lg border border-border-button-default bg-background-primary-default ps-2 pe-1.5 text-text-secondary shadow-xs outline-none transition-colors duration-150 ease-out hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+      >
+        <RiCalendarLine className="size-4 shrink-0" aria-hidden />
+        <span className="text-body-medium whitespace-nowrap text-text-primary">{label}</span>
+        <RiArrowDownSLine className="size-4 shrink-0" aria-hidden />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close period menu"
+            onClick={onToggle}
+            className="fixed inset-0 z-30 cursor-default"
+          />
+          <div
+            id={id}
+            role="menu"
+            aria-label="Change period"
+            className="absolute start-0 top-9 z-40 w-40 rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-lg"
+          >
+            {PERIOD_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                role="menuitem"
+                aria-current={option === label ? "true" : undefined}
+                onClick={() => onPick(option)}
+                className={cx(
+                  "w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium hover:bg-background-secondary-hover",
+                  option === label ? "text-text-primary" : "text-text-secondary",
+                )}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </span>
   );
 }
 
@@ -260,22 +343,44 @@ export default function MarketingTemplatePage() {
   const [channelFilter, setChannelFilter] = useState("All channels");
   const [objectiveFilter, setObjectiveFilter] = useState("All objectives");
   const [spendFilter, setSpendFilter] = useState("All spend");
+  const [searchQuery, setSearchQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(true);
-  const [sortKey, setSortKey] = useState<"name" | "date" | "spend">("date");
+  // No default sort: the original first screen shows the rows in their
+  // original order (Jul 22 / Sep 16 / Dec 24 / ...), not sorted by date.
+  const [sortKey, setSortKey] = useState<"name" | "date" | "spend" | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [sessionTab, setSessionTab] = useState<"Channels" | "Campaigns" | "Landing pages">("Channels");
-  const [activeChannel, setActiveChannel] = useState<string | null>(null);
+  const [sessionsExpanded, setSessionsExpanded] = useState(false);
+  const [periods, setPeriods] = useState({ funnel: "Last 30 days", spend: "Last 30 days", roas: "This year", visitors: "This year" });
+  const [periodMenu, setPeriodMenu] = useState<keyof typeof periods | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [roasHover, setRoasHover] = useState<number | null>(null);
   const [visitorHover, setVisitorHover] = useState<number | null>(null);
   const [actionFor, setActionFor] = useState<number | null>(null);
   const [editor, setEditor] = useState<{ mode: "new" | "edit"; campaign: Campaign } | null>(null);
 
+  // Esc closes the editor drawer, the row action menu and the period menu.
+  useEffect(() => {
+    if (!editor && actionFor === null && periodMenu === null) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setEditor(null);
+        setActionFor(null);
+        setPeriodMenu(null);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [editor, actionFor, periodMenu]);
+
   const gradientId = useId();
   const PAGE_SIZE = 10;
 
   const filtered = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     const rows = campaigns.filter((c) => {
+      if (query && !c.name.toLowerCase().includes(query)) return false;
       if (channelFilter !== "All channels" && c.channel !== channelFilter) return false;
       if (objectiveFilter !== "All objectives" && c.objective !== objectiveFilter) return false;
       if (spendFilter === "Under $1,000" && c.spend >= 1000) return false;
@@ -284,21 +389,39 @@ export default function MarketingTemplatePage() {
       if (spendFilter === "Over $20,000" && c.spend <= 20000) return false;
       return true;
     });
-    rows.sort((a, b) => {
-      const cmp =
-        sortKey === "name"
-          ? a.name.localeCompare(b.name)
-          : sortKey === "date"
-            ? a.sortDate.localeCompare(b.sortDate)
-            : a.spend - b.spend;
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    // No sort key = original row order (the original's first screen).
+    if (sortKey) {
+      rows.sort((a, b) => {
+        const cmp =
+          sortKey === "name"
+            ? a.name.localeCompare(b.name)
+            : sortKey === "date"
+              ? a.sortDate.localeCompare(b.sortDate)
+              : a.spend - b.spend;
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
     return rows;
-  }, [campaigns, channelFilter, objectiveFilter, spendFilter, sortKey, sortDir]);
+  }, [campaigns, searchQuery, channelFilter, objectiveFilter, spendFilter, sortKey, sortDir]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const selectedOnPage = pageRows.filter((c) => selectedIds.includes(c.id)).length;
+  const allPageSelected = pageRows.length > 0 && selectedOnPage === pageRows.length;
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const pageIds = pageRows.map((c) => c.id);
+      if (allPageSelected) return prev.filter((id) => !pageIds.includes(id));
+      return [...new Set([...prev, ...pageIds])];
+    });
+  }
+
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   const roasPoint = roasHover !== null ? ROAS_MONTHS[roasHover] : null;
   const visitorPoint = visitorHover !== null ? VISITOR_MONTHS[visitorHover] : null;
@@ -421,10 +544,19 @@ export default function MarketingTemplatePage() {
               <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">96.4K</p>
               <Chip variant="bold" color="lime">+5.8%</Chip>
             </div>
-            <p className="text-body-2-medium text-text-tertiary">Last 30 days</p>
+            <PeriodButton
+              id="funnel"
+              label={periods.funnel}
+              open={periodMenu === "funnel"}
+              onToggle={() => setPeriodMenu((cur) => (cur === "funnel" ? null : "funnel"))}
+              onPick={(value) => {
+                setPeriods((prev) => ({ ...prev, funnel: value }));
+                setPeriodMenu(null);
+              }}
+            />
           </div>
           <div className="flex w-full flex-col gap-3">
-            {FUNNEL.map((step, i) => (
+            {FUNNEL.map((step) => (
               <div key={step.label}>
                 <div className="flex w-full flex-col gap-1.5">
                   <div className="flex w-full items-center justify-between">
@@ -435,11 +567,6 @@ export default function MarketingTemplatePage() {
                     <div className="h-full rounded-full bg-chart-2-active transition-[width] duration-500" style={{ width: `${step.pct}%` }} />
                   </div>
                 </div>
-                {i < FUNNEL.length - 1 && (
-                  <p className="mt-1.5 ps-1 text-body-2-regular text-text-tertiary tabular-nums">
-                    ↓ {((FUNNEL[i + 1].pct / step.pct) * 100).toFixed(1)}% convert
-                  </p>
-                )}
               </div>
             ))}
           </div>
@@ -452,20 +579,23 @@ export default function MarketingTemplatePage() {
               <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">$24,880</p>
               <Chip variant="bold" color="lime">+8.4%</Chip>
             </div>
-            <p className="text-body-2-medium text-text-tertiary">Last 30 days</p>
+            <PeriodButton
+              id="spend"
+              label={periods.spend}
+              open={periodMenu === "spend"}
+              onToggle={() => setPeriodMenu((cur) => (cur === "spend" ? null : "spend"))}
+              onPick={(value) => {
+                setPeriods((prev) => ({ ...prev, spend: value }));
+                setPeriodMenu(null);
+              }}
+            />
           </div>
-          <Donut active={activeChannel} onSelect={setActiveChannel} />
+          <Donut />
           <div className="flex w-full flex-col gap-1">
             {CHANNEL_SPEND.map((channel) => (
-              <button
+              <div
                 key={channel.name}
-                type="button"
-                aria-pressed={activeChannel === channel.name}
-                onClick={() => setActiveChannel(activeChannel === channel.name ? null : channel.name)}
-                className={cx(
-                  "flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start transition-colors hover:bg-background-tertiary-default",
-                  activeChannel === channel.name && "bg-background-tertiary-default",
-                )}
+                className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-start"
               >
                 <span className="flex items-center gap-2 text-body-medium text-text-primary">
                   <span className={cx("size-2 rounded-full", channel.dot)} aria-hidden />
@@ -475,12 +605,12 @@ export default function MarketingTemplatePage() {
                   {formatMoney(channel.value)}
                   <span className="ms-2 text-text-tertiary">{Math.round((channel.value / CHANNEL_TOTAL) * 100)}%</span>
                 </span>
-              </button>
+              </div>
             ))}
           </div>
         </section>
 
-        <section className={cardClass} aria-label="Sessions">
+        <section className={cx(cardClass, "relative")} aria-label="Sessions">
           <div className="flex w-full items-center justify-between gap-2">
             <p className="text-body-medium text-text-secondary">Sessions</p>
             <div className="flex rounded-full bg-background-tertiary-default p-0.5" role="tablist" aria-label="Sessions breakdown">
@@ -501,11 +631,31 @@ export default function MarketingTemplatePage() {
               ))}
             </div>
           </div>
-          {sessionTab === "Channels" && <BarList rows={SESSION_CHANNELS} />}
-          {sessionTab === "Campaigns" && <BarList rows={SESSION_CAMPAIGNS.map((r) => ({ ...r, color: "bg-chart-5-active" }))} />}
-          {sessionTab === "Landing pages" && <BarList rows={SESSION_PAGES.map((r) => ({ ...r, color: "bg-chart-4-active" }))} />}
+          {sessionTab === "Channels" && (
+            <div className="pb-5">
+              <BarList rows={sessionsExpanded ? SESSION_CHANNELS : SESSION_CHANNELS.slice(0, 3)} />
+            </div>
+          )}
+          {sessionTab !== "Channels" && (
+            <p className="py-6 text-center text-body-2-regular text-text-tertiary">
+              待实测：原版 SSR 只渲染 Channels 面板，此面板数据需真机核对后补。
+            </p>
+          )}
+          {sessionTab === "Channels" && (
+            <button
+              type="button"
+              aria-label={sessionsExpanded ? "Show less" : "Show 2 more"}
+              onClick={() => setSessionsExpanded((v) => !v)}
+              className="absolute bottom-1 left-1/2 flex h-5 w-10 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-border-button-default bg-background-primary-default shadow-xs outline-none transition-colors duration-150 hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <RiArrowDownSLine
+                className={cx("size-3.5 text-text-secondary transition-transform duration-200 ease-out", sessionsExpanded && "rotate-180")}
+                aria-hidden
+              />
+            </button>
+          )}
           <p className="text-body-2-regular text-text-tertiary">
-            {sessionTab === "Channels" ? "Share of sessions by acquisition channel." : sessionTab === "Campaigns" ? "Share of sessions by campaign." : "Share of sessions by landing page."}
+            {sessionTab === "Channels" ? "Share of sessions by acquisition channel." : "Share of sessions by campaign or landing page."}
           </p>
         </section>
       </div>
@@ -524,7 +674,16 @@ export default function MarketingTemplatePage() {
                 </p>
                 <Chip variant="bold" color="lime">{roasPoint ? `${roasPoint.roas.toFixed(1)}x ROAS` : "+9.4%"}</Chip>
               </div>
-              <p className="text-body-2-medium text-text-tertiary tabular-nums">This year</p>
+              <PeriodButton
+                id="roas"
+                label={periods.roas}
+                open={periodMenu === "roas"}
+                onToggle={() => setPeriodMenu((cur) => (cur === "roas" ? null : "roas"))}
+                onPick={(value) => {
+                  setPeriods((prev) => ({ ...prev, roas: value }));
+                  setPeriodMenu(null);
+                }}
+              />
             </div>
             <dl className="flex shrink-0 items-center gap-4 text-body-2-medium text-text-secondary">
               <div className="flex items-center gap-1.5">
@@ -552,7 +711,7 @@ export default function MarketingTemplatePage() {
                 <YAxis yAxisId="spend" width={40} tickCount={4} tickFormatter={(v: number) => `$${v}K`} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
                 <YAxis yAxisId="roas" orientation="right" width={32} domain={[2.5, 4.5]} tickCount={4} tickFormatter={(v: number) => `${v}x`} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} interval="preserveStartEnd" tick={{ fontSize: 13, fill: "var(--color-text-tertiary)" }} />
-                <Tooltip content={() => null} cursor={{ stroke: "var(--color-chart-cursor)", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                <Tooltip cursor={{ stroke: "var(--color-chart-cursor)", strokeWidth: 1, strokeDasharray: "4 4" }} />
                 <Bar yAxisId="spend" dataKey="spend" fill="var(--color-chart-6)" radius={[4, 4, 0, 0]} maxBarSize={28} />
                 <Line yAxisId="roas" type="monotone" dataKey="roas" stroke="var(--color-chart-5-active)" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </ComposedChart>
@@ -578,7 +737,16 @@ export default function MarketingTemplatePage() {
                 <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">{visitorTotal.toLocaleString("en-US")}</p>
                 <Chip variant="bold" color="lime">+8.8%</Chip>
               </div>
-              <p className="text-body-2-medium text-text-tertiary tabular-nums">This year</p>
+              <PeriodButton
+                id="visitors"
+                label={periods.visitors}
+                open={periodMenu === "visitors"}
+                onToggle={() => setPeriodMenu((cur) => (cur === "visitors" ? null : "visitors"))}
+                onPick={(value) => {
+                  setPeriods((prev) => ({ ...prev, visitors: value }));
+                  setPeriodMenu(null);
+                }}
+              />
             </div>
             <dl className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 text-body-2-medium text-text-secondary">
               <div className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-chart-1" aria-hidden /><dt>Organic</dt></div>
@@ -607,7 +775,7 @@ export default function MarketingTemplatePage() {
                 <CartesianGrid vertical={false} stroke="var(--color-chart-track)" />
                 <YAxis width={40} tickCount={4} tickFormatter={(v: number) => `${Math.round(v / 1000)}K`} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} interval="preserveStartEnd" tick={{ fontSize: 13, fill: "var(--color-text-tertiary)" }} />
-                <Tooltip content={() => null} cursor={{ stroke: "var(--color-chart-cursor)", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                <Tooltip cursor={{ stroke: "var(--color-chart-cursor)", strokeWidth: 1, strokeDasharray: "4 4" }} />
                 <Area type="monotone" dataKey="organic" stackId="1" stroke="var(--color-chart-1-active)" strokeWidth={2} fill={`url(#${gradientId}-organic)`} dot={false} activeDot={{ r: 3 }} />
                 <Area type="monotone" dataKey="paid" stackId="1" stroke="var(--color-chart-6-active)" strokeWidth={2} fill="var(--color-chart-6)" fillOpacity={0.12} dot={false} activeDot={{ r: 3 }} />
                 <Area type="monotone" dataKey="social" stackId="1" stroke="var(--color-chart-3-active)" strokeWidth={2} fill="var(--color-chart-3)" fillOpacity={0.12} dot={false} activeDot={{ r: 3 }} />
@@ -636,9 +804,20 @@ export default function MarketingTemplatePage() {
             Total Results <span className="text-text-secondary tabular-nums">{filtered.length}</span>{" "}
             <span className="text-body-medium font-normal text-text-secondary">campaigns</span>
           </p>
-          <p className="text-body-2-regular text-text-tertiary">
-            Page {safePage} of {pageCount} · click a column header to sort
-          </p>
+        </div>
+
+        <div className="flex w-full items-center gap-2 rounded-xl border border-border-button-default bg-background-primary-default px-2.5 py-2">
+          <RiSearchLine className="size-5 shrink-0 text-foreground-icon-primary" aria-hidden />
+          <input
+            value={searchQuery}
+            onChange={(event) => {
+              setSearchQuery(event.target.value);
+              setPage(1);
+            }}
+            aria-label="Search campaigns"
+            placeholder="Search"
+            className="min-w-0 flex-1 bg-transparent text-body-medium text-text-primary outline-none placeholder:text-text-tertiary"
+          />
         </div>
 
         {filtersOpen && (
@@ -672,6 +851,18 @@ export default function MarketingTemplatePage() {
           <table className="w-full min-w-[720px] border-collapse text-start">
             <thead>
               <tr className="border-b border-border-table">
+                <th className="w-8 py-2 pe-2">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all campaigns on this page"
+                    checked={allPageSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = selectedOnPage > 0 && !allPageSelected;
+                    }}
+                    onChange={toggleSelectAll}
+                    className="size-4 cursor-pointer accent-current align-middle"
+                  />
+                </th>
                 <th className="py-2 pe-3 text-start">
                   <button type="button" onClick={() => toggleSort("name")} className="flex cursor-pointer items-center gap-1 text-caption-1-semibold text-text-tertiary uppercase hover:text-text-primary">
                     Campaign {sortIcon("name")}
@@ -693,11 +884,29 @@ export default function MarketingTemplatePage() {
               </tr>
             </thead>
             <tbody>
-              {pageRows.map((campaign) => (
+              {pageRows.map((campaign) => {
+                const ChannelIcon = CHANNEL_ICON[campaign.channel] ?? RiGlobalLine;
+                return (
                 <tr key={campaign.id} className="border-b border-border-table last:border-b-0 hover:bg-background-tertiary-default/50">
+                  <td className="py-3 pe-2">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${campaign.name}`}
+                      checked={selectedIds.includes(campaign.id)}
+                      onChange={() => toggleSelect(campaign.id)}
+                      className="size-4 cursor-pointer accent-current align-middle"
+                    />
+                  </td>
                   <td className="py-3 pe-3">
-                    <p className="text-body-medium text-text-primary">{campaign.name}</p>
-                    <p className="text-body-2-regular text-text-tertiary">{campaign.channel}</p>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background-tertiary-default"
+                        title={campaign.channel}
+                      >
+                        <ChannelIcon className="size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
+                      </span>
+                      <span className="truncate text-body-medium text-text-primary">{campaign.name}</span>
+                    </span>
                   </td>
                   <td className="py-3 pe-3">
                     <select
@@ -715,12 +924,26 @@ export default function MarketingTemplatePage() {
                   <td className="py-3 pe-3 text-body-medium text-text-secondary tabular-nums">{campaign.updated}</td>
                   <td className="py-3 pe-3 text-body-medium text-text-primary tabular-nums">{formatMoney(campaign.spend)}</td>
                   <td className="relative py-3 text-end">
-                    <IconButton
-                      icon={RiMoreFill}
-                      size="small"
-                      aria-label={`Actions for ${campaign.name}`}
-                      onClick={() => setActionFor((cur) => (cur === campaign.id ? null : campaign.id))}
-                    />
+                    <span className="inline-flex items-center justify-end gap-1">
+                      <IconButton
+                        icon={RiDeleteBinLine}
+                        size="small"
+                        aria-label="Delete"
+                        onClick={() => deleteCampaign(campaign.id)}
+                      />
+                      <IconButton
+                        icon={RiPencilLine}
+                        size="small"
+                        aria-label="Edit"
+                        onClick={() => setEditor({ mode: "edit", campaign })}
+                      />
+                      <IconButton
+                        icon={RiMoreFill}
+                        size="small"
+                        aria-label={`More actions for ${campaign.name}`}
+                        onClick={() => setActionFor((cur) => (cur === campaign.id ? null : campaign.id))}
+                      />
+                    </span>
                     {actionFor === campaign.id && (
                       <div className="absolute right-0 z-30 mt-1 w-40 rounded-xl border border-border-button-default bg-background-primary-default p-1 text-start shadow-lg">
                         <button type="button" onClick={() => { setActionFor(null); setEditor({ mode: "edit", campaign }); }} className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-body-medium text-text-primary hover:bg-background-secondary-hover">
@@ -736,10 +959,11 @@ export default function MarketingTemplatePage() {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-body-regular text-text-tertiary">
+                  <td colSpan={7} className="py-8 text-center text-body-regular text-text-tertiary">
                     No campaigns match these filters — clear a filter to see more.
                   </td>
                 </tr>

@@ -29,7 +29,17 @@ const DETAILS: Detail[] = [
   { icon: RiStethoscopeLine, label: "GP Doctor", value: "Mattheus Clarkson" },
 ];
 
-export function PatientInfoCard({ className }: { className?: string } = {}) {
+export function PatientInfoCard({
+  className,
+  onAddPhoto,
+  photoSrc,
+}: {
+  className?: string;
+  /** Called when the "Add profile photo" button is pressed. */
+  onAddPhoto?: () => void;
+  /** Photo URL shown in the avatar when set (falls back to initials). */
+  photoSrc?: string;
+} = {}) {
   const localize = useTemplateCopy();
   return localize((
     <section
@@ -39,13 +49,14 @@ export function PatientInfoCard({ className }: { className?: string } = {}) {
       )}
     >
       <div className="relative">
-        <Avatar size="lg" initials="M" className="size-[66px] text-[24.75px]" />
+        <Avatar size="lg" initials="M" src={photoSrc} className="size-[66px] text-[24.75px]" />
         <Button
           variant="secondary"
           size="xs"
           iconOnly
           leadingIcon={RiAddLine}
           aria-label="Add profile photo"
+          onClick={onAddPhoto}
           className="absolute -top-0.5 -end-0.5 rounded-full"
         />
       </div>

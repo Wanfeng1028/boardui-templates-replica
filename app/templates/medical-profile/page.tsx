@@ -5,14 +5,14 @@ import {
   RiAsterisk,
   RiCheckLine,
   RiCloseLine,
-  RiDeleteBinLine,
-  RiEyeLine,
+  RiEditLine,
+  RiFileTextLine,
   RiFilter3Fill,
   RiMoonClearFill,
-  RiMore2Fill,
   RiRunLine,
+  RiSearchLine,
 } from "@remixicon/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
@@ -21,6 +21,8 @@ import { PatientInfoCard } from "@/components/application/medical/patient-info-c
 import { WeekRangePill } from "@/components/application/medical/week-range-pill";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Button } from "@/components/base/buttons/button";
+import { IconButton } from "@/components/base/buttons/icon-button";
+import { InputBase } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
 
 /**
@@ -59,10 +61,14 @@ const STEP_DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 /* Sleep score                                                         */
 /* ------------------------------------------------------------------ */
 
+/* Row dot colours are the originals (verified from the SSR styles):
+   Duration chart-5, Bedtime chart-3, Interruptions chart-6. `color` is
+   the ring-segment colour (unchanged — the ring itself is client-
+   rendered, so its colours are not verifiable from SSR). */
 const SLEEP_ROWS = [
-  { key: "duration", label: "Duration", value: "7h 50m", score: 49, max: 50, color: "var(--color-chart-3-active)" },
-  { key: "bedtime", label: "Bedtime", value: "20m earlier", score: 29, max: 30, color: "var(--color-chart-2)" },
-  { key: "interruptions", label: "Interruptions", value: "5m wake up", score: 20, max: 20, color: "var(--color-chart-4)" },
+  { key: "duration", label: "Duration", value: "7h 50m", score: 49, max: 50, color: "var(--color-chart-3-active)", dot: "var(--color-chart-5)" },
+  { key: "bedtime", label: "Bedtime", value: "20m earlier", score: 29, max: 30, color: "var(--color-chart-2)", dot: "var(--color-chart-3)" },
+  { key: "interruptions", label: "Interruptions", value: "5m wake up", score: 20, max: 20, color: "var(--color-chart-4)", dot: "var(--color-chart-6)" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -130,16 +136,19 @@ function MiniRing({ values, size = 28 }: { values: [number, number, number]; siz
   );
 }
 
-function BigRing({ values }: { values: [number, number, number] }) {
+/* Each ring is clickable in the original (<g class="cursor-pointer">);
+   what a click does is not visible in SSR, so it surfaces the ring's
+   values (pending live verification of the original behaviour). */
+function BigRing({ values, onRingClick }: { values: [number, number, number]; onRingClick?: (label: string, pct: number) => void }) {
   const rings = [
-    { r: 82, pct: values[0], stroke: "var(--color-chart-3)" },
-    { r: 58, pct: values[1], stroke: "var(--color-chart-2)" },
-    { r: 34, pct: values[2], stroke: "var(--color-chart-4)" },
+    { r: 82, pct: values[0], stroke: "var(--color-chart-3)", label: "Move" },
+    { r: 58, pct: values[1], stroke: "var(--color-chart-2)", label: "Exercise" },
+    { r: 34, pct: values[2], stroke: "var(--color-chart-4)", label: "Running" },
   ];
   return (
     <svg viewBox="0 0 200 200" className="h-full max-h-[210px] w-full overflow-visible" role="img" aria-label="Move, exercise, and running activity progress">
       {rings.map((ring) => (
-        <g key={ring.r} transform="rotate(-90 100 100)">
+        <g key={ring.r} transform="rotate(-90 100 100)" className="cursor-pointer" onClick={() => onRingClick?.(ring.label, ring.pct)}>
           <circle cx="100" cy="100" r={ring.r} fill="none" stroke={ring.stroke} strokeWidth="18" opacity="0.16" />
           {ring.pct > 0 && (
             <circle
@@ -213,6 +222,19 @@ const ALL_PATIENTS: Patient[] = [
   ...Array.from({ length: 540 - PAGE1.length }, (_, i) => generatedPatient(i)),
 ];
 
+/* First 8 patients have real photo avatars in the original; the last 4
+   use initials circles. Photos ship in public/avatars/. */
+const AVATARS: Record<string, string> = {
+  "John Clarkson": "/avatars/john-clarkson.webp",
+  "Aspen Lubin": "/avatars/aspen-lubin.webp",
+  "Michael Ekstrom": "/avatars/michael-ekstrom.webp",
+  "Kianna Vaccaro": "/avatars/kianna-vaccaro.webp",
+  "Livia Saris": "/avatars/livia-saris.webp",
+  "Jaydon Aminoff": "/avatars/jaydon-aminoff.webp",
+  "Maria Lubin": "/avatars/maria-lubin.webp",
+  "Ann Press": "/avatars/ann-press.webp",
+};
+
 const STATUS_STYLE: Record<Status, string> = {
   Stable: "bg-status-lime-background text-status-lime-text",
   "Under observation": "bg-amber-100 text-amber-800",
@@ -229,27 +251,46 @@ export default function MedicalProfileTemplatePage() {
   const [weekIdx, setWeekIdx] = useState(0);
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const [sleepHover, setSleepHover] = useState<string | null>(null);
-  const [focusMonth, setFocusMonth] = useState(6); // July — Jul 10 is the selected day
+  const [focusMonth, setFocusMonth] = useState(0); // January — the original pill starts on January
   const [selectedDay, setSelectedDay] = useState({ month: 6, day: 10 });
   const [statusFilter, setStatusFilter] = useState("All statuses");
   const [conditionFilter, setConditionFilter] = useState("All conditions");
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState<"name" | "next" | null>(null);
   const [sortDir, setSortDir] = useState<1 | -1>(1);
-  const [deleted, setDeleted] = useState<string[]>([]);
   const [admissionEdits, setAdmissionEdits] = useState<Record<string, Admission>>({});
+  const [photoSrc, setPhotoSrc] = useState<string | undefined>(undefined);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState<Set<string>>(
     () => new Set(PAGE1.filter((p) => p.checked).map((p) => p.name)),
   );
   const [admissionMenu, setAdmissionMenu] = useState<string | null>(null);
-  const [rowMenu, setRowMenu] = useState<string | null>(null);
-  const [viewPatient, setViewPatient] = useState<Patient | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportType, setReportType] = useState("Lab results");
   const [reportNote, setReportNote] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const monthRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const toastTimer = useRef<number | null>(null);
+  const admissionMenuRefs = useRef<Record<string, HTMLSpanElement | null>>({});
+
+  // Admission menu: Esc + click-outside close, like the original React Aria Select.
+  useEffect(() => {
+    if (!admissionMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAdmissionMenu(null);
+    };
+    const onDown = (e: MouseEvent) => {
+      const el = admissionMenuRefs.current[admissionMenu];
+      if (el && !el.contains(e.target as Node)) setAdmissionMenu(null);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onDown);
+    };
+  }, [admissionMenu]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -264,16 +305,18 @@ export default function MedicalProfileTemplatePage() {
   const selRings: [number, number, number] = MINI_RINGS[selIdx] ?? [0, 0, 0];
 
   const filtered = useMemo(() => {
-    let rows = ALL_PATIENTS.filter((p) => !deleted.includes(p.name));
+    let rows = ALL_PATIENTS;
     if (statusFilter !== "All statuses") rows = rows.filter((p) => p.status === statusFilter);
     if (conditionFilter !== "All conditions") rows = rows.filter((p) => p.conditions.includes(conditionFilter));
+    const q = query.trim().toLowerCase();
+    if (q !== "") rows = rows.filter((p) => p.name.toLowerCase().includes(q));
     if (sortKey === "name") {
       rows = [...rows].sort((a, b) => sortDir * a.name.localeCompare(b.name));
     } else if (sortKey === "next") {
       rows = [...rows].sort((a, b) => sortDir * (new Date(a.next).getTime() - new Date(b.next).getTime()));
     }
     return rows;
-  }, [deleted, statusFilter, conditionFilter, sortKey, sortDir]);
+  }, [query, statusFilter, conditionFilter, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / 12));
   const safePage = Math.min(page, totalPages);
@@ -349,7 +392,22 @@ export default function MedicalProfileTemplatePage() {
       }
     >
       <div className="flex w-full flex-col gap-4 xl:flex-row">
-        <PatientInfoCard />
+        <PatientInfoCard
+          photoSrc={photoSrc}
+          onAddPhoto={() => photoInputRef.current?.click()}
+        />
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          aria-label="Choose profile photo"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) setPhotoSrc(URL.createObjectURL(file));
+            e.target.value = "";
+          }}
+        />
         <ImportantAlertsCard />
       </div>
 
@@ -442,20 +500,12 @@ export default function MedicalProfileTemplatePage() {
           </div>
           <div className="flex flex-col gap-2">
             {SLEEP_ROWS.map((row) => (
-              <button
+              <div
                 key={row.key}
-                type="button"
-                onMouseEnter={() => setSleepHover(row.key)}
-                onMouseLeave={() => setSleepHover(null)}
-                onFocus={() => setSleepHover(row.key)}
-                onBlur={() => setSleepHover(null)}
-                className={cx(
-                  "flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                  sleepHover === row.key ? "bg-background-tertiary-default" : "bg-background-inner-default",
-                )}
+                className="flex w-full items-center justify-between rounded-xl bg-background-inner-default px-3 py-2.5 text-start"
               >
                 <span className="flex items-center gap-2 text-body-2-regular text-text-secondary">
-                  <span className="size-2.5 rounded-full" style={{ backgroundColor: row.color }} aria-hidden />
+                  <span className="size-2.5 rounded-full" style={{ backgroundColor: row.dot }} aria-hidden />
                   {row.label}
                   <span aria-hidden>:</span>
                   {row.value}
@@ -463,7 +513,7 @@ export default function MedicalProfileTemplatePage() {
                 <span className="text-body-medium text-text-primary tabular-nums">
                   {row.score} <span className="text-text-tertiary">/ {row.max}</span>
                 </span>
-              </button>
+              </div>
             ))}
           </div>
         </section>
@@ -501,13 +551,11 @@ export default function MedicalProfileTemplatePage() {
                   {Array.from({ length: MONTH_DAYS[m] }, (_, d) => d + 1).map((day) => {
                     const idx = dayIndex(m, day);
                     const values = MINI_RINGS[idx] ?? [0, 0, 0];
-                    const active = values.some((v) => v > 0);
                     const isSelected = selectedDay.month === m && selectedDay.day === day;
                     return (
                       <button
                         key={day}
                         type="button"
-                        disabled={!active}
                         aria-label={`Activity for ${name} ${day}`}
                         aria-pressed={isSelected}
                         onClick={() => {
@@ -519,7 +567,6 @@ export default function MedicalProfileTemplatePage() {
                           isSelected
                             ? "border-accent-500 bg-background-primary-default"
                             : "border-transparent hover:bg-background-primary-hover",
-                          !active && "cursor-default opacity-40 hover:bg-transparent",
                         )}
                       >
                         <span className="text-body-medium whitespace-nowrap text-text-primary">{day}</span>
@@ -567,7 +614,20 @@ export default function MedicalProfileTemplatePage() {
                 </div>
               </div>
               <div className="flex min-h-0 w-full flex-1 items-center justify-center">
-                <BigRing values={selRings} />
+                <BigRing
+                  values={selRings}
+                  onRingClick={(label) => {
+                    if (!selActivity) return;
+                    const detail =
+                      label === "Move"
+                        ? `${selActivity.moveKcal.toLocaleString("en-US")} kcal`
+                        : label === "Exercise"
+                          ? fmtExercise(selActivity.exerciseMin)
+                          : `${selActivity.runningKm} km`;
+                    const pct = label === "Move" ? selActivity.movePct : label === "Exercise" ? selActivity.exPct : selActivity.runPct;
+                    showToast(`${label} · ${pct}% · ${detail}`);
+                  }}
+                />
               </div>
               <p className="text-center text-body-2-regular text-text-tertiary">
                 Move {selActivity.movePct}% · Exercise {selActivity.exPct}% · Running {selActivity.runPct}%
@@ -587,6 +647,18 @@ export default function MedicalProfileTemplatePage() {
             <p className="text-body-medium text-text-primary tabular-nums">{filtered.length} patients</p>
           </div>
           <div className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-2.5 overflow-x-auto px-3 sm:mx-0 sm:w-auto">
+            <InputBase
+              aria-label="Search patients"
+              placeholder="Search"
+              leadingIcon={RiSearchLine}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              fieldClassName="min-w-[153px] flex-1 rounded-full bg-background-secondary-default sm:w-[153px] sm:min-w-0 sm:flex-none"
+              className="text-body-medium"
+            />
             <label className="flex shrink-0 items-center gap-1.5 text-body-2-medium text-text-secondary">
               Status
               <select
@@ -681,43 +753,54 @@ export default function MedicalProfileTemplatePage() {
                     </td>
                     <td className="py-2 pe-2">
                       <span className="flex items-center gap-2">
-                        <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-background-tertiary-default text-body-2-medium text-text-secondary">
-                          {p.initials ?? initialsOf(p.name)}
-                        </span>
+                        {AVATARS[p.name] ? (
+                          <img src={AVATARS[p.name]} alt="" className="size-8 shrink-0 rounded-full object-cover" />
+                        ) : (
+                          <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-full bg-background-tertiary-default text-body-2-medium text-text-secondary">
+                            {p.initials ?? initialsOf(p.name)}
+                          </span>
+                        )}
                         <span className="whitespace-nowrap text-body-medium text-text-primary">{p.name}</span>
                       </span>
                     </td>
-                    <td className="relative py-2 pe-2">
-                      <button
-                        type="button"
-                        aria-label={`Admission for ${p.name}: ${admission}`}
-                        aria-expanded={admissionMenu === p.name}
-                        onClick={() => setAdmissionMenu(admissionMenu === p.name ? null : p.name)}
-                        className="flex cursor-pointer items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1 text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    <td className="py-2 pe-2">
+                      <span
+                        ref={(el) => {
+                          admissionMenuRefs.current[p.name] = el;
+                        }}
+                        className="relative inline-block"
                       >
-                        {admission}
-                        <span aria-hidden>▾</span>
-                      </button>
-                      {admissionMenu === p.name && (
-                        <span className="absolute start-0 top-10 z-20 flex flex-col rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-dropdown">
-                          {ADMISSIONS.map((a) => (
-                            <button
-                              key={a}
-                              type="button"
-                              onClick={() => {
-                                setAdmissionEdits((prev) => ({ ...prev, [p.name]: a }));
-                                setAdmissionMenu(null);
-                              }}
-                              className={cx(
-                                "cursor-pointer whitespace-nowrap rounded-lg px-2.5 py-1.5 text-start text-body-2-medium outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                                a === admission ? "text-text-primary" : "text-text-secondary",
-                              )}
-                            >
-                              {a}
-                            </button>
-                          ))}
-                        </span>
-                      )}
+                        <button
+                          type="button"
+                          aria-label={`Admission status for ${p.name}`}
+                          aria-expanded={admissionMenu === p.name}
+                          onClick={() => setAdmissionMenu(admissionMenu === p.name ? null : p.name)}
+                          className="flex cursor-pointer items-center justify-between gap-1 rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1 text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                        >
+                          {admission}
+                          <span aria-hidden>▾</span>
+                        </button>
+                        {admissionMenu === p.name && (
+                          <span className="absolute start-0 top-10 z-20 flex flex-col rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-dropdown">
+                            {ADMISSIONS.map((a) => (
+                              <button
+                                key={a}
+                                type="button"
+                                onClick={() => {
+                                  setAdmissionEdits((prev) => ({ ...prev, [p.name]: a }));
+                                  setAdmissionMenu(null);
+                                }}
+                                className={cx(
+                                  "cursor-pointer whitespace-nowrap rounded-lg px-2.5 py-1.5 text-start text-body-2-medium outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                                  a === admission ? "text-text-primary" : "text-text-secondary",
+                                )}
+                              >
+                                {a}
+                              </button>
+                            ))}
+                          </span>
+                        )}
+                      </span>
                     </td>
                     <td className="py-2 pe-2">
                       <span className={cx("inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-body-2-medium", STATUS_STYLE[p.status])}>
@@ -734,41 +817,21 @@ export default function MedicalProfileTemplatePage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-primary tabular-nums">{p.next}</td>
-                    <td className="relative py-2 text-end">
-                      <button
-                        type="button"
-                        aria-label={`Actions for ${p.name}`}
-                        aria-expanded={rowMenu === p.name}
-                        onClick={() => setRowMenu(rowMenu === p.name ? null : p.name)}
-                        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                      >
-                        <RiMore2Fill className="size-5" aria-hidden />
-                      </button>
-                      {rowMenu === p.name && (
-                        <span className="absolute end-0 top-10 z-20 flex w-[160px] flex-col rounded-xl border border-border-button-default bg-background-primary-default p-1 shadow-dropdown">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setViewPatient(p);
-                              setRowMenu(null);
-                            }}
-                            className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-start text-body-2-medium text-text-primary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                          >
-                            <RiEyeLine className="size-4" aria-hidden /> View profile
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleted((prev) => [...prev, p.name]);
-                              setRowMenu(null);
-                              showToast(`${p.name} removed from this view.`);
-                            }}
-                            className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-start text-body-2-medium text-text-error-primary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                          >
-                            <RiDeleteBinLine className="size-4" aria-hidden /> Remove
-                          </button>
-                        </span>
-                      )}
+                    <td className="py-2 text-end">
+                      <span className="inline-flex items-center justify-end gap-1">
+                        <IconButton
+                          icon={RiFileTextLine}
+                          size="small"
+                          aria-label="View chart"
+                          onClick={() => showToast(`Chart for ${p.name}`)}
+                        />
+                        <IconButton
+                          icon={RiEditLine}
+                          size="small"
+                          aria-label="Edit patient"
+                          onClick={() => showToast(`Edit patient: ${p.name}`)}
+                        />
+                      </span>
                     </td>
                   </tr>
                 );
@@ -826,42 +889,6 @@ export default function MedicalProfileTemplatePage() {
           </nav>
         </div>
       </section>
-
-      {/* View patient dialog */}
-      {viewPatient && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center" role="dialog" aria-modal="true" aria-label="Patient profile">
-          <button type="button" aria-label="Close patient profile" onClick={() => setViewPatient(null)} className="absolute inset-0 cursor-pointer bg-black/40" />
-          <div className="relative w-full max-w-[420px] rounded-3xl border border-border-button-default bg-background-primary-default p-5 shadow-dropdown">
-            <div className="flex items-start justify-between gap-2">
-              <span className="inline-flex size-12 items-center justify-center rounded-full bg-background-tertiary-default text-title-3-semibold text-text-secondary">
-                {viewPatient.initials ?? initialsOf(viewPatient.name)}
-              </span>
-              <button type="button" aria-label="Close" onClick={() => setViewPatient(null)} className="flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring">
-                <RiCloseLine className="size-5" aria-hidden />
-              </button>
-            </div>
-            <p className="mt-3 text-title-2-medium text-text-primary">{viewPatient.name}</p>
-            <div className="mt-3 flex flex-col gap-2">
-              {[
-                ["Admission", admissionEdits[viewPatient.name] ?? viewPatient.admission],
-                ["Status", viewPatient.status],
-                ["Condition", viewPatient.conditions.join(", ")],
-                ["Next appointment", viewPatient.next],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between rounded-xl bg-background-inner-default px-3 py-2.5">
-                  <span className="text-body-2-regular text-text-secondary">{label}</span>
-                  <span className="text-body-medium text-text-primary">{value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 flex justify-end">
-              <Button variant="primary" size="medium" onClick={() => setViewPatient(null)}>
-                Done
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* File a report dialog */}
       {reportOpen && (
