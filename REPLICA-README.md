@@ -101,13 +101,13 @@ npm run build    # 生产构建（静态导出到 out/）
 - **补充（2026-11-07）：MAC "+" 附件菜单按浏览器实测重做。** 此前猜的 3 项菜单（Upload image/document/file、190px）全错；原版实测为 359px 宽、标题 "Add to chat"、7 项分 Add/Plugins 两组（Files and folders、Goal、Plan mode、Documents、Spreadsheets、Presentations、Code blocks），每项图标+加粗标题+灰色说明同行，点开后 "+" 变黑 "×"。已按实测原样重做，7 项均有反应（文件选择器/目标输入/Plan 横条/各插件预填提示）。
 - **补充（2026-11-07）：父 agent 浏览器实测 MAC 26 项。** 以 `tpl-pages/multi-agent-chat.html` 为准逐项核查后修了 13 项（顶栏三按钮加 title 提示、群聊标题词边界两行、头像单行重叠、描述两行断词、删侧栏底部中文"全部模板"、选项图标改横向 …、顶栏"全部模板"改回原版风格网格图标按钮、胶囊加 chevron 可编辑提示、首载 Thinking 改条件挂载、占位与 aria-label 统一、Permission 显示全称、Description 加高到 4 行、Voice 全部启用并用 speechSynthesis 真试听、… 菜单宽度与遮挡修复、Emotion 16 张 SVG 表情脸+名称、形状 3×3 大号剪影+名称）。**10 项经 HTML 核实为"原版即如此、副本已一致"，未改动**：命名大小写混用、选中底色 #ebebeb、Copy 纯图标、气泡无边框/阴影、消息区无居中限宽列、Helpful 等悬停才现、署名在气泡下方、发送键亮蓝、输入框原版阴影、分区底色同色——若浏览器复测仍觉这些地方"有问题"，那是要偏离 1:1 原版的改动，需另行下令。3 项与 HTML 冲突但按任务明令改了（描述两行、Permission 全称、描述框 4 行），代码注释已注明原版实情。表情脸/形状剪影/语音试听/菜单滚动条等交互效果需浏览器复测确认，本轮只做了构建验证。
 
-## 组件详情页（2026-11-07，用户要求：/components 点进去不再跳到别人网站，78 个一个都不能少）
+## 组件详情页（2026-11-07，用户要求：/components 点进去不再跳到别人网站，78 个一个都不能少；同日晚全量盘点补齐 37 个缺口 → 115 个）
 
-- **78/78 全部建成**：`app/components/{slug}/page.tsx`，每个详情页按原版 https://www.boardui.com/components/{slug} 的样子做：标题+描述、Installation（CLI `npx boardui@latest add {slug}` + Manual 双 tab）、各小节正文+现场演示+代码示例、部分有 Props。模板类 slug（home-dashboard、finance-dashboard、marketing-dashboard、medical-profile、ai-chat、ai-image-generation、ai-profile、multi-agent-chat、project-board）的演示区链接到本站 /templates/* 对应模板页。
+- **115/115 全部建成**：`app/components/{slug}/page.tsx`，每个详情页按原版 https://www.boardui.com/components/{slug} 的样子做：标题+描述、Installation（CLI `npx boardui@latest add {slug}` + Manual 双 tab）、各小节正文+现场演示+代码示例、部分有 Props。模板类 slug（home-dashboard、finance-dashboard、marketing-dashboard、medical-profile、ai-chat、ai-image-generation、ai-profile、multi-agent-chat、project-board）的演示区链接到本站 /templates/* 对应模板页。2026-11-07 晚补齐的 37 个：26 个免费 UI（accordion、badge、checkbox-card、color-picker、combobox、command-palette、context-menu、date-calendar、date-range-picker、drawer、kbd、meeting-scheduler、meter、modal、number-field、popover、progress、radio-card、search-field、skeleton、spinner、status-dot、switch-card、tag-group、time-field、toast）、7 个免费 block（agent-chat、agent-log、app-shell、important-alerts-card、orders-chart-card、patient-info-card、theme-toggle）、2 个 Pro 组件（agent-avatar、composer）、hr-management 模板页、pro-installation 文档页；免费源码按注册表原样装入（accordion/toast 抽查与注册表字节一致），目录 components-index.ts 同步 +36 条（114 条，pro-installation 为文档页不进目录，与原版一致）。
 - **逐字校对**：16 页（textarea、tooltip、tree-view、typography、web-search、close-button、color、combo-chart-card、composer-attachments、home-dashboard、multi-agent-chat、notification、notification-center、pagination、project-board、date-picker）曾因 browser.open 限流未抓到原版原文，2026-11-07 用 curl + 20 秒间隔逐页重抓原版 SSR HTML（16/16 全部 200）并逐字校对，页末有 `// 已按原版逐字校对` 标注；date-picker 尾部内嵌原版 shared.tsx 全文 279 行（原版 file viewer 转储，与仓库 `components/base/date-picker/shared.tsx` 不是同一版本，已注明）。其余 62 页建页时已按原版抓取。
 - **内链化**：/components 目录页的 78 个外链全部改成内链（/components/{slug}）；8 个模板 iframe 改指本站 /templates/*；MAC 页两处 window.open(boardui.com) 改成 mailto:hi@boardui.com；pricing 链接改 /pro-components；web-search 的 boardui.com mock 结果改 /components。**全站已无任何 href 指向 boardui.com**（2026-11-07 grep 核查：剩余 boardui.com 字样仅为源码注释里的来源标注、CLI 包名 `npx boardui@latest`、演示数据里的邮箱/文案、MAC 页原版联系邮箱 mailto，均不跳转）。13 处详情页顶部的来源标注已改成 ui.gemmae.dev/components/{slug}。144 张预览图下载到 `public/previews/`（72 slug × 明暗两档）。web-search 的 4 个第三方 mock 结果（ai-sdk.dev、platform.openai.com、perplexity.ai、developer.mozilla.org）已于 2026-11-07 晚改成纯文本 chip，不再是可点击外链（站内 boardui.com 结果仍为内链）；目标是用户在站里点来点去不跳到别人的网站。
 - **演示区 3 处不一致已修（2026-11-07 晚，curl 原版 SSR HTML 核实）**：notification States 演示按原版换成 3 项三列网格（information "New version available"、success "Changes saved"、error "Upload failed"，无时间戳），去掉多出来的 neutral 项；pagination 演示按原版改成第 6 页、共 181 页（"1 … 5 6 7 … 181"，两侧 dots 齐全），代码示例不动（原版就是 `useState(1)` / `totalPages={10}`）；textarea Auto resize 演示 `maxRows` 由 4 改 8、占位文字改成原版的 "Write as much as you need"，Character count 演示 `maxLength` 由 120 改 160（原版与本页文字均为 12/160）。原版个别文案照原文保留，包括疑似原文笔误 "Get BoardUI Pro now and install it end away."。
-- **验证**：`npm run build` 通过（99/99 静态页）、`npx tsc --noEmit` 干净；上线后 78 页逐个 curl 验 200（见本轮交付报告）。
+- **验证**：`npm run build` 通过（2026-11-07 晚：115 个 /components 路由静态生成，BUILD_ID ZJVK7lKIDdMGyZPlI6mbw）、`npx tsc --noEmit` 干净；上线后 115 页逐个 curl 验 200（见本轮交付报告）。
 
 ## 免费组件来源
 
@@ -117,7 +117,7 @@ npm run build    # 生产构建（静态导出到 out/）
 ## 目录
 
 - `app/templates/` — 11 条模板路由 + 总览页
-- `app/components/{slug}/` — 78 个组件详情页（2026-11-07 新增，见"组件详情页"一节）
+- `app/components/{slug}/` — 115 个组件详情页（2026-11-07 新增 78 个，同日晚补齐 37 个，见"组件详情页"一节）
 - `public/previews/` — 144 张组件预览图（72 slug × 明暗两档）
 - `app/pro-components/` — 30 个 Pro 组件展示页（`/pro-components` 13 个非图表 + `/pro-components/charts` 17 张图表卡）
 - `components/application/charts/` — 17 张图表卡组件；`components/application/pro/` — 13 个非图表 Pro 组件
