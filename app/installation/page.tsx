@@ -81,6 +81,97 @@ function Command({ cmd }: { cmd: string }) {
   );
 }
 
+
+function PkgCommand({ npm, pnpm, yarn }: { npm: string; pnpm: string; yarn: string }) {
+  const [pm, setPm] = useState<"npm" | "pnpm" | "yarn">("npm");
+  const cmd = pm === "npm" ? npm : pm === "pnpm" ? pnpm : yarn;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {(["npm", "pnpm", "yarn"] as const).map((name) => (
+          <button
+            key={name}
+            type="button"
+            onClick={() => setPm(name)}
+            className={cx(
+              "rounded-full border px-3 py-1 text-caption-1-semibold transition-colors",
+              pm === name
+                ? "border-border-button-default bg-background-tertiary-default text-text-primary"
+                : "border-border-button-default bg-background-primary-default text-text-secondary hover:text-text-primary",
+            )}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+      <Command cmd={cmd} />
+    </div>
+  );
+}
+
+const VITE_CONFIG_CODE = `// vite.config.ts
+import path from "node:path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
+});`;
+
+const VITE_TSCONFIG_CODE = `{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  }
+}`;
+
+const VITE_MAIN_CODE = `import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./styles/globals.css";
+import App from "./App.tsx";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);`;
+
+const RR_TSCONFIG_CODE = `// tsconfig.json — add "@/*" next to the template's "~/*" alias
+{
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./app/*"],
+      "@/*": ["./app/*"]
+    }
+  }
+}`;
+
+const RR_ROOT_CODE = `// app/root.tsx
+import "@/styles/globals.css"; // replaces the default "./app.css" import`;
+
+const ASTRO_TSCONFIG_CODE = `// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  }
+}`;
+
+const ASTRO_LAYOUT_CODE = `---
+// src/layouts/Layout.astro
+import "@/styles/globals.css";
+---`;
+
+const ASTRO_USAGE_CODE = `---
+// src/pages/index.astro
+import { Button } from "@/components/base/buttons/button";
+---
+<Button client:load>Get started</Button>`;
+
 const LAYOUT_CODE = `// app/layout.tsx
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
@@ -2480,22 +2571,137 @@ export default function InstallationPage() {
                 <Command cmd="npx boardui@latest add button" />
               </Step>
             </div>
+          ) : framework === "Vite" ? (
+            <div className="flex flex-col gap-4">
+              <Step n={1} title="Create a project (skip if you have one).">
+                <Command cmd="npm create vite@latest my-app -- --template react-ts" />
+              </Step>
+              <Step n={2} title="Install Tailwind CSS v4 and register the Vite plugin.">
+                <p className="text-body-regular text-text-secondary">
+                  The plugin handles the stylesheet and the{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">@theme</code> tokens for
+                  you:
+                </p>
+                <Command cmd="npm install tailwindcss @tailwindcss/vite" />
+                <FileBlock file="vite.config.ts" code={VITE_CONFIG_CODE} />
+              </Step>
+              <Step n={3} title="Add the @/* import alias to tsconfig.json.">
+                <FileBlock file="tsconfig.json" code={VITE_TSCONFIG_CODE} />
+              </Step>
+              <Step n={4} title="Run init.">
+                <p className="text-body-regular text-text-secondary">
+                  It will prompt you for a few choices: a default style, a base color, and whether to install
+                  the design rules. When in doubt, accept the defaults — you can change them later in{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">boardui.json</code>.
+                </p>
+                <PkgCommand
+                  npm="npx boardui@latest init"
+                  pnpm="pnpm dlx boardui@latest init"
+                  yarn="yarn dlx boardui@latest init"
+                />
+              </Step>
+              <Step n={5} title="Import the stylesheet in your app entry.">
+                <p className="text-body-regular text-text-secondary">
+                  The init step created{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">src/styles/globals.css</code>{" "}
+                  for you:
+                </p>
+                <FileBlock file="main.tsx" code={VITE_MAIN_CODE} />
+              </Step>
+              <Step n={6} title="Add components.">
+                <p className="text-body-regular text-text-secondary">For example, the Button:</p>
+                <PkgCommand
+                  npm="npx boardui@latest add button"
+                  pnpm="pnpm dlx boardui@latest add button"
+                  yarn="yarn dlx boardui@latest add button"
+                />
+              </Step>
+            </div>
+          ) : framework === "React Router" ? (
+            <div className="flex flex-col gap-4">
+              <Step n={1} title="Create a project (skip if you have one).">
+                <p className="text-body-regular text-text-secondary">
+                  React Router v7 is the successor to Remix — these steps apply to both.
+                </p>
+                <Command cmd="npx create-react-router@latest my-app" />
+                <p className="text-body-2-regular text-text-tertiary">
+                  # the default template ships with Tailwind CSS v4 already wired up
+                </p>
+              </Step>
+              <Step n={2} title="Add the @/* import alias.">
+                <p className="text-body-regular text-text-secondary">
+                  The template already uses{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">vite-tsconfig-paths</code>
+                  , so a tsconfig entry is all you need:
+                </p>
+                <FileBlock file="tsconfig.json" code={RR_TSCONFIG_CODE} />
+              </Step>
+              <Step n={3} title="Run init, targeting the app directory.">
+                <PkgCommand
+                  npm="npx boardui@latest init --dir app"
+                  pnpm="pnpm dlx boardui@latest init --dir app"
+                  yarn="yarn dlx boardui@latest init --dir app"
+                />
+              </Step>
+              <Step n={4} title="Import the stylesheet in your root route.">
+                <FileBlock file="app/root.tsx" code={RR_ROOT_CODE} />
+              </Step>
+              <Step n={5} title="Add components, targeting the app directory.">
+                <PkgCommand
+                  npm="npx boardui@latest add button --dir app"
+                  pnpm="pnpm dlx boardui@latest add button --dir app"
+                  yarn="yarn dlx boardui@latest add button --dir app"
+                />
+              </Step>
+            </div>
           ) : (
-            <p className="text-body-regular text-text-secondary">
-              Using something else? Any framework that runs React 19 with Tailwind CSS v4 works — wire up the{" "}
-              <code className="font-mono text-caption-1-medium text-text-primary">@/*</code> alias, run{" "}
-              <code className="font-mono text-caption-1-medium text-text-primary">npx boardui init</code>, and
-              import the stylesheet. Or skip the CLI entirely with the manual steps below.
-            </p>
+            <div className="flex flex-col gap-4">
+              <Step n={1} title="Create a project and add the React + Tailwind integrations.">
+                <Command cmd="npm create astro@latest my-app" />
+                <Command cmd="npx astro add react tailwind" />
+                <p className="text-body-2-regular text-text-tertiary">
+                  # installs the React integration and the Tailwind CSS v4 Vite plugin
+                </p>
+              </Step>
+              <Step n={2} title="Add the @/* import alias.">
+                <FileBlock file="tsconfig.json" code={ASTRO_TSCONFIG_CODE} />
+              </Step>
+              <Step n={3} title="Run init in the project root.">
+                <p className="text-body-regular text-text-secondary">
+                  Styles and utils are written into{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">src/</code> automatically.
+                </p>
+                <PkgCommand
+                  npm="npx boardui@latest init"
+                  pnpm="pnpm dlx boardui@latest init"
+                  yarn="yarn dlx boardui@latest init"
+                />
+              </Step>
+              <Step n={4} title="Import the stylesheet in your base layout.">
+                <FileBlock file="src/layouts/Layout.astro" code={ASTRO_LAYOUT_CODE} />
+              </Step>
+              <Step n={5} title="Add components and hydrate them in .astro files.">
+                <p className="text-body-regular text-text-secondary">
+                  Interactive components need a{" "}
+                  <code className="font-mono text-caption-1-medium text-text-primary">client:*</code> directive
+                  to hydrate on the page:
+                </p>
+                <PkgCommand
+                  npm="npx boardui@latest add button"
+                  pnpm="pnpm dlx boardui@latest add button"
+                  yarn="yarn dlx boardui@latest add button"
+                />
+                <FileBlock file="src/pages/index.astro" code={ASTRO_USAGE_CODE} />
+              </Step>
+            </div>
           )}
-          {framework === "Next.js" && (
           <p className="text-body-regular text-text-secondary">
             Using something else? Any framework that runs React 19 with Tailwind CSS v4 works — wire up the{" "}
             <code className="font-mono text-caption-1-medium text-text-primary">@/*</code> alias, run{" "}
             <code className="font-mono text-caption-1-medium text-text-primary">npx boardui init</code>, and
             import the stylesheet. Or skip the CLI entirely with the manual steps below.
           </p>
-          )}
+
         </Section>
 
         <Section title="Monorepos and custom aliases" id="monorepos">

@@ -6,6 +6,7 @@ import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from 
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
 import { LinkButton } from "@/components/base/buttons/link-button";
+import { ButtonLink } from "@/components/base/buttons/button";
 import { cx } from "@/utils/cx";
 
 function CopyButton({ text }: { text: string }) {
@@ -46,6 +47,19 @@ function CodeBlock({ code }: { code: string }) {
     <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
       {code}
     </pre>
+  );
+}
+
+
+function FileBlock({ file, code }: { file: string; code: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-mono text-caption-1-medium text-text-secondary">{file}</p>
+        <CopyButton text={code} />
+      </div>
+      <CodeBlock code={code} />
+    </div>
   );
 }
 
@@ -92,6 +106,38 @@ const SHADCN_MCP_CODE = `{
     "@boardui": "https://www.boardui.com/r/{name}.json"
   }
 }`;
+
+
+const MCP_STDIO_CODE = `{
+  "mcpServers": {
+    "boardui": {
+      "command": "npx",
+      "args": ["-y", "boardui@latest", "mcp"]
+    }
+  }
+}`;
+
+const VSCODE_MCP_CODE = `{
+  "servers": {
+    "boardui": {
+      "command": "npx",
+      "args": ["-y", "boardui@latest", "mcp"]
+    }
+  }
+}`;
+
+// One-click install deep links (standard Cursor / VS Code MCP install URL
+// schemes; the configs above are the verbatim server configs).
+const CURSOR_INSTALL_URL =
+  "cursor://anysphere.cursor-deeplink/mcp/install?name=boardui&config=" +
+  encodeURIComponent(
+    JSON.stringify({ mcpServers: { boardui: { command: "npx", args: ["-y", "boardui@latest", "mcp"] } } }),
+  );
+const VSCODE_INSTALL_URL =
+  "vscode:mcp/install?" +
+  encodeURIComponent(
+    JSON.stringify({ servers: { boardui: { command: "npx", args: ["-y", "boardui@latest", "mcp"] } } }),
+  );
 
 /** MCP server page, mirroring boardui.com/mcp. */
 export default function McpPage() {
@@ -151,11 +197,38 @@ export default function McpPage() {
               </p>
               <Command cmd="claude mcp add boardui -- npx -y boardui@latest mcp" />
             </>
+          ) : client === "Cursor" ? (
+            <>
+              <p className="text-body-regular text-text-secondary">
+                Install with one click, or add the server to{" "}
+                <code className="font-mono text-caption-1-medium text-text-primary">.cursor/mcp.json</code>{" "}
+                yourself, then enable it under Settings, Tools &amp; MCP.
+              </p>
+              <div>
+                <ButtonLink href={CURSOR_INSTALL_URL}>Add to Cursor</ButtonLink>
+              </div>
+              <FileBlock file=".cursor/mcp.json" code={MCP_STDIO_CODE} />
+            </>
+          ) : client === "VS Code" ? (
+            <>
+              <p className="text-body-regular text-text-secondary">
+                Install with one click, or add the server to{" "}
+                <code className="font-mono text-caption-1-medium text-text-primary">.vscode/mcp.json</code>{" "}
+                and press Start next to it.
+              </p>
+              <div>
+                <ButtonLink href={VSCODE_INSTALL_URL}>Add to VS Code</ButtonLink>
+              </div>
+              <FileBlock file=".vscode/mcp.json" code={VSCODE_MCP_CODE} />
+            </>
           ) : (
-            <p className="text-body-regular text-text-secondary">
-              {client} installs with one click. Restart the client (or open a new session) afterwards so the
-              tools bind.
-            </p>
+            <>
+              <p className="text-body-regular text-text-secondary">
+                Windsurf, Zed, Cline, and every other MCP client take the same stdio server. Point them at
+                this config wherever they keep MCP servers:
+              </p>
+              <FileBlock file="mcp.json" code={MCP_STDIO_CODE} />
+            </>
           )}
         </Section>
 
