@@ -402,7 +402,7 @@ export default function DatePickerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Meeting scheduler</h2>
           <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover — a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
-          <div className="overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4">
+          <div className="relative h-[451px] overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4 xl:h-[223px]">
               {(() => { const Preview = FREE_COMPONENT_PREVIEWS["/components/date-picker"]; return Preview ? <Preview /> : null; })()}
             </div>
         </section>
