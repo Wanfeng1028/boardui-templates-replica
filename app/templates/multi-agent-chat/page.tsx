@@ -3,6 +3,7 @@
 import {
   RiAddLine,
   RiArrowDownSLine,
+  RiArrowRightSLine,
   RiArrowUpLine,
   RiAttachmentLine,
   RiCheckLine,
@@ -36,7 +37,6 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import {
   Dropdown,
-  DropdownDivider,
   DropdownGroup,
   DropdownItem,
   DropdownPopover,
@@ -59,15 +59,19 @@ import { cx } from "@/utils/cx";
  */
 
 /* ------------------------------------------------------------------ */
-/* Avatar data — from investigation-report.md section 3 (public       */
-/* snapshot + official docs). The original draws its "paper face" on  */
-/* canvas; here it is rebuilt in SVG/CSS, behaviour-aligned, not      */
-/* pixel 1:1. The 16 expression names, 9 shape names and 9 radial     */
-/* gradients are verbatim from the original; each expression's actual  */
-/* eyes/mouth, each shape's path and the fold layer are our own        */
-/* interpretation — the snapshot carries no pixel or vector data for   */
-/* them. The per-agent colour/shape assignment below is also our own   */
-/* choice: the original's per-agent defaults cannot be recovered.      */
+/* Avatar data — the original draws its "paper face" on canvas; here  */
+/* it is rebuilt in SVG/CSS, behaviour-aligned, not pixel 1:1. The 16 */
+/* expression names, 9 shape names and 9 radial gradients are        */
+/* verbatim from the original. Per-agent defaults below are measured  */
+/* from the live original (boardui-verify/mac-fix/orig-probe3.json +  */
+/* orig-probe4.json, 2026-11-08): sidebar pastel fills, editor       */
+/* description/name/label, pressed expression dot, selected shape     */
+/* (aria-selected) and pressed colour dot (only Security has one —    */
+/* Teal; the other six use custom pastel fills, no named colour).     */
+/* The shape silhouettes themselves are our own reading of the        */
+/* original's canvas shapes from screenshots — no vector data        */
+/* survives for them.                                                 */
+/* ------------------------------------------------------------------ */
 /* ------------------------------------------------------------------ */
 
 type AvatarShape =
@@ -80,9 +84,12 @@ type AvatarExpression =
   | "Excited" | "Calm" | "Shy" | "Confused";
 
 /** The original's 9 named colours (radial-gradient, closest-side circle
-    at 50% 50%, plus a white highlight layer). `from` is the gradient
-    start; Agent.body stores the `from` value so the gradient can be
-    resolved back from it. */
+    at 50% 50%). The editor's colour dots use these verbatim
+    (orig-probe4: Blue #437EF7→#004DE9, Teal #27b5a2→#00957c, Violet
+    #8554F6→#3E00CD, Pink #E34798→#D3006D, Red #E74241→#CF0100, Orange
+    #f47327→#d83f00, Cyan #1bb4ce→#0093ad, Lime #88c81c→#6aa400, Green
+    #36c15c→#009f13). Agent.body, by contrast, is the pastel fill the
+    original's canvas actually paints. */
 const AVATAR_COLORS = [
   { id: "blue", label: "Blue", from: "#437EF7", to: "#004DE9" },
   { id: "teal", label: "Teal", from: "#27b5a2", to: "#00957c" },
@@ -95,22 +102,78 @@ const AVATAR_COLORS = [
   { id: "green", label: "Green", from: "#36c15c", to: "#009f13" },
 ] as const;
 
+/** Pastel fill for a named colour, as the original's canvas renders it:
+    the named colour lightened towards white. Teal #27b5a2 lightened
+    this way lands within a few units of the original's Security fill
+    #B3E4E5, so picking a named colour in the editor keeps the pastel
+    look instead of going vivid. */
+function pastelOf(hex: string): string {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * 0.65);
+  const r = mix((n >> 16) & 255);
+  const g = mix((n >> 8) & 255);
+  const b = mix(n & 255);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+/** Deeper shade of a pastel fill, for the gradient edge and the
+    right-side fold shadow: the pastel pulled 40% back towards its
+    named colour (or towards a neutral deep tone for custom pastels). */
+function deepOf(pastel: string, vivid?: string): string {
+  const p = parseInt(pastel.slice(1), 16);
+  const v = vivid ? parseInt(vivid.slice(1), 16) : 0x5a7d84;
+  const mix = (pc: number, vc: number) => Math.round(pc + (vc - pc) * 0.4);
+  const r = mix((p >> 16) & 255, (v >> 16) & 255);
+  const g = mix((p >> 8) & 255, (v >> 8) & 255);
+  const b = mix(p & 255, v & 255);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
 const AVATAR_SHAPES: AvatarShape[] = [
   "star", "heart", "cloud", "diamond", "shield",
   "slender", "pocket", "petal", "flower",
 ];
 
-/** Face silhouettes on a 0 0 40 40 viewBox. Shield/star/diamond are the
-    pre-existing replica paths; heart/cloud/slender/pocket/petal/flower
-    are drawn to the original's shape names (no vector data survives). */
+/** The original's shape chips sit on a fixed elliptical arc around the
+    editor avatar (measured live, orig-shapes-hyd.json): 9 chips of
+    56×56, left-to-right along the arc, the agent's selected shape at
+    index 4 (bottom centre, page [1228,347]). Positions below are
+    relative to the avatar area (its left edge sits 8px inside the
+    editor section, so the first chip is clipped invisible, the second
+    shows a 9px edge, and the last two run past the panel's right
+    edge — exactly as on the original). */
+const SHAPE_RING_POS: { left: number; top: number }[] = [
+  { left: -73, top: 120 },
+  { left: -47, top: 186 },
+  { left: 0, top: 239 },
+  { left: 62, top: 274 },
+  { left: 132, top: 286 },
+  { left: 202, top: 274 },
+  { left: 264, top: 239 },
+  { left: 311, top: 186 },
+  { left: 337, top: 120 },
+];
+
+/** Ring order for an agent: the 9 shapes rotated so the agent's shape
+    lands at arc index 4 (bottom centre). */
+function ringOrder(selected: AvatarShape): AvatarShape[] {
+  const start = (AVATAR_SHAPES.indexOf(selected) - 4 + AVATAR_SHAPES.length) % AVATAR_SHAPES.length;
+  return AVATAR_SHAPES.map((_, i) => AVATAR_SHAPES[(start + i) % AVATAR_SHAPES.length]);
+}
+
+/** Face silhouettes on a 0 0 40 40 viewBox. Star is a 5-point star,
+    diamond a rhombus, slender a plump blob, pocket a rounded square —
+    all read off the original's sidebar/editor screenshots; heart /
+    cloud / shield / petal / flower follow the original's shape names
+    (no vector data survives). */
 const SHAPE_PATHS: Record<AvatarShape, string> = {
-  star: "M20 2.5c1.6 6.8 4.2 9.4 5.4 10.6 1.2 1.2 3.8 3.8 10.6 5.4-6.8 1.6-9.4 4.2-10.6 5.4-1.2 1.2-3.8 3.8-5.4 10.6-1.6-6.8-4.2-9.4-5.4-10.6-1.2-1.2-3.8-3.8-10.6-5.4 6.8-1.6 9.4-4.2 10.6-5.4 1.2-1.2 3.8-3.8 5.4-10.6Z",
+  star: "M20 2.2l4.7 9.9 10.8 1.4-7.9 7.4 2 10.7L20 26.4l-9.6 5.2 2-10.7-7.9-7.4 10.8-1.4L20 2.2Z",
   heart: "M20 36.5C10 29 3.5 22 3.5 14.5 3.5 9.5 7.5 6 12 6c3.2 0 6 1.8 8 4.5C22 7.8 24.8 6 28 6c4.5 0 8.5 3.5 8.5 8.5 0 7.5-6.5 14.5-16.5 22Z",
   cloud: "M13.5 34.5c-4.5 0-8-3.2-8-7.4 0-3.6 2.5-6.6 6-7.3.9-4.6 5-8.3 10-8.3 4.4 0 8.1 2.8 9.4 6.8 3.6.7 6.1 3.7 6.1 7.3 0 4.2-3.6 7.4-8.5 7.4H13.5Z",
-  diamond: "M20 3.5c1.8 0 3.3 1 4.2 2.5l7.3 11.2c1.5 2.3 1.5 5.3 0 7.6L24.2 36c-.9 1.5-2.4 2.5-4.2 2.5s-3.3-1-4.2-2.5l-7.3-11.2c-1.5-2.3-1.5-5.3 0-7.6L15.8 6c.9-1.5 2.4-2.5 4.2-2.5Z",
+  diamond: "M20 3.5L35.5 20 20 36.5 4.5 20 20 3.5Z",
   shield: "M20 2.5c8.5 0 15 6 15 14.5 0 9.5-6.5 18-15 20.5C11.5 35 5 26.5 5 17 5 8.5 11.5 2.5 20 2.5Z",
-  slender: "M20 2c5.5 0 8.5 6 8.5 18S25.5 38 20 38 11.5 32 11.5 20 14.5 2 20 2Z",
-  pocket: "M8 4h24v21c0 4.5-3.5 8-7.5 10.5L20 38l-4.5-2.5C11.5 33 8 29.5 8 25V4Z",
+  slender: "M20 3.5c7.5 0 9.8 2.2 12.6 5.7C35.5 13 36 16.8 36 20s-.5 7-3.4 10.8C29.8 34.3 27.5 36.5 20 36.5S10.2 34.3 7.4 30.8C4.5 27 4 23 4 20s.5-7 3.4-10.8C10.2 5.7 12.5 3.5 20 3.5Z",
+  pocket: "M10 4h20a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6V10a6 6 0 0 1 6-6Z",
   petal: "M20 2.5C28 10 32.5 17.5 32.5 24.5a12.5 12.5 0 1 1-25 0C7.5 17.5 12 10 20 2.5Z",
   flower: "M20 6.5A6.8 6.8 0 0 1 31.7 13.25 6.8 6.8 0 0 1 31.7 26.75 6.8 6.8 0 0 1 20 33.5 6.8 6.8 0 0 1 8.3 26.75 6.8 6.8 0 0 1 8.3 13.25 6.8 6.8 0 0 1 20 6.5Z",
 };
@@ -163,14 +226,18 @@ type Agent = {
   name: string;
   label: string;
   desc: string;
-  /** Sidebar list intro, verbatim from the original's server-rendered HTML
-      (for landing/marketing it matches replyP1; for the other five it does
-      not — the replica used to show replyP1 here, which was wrong). */
+  /** Sidebar list intro: the agent's first reply paragraph, verbatim
+      from the original (orig-lw-conv-*.json). */
   intro: string;
+  /** Pastel fill the original's canvas paints (measured live). */
   body: string;
-  /** Gradient key: stores the `from` value of one of AVATAR_COLORS. */
+  /** Deeper shade of `body`: gradient edge + right-side fold shadow. */
+  deep: string;
+  /** Named colour pressed in the editor, if any — only Security has one
+      (Teal, orig-probe4); the rest use custom pastel fills. */
+  colorId?: string;
   shape: AvatarShape;
-  /** Default "Neutral". Our reading of the original's 16 expressions. */
+  /** Pressed expression dot in the editor (measured live). */
   expression?: AvatarExpression;
   userMsg: string;
   replyP1: string;
@@ -182,10 +249,12 @@ const AGENTS: Agent[] = [
     id: "landing",
     name: "landing page designer",
     label: "Design",
-    desc: "Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.",
+    desc: "Thoughtful layouts, clear hierarchy, and a little personality for your next landing page.",
     intro: "Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.",
-    body: "#36c15c",
-    shape: "shield",
+    body: "#B9DFD0",
+    deep: "#8EC7AE",
+    shape: "slender",
+    expression: "Curious",
     userMsg: "How can we make the landing page feel clearer?",
     replyP1:
       "Give the hero one clear action. Lead with the outcome, pair it with a focused product preview, and move the secondary links below the fold.",
@@ -195,25 +264,29 @@ const AGENTS: Agent[] = [
   {
     id: "reviewer",
     name: "content reviewer",
-    label: "Review",
-    desc: "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.",
+    label: "Writing",
+    desc: "Makes your writing clear, concise, and unmistakably yours.",
     intro: "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.",
-    body: "#437EF7",
-    shape: "heart",
-    userMsg: "Can we make this welcome message sound warmer?",
+    body: "#EBC7AD",
+    deep: "#DCA87E",
+    shape: "pocket",
+    expression: "Thinking",
+    userMsg: "Can you help tighten our welcome email?",
     replyP1:
-      "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the rest of the copy short. That will save the reader a step or two.",
+      "The shorter opening feels more welcoming. Start with a quick thank-you, explain the first useful step, and keep the main button close to that instruction.",
     replyP2:
-      "Add one line about who to contact if something is unclear. It gives new users a clear place to start.",
+      "Save the feature tour for a follow-up. A new customer should leave this email knowing exactly where to begin.",
   },
   {
     id: "marketing",
     name: "marketing bot",
     label: "Marketing",
-    desc: "Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.",
+    desc: "Turns a good idea into a campaign people remember.",
     intro: "Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.",
-    body: "#E34798",
+    body: "#B4E4E3",
+    deep: "#87CFCD",
     shape: "star",
+    expression: "Happy",
     userMsg: "What should our launch campaign focus on?",
     replyP1:
       "Lead with the problem your audience recognizes. Build the campaign around one before-and-after story, then adapt it for email, social, and the launch page.",
@@ -224,29 +297,33 @@ const AGENTS: Agent[] = [
     id: "seo",
     name: "seo bot",
     label: "SEO",
-    desc: "Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.",
+    desc: "Helps the right people discover your work through search.",
     intro: "Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.",
-    body: "#f47327",
-    shape: "diamond",
-    userMsg: "How should we improve our main article?",
+    body: "#B9ABED",
+    deep: "#9A86E2",
+    shape: "flower",
+    expression: "Neutral",
+    userMsg: "Help me plan a useful topic cluster for our blog.",
     replyP1:
-      "Start with a practical guide to the core topic. Support it with focused articles that answer the next question each reader is likely to have, and connect them clearly.",
+      "Start with a practical guide to the core topic. Support it with focused articles that answer the next questions readers are likely to ask.",
     replyP2:
-      "Keep titles direct and useful. That makes it easier to see how each page helps the reader.",
+      "Link each article back to the guide and to one related next step. Clear titles and useful examples will make the structure easier for people to navigate.",
   },
   {
     id: "research",
     name: "research assistant",
     label: "Research",
-    desc: "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.",
+    desc: "Connects the dots, asks better questions, and brings the evidence.",
     intro: "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.",
-    body: "#27b5a2",
-    shape: "cloud",
-    userMsg: "How should we run discovery interviews?",
+    body: "#F5DEA3",
+    deep: "#EACB77",
+    shape: "petal",
+    expression: "Thinking",
+    userMsg: "How should we prepare for customer interviews?",
     replyP1:
-      "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what mattered most in that moment.",
+      "Ask about the last time the problem happened. Have customers walk through what they tried, where they got stuck, and what a good result would have looked like.",
     replyP2:
-      "Keep notes simple and compare them across interviews. Patterns will appear more quickly than single stories.",
+      "Keep the first five interviews focused on the same questions. Compare the patterns afterward before deciding which assumption to test next.",
   },
   {
     id: "security",
@@ -254,37 +331,59 @@ const AGENTS: Agent[] = [
     label: "Security",
     desc: "A careful second pair of eyes for permissions, privacy, and application security.",
     intro: "Review access permissions before inviting testers. Confirm that every request checks the current user’s access and that one account cannot read another account’s data.",
-    // Original: Teal (the editor snapshot has Teal aria-pressed="true" for
-    // Security agent). The replica used to assign Violet here — wrong.
-    body: "#27b5a2",
+    body: "#B3E4E5",
+    deep: "#85CCD3",
+    colorId: "teal",
     shape: "shield",
-    userMsg: "How do we prepare for tester onboarding?",
+    expression: "Neutral",
+    userMsg: "What should we check before sharing the beta?",
     replyP1:
-      "Review access permissions before inviting testers. Confirm that every request checks the current user and remove any access that is wider than necessary.",
+      "Review access permissions before inviting testers. Confirm that every request checks the current user’s access and that one account cannot read another account’s data.",
     replyP2:
-      "Set a plan for revoking access quickly. Then test that flow with one internal account before inviting anyone.",
+      "Then check the password-reset flow, uploaded files, and sensitive information in logs. Keep a short checklist so the same checks run before each release.",
   },
   {
     id: "cloud",
     name: "Cloud engineer",
-    label: "Engineering",
-    desc: "Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.",
+    label: "Cloud",
+    desc: "Helps with server architecture, cloud infrastructure, deployments, and reliable services.",
     intro: "Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.",
-    body: "#1bb4ce",
-    shape: "slender",
+    body: "#F3BCA5",
+    deep: "#E89B78",
+    shape: "cloud",
+    expression: "Thinking",
     userMsg: "How should we approach our staging deployment?",
     replyP1:
-      "Give staging its own environment and data. Match the production configuration closely, while keeping secrets and permissions separate.",
+      "Give staging its own environment and data. Match the production configuration closely, while keeping credentials, storage, and deployment permissions separate.",
     replyP2:
-      "Add a health check and a simple rollback path before automating releases. Then use a small deployment to confirm connectivity.",
+      "Add a health check and a simple rollback path before automating releases. Then use a small deployment to verify logs, startup behavior, and connectivity.",
   },
 ];
+/** The original's sidebar starts with NO group chat: groups only exist
+    once created through "…" → Start a group chat → picker
+    (orig-group-via-menu.json). The picker lists the 7 sidebar agents
+    plus three more the original knows (Product planner, Support guide,
+    Data analyst) — their pastel avatars below are our own pick, the
+    original's picker shows no colour data for them. */
+type PickerMember = { id: string; name: string; body: string; deep: string; shape: AvatarShape };
+const PICKER_EXTRA: PickerMember[] = [
+  { id: "planner", name: "Product planner", body: "#D9C8F2", deep: "#B79CE6", shape: "diamond" },
+  { id: "support-guide", name: "Support guide", body: "#F6CFCF", deep: "#E8AFAF", shape: "heart" },
+  { id: "analyst", name: "Data analyst", body: "#BFE3E0", deep: "#8FC9C4", shape: "cloud" },
+];
 
-const GROUP = {
-  id: "group",
-  name: "Design + Marketing + Product",
-  desc: "Start a conversation",
+/** A group created from the picker. `members` are in pick order; the
+    name joins each member's first name-word capitalised with " + "
+    (orig: Cloud engineer + marketing bot + Product planner →
+    "Cloud + Marketing + Product", orig-group-start.json). */
+type GroupChat = {
+  id: string;
+  name: string;
+  members: PickerMember[];
 };
+
+/** Sidebar subtitle of a created group (orig-group-start.json). */
+const GROUP_DESC = "Start a conversation";
 
 /* ------------------------------------------------------------------ */
 /* Marketplace roster — REMOVED 2026-11-07: the previous list of six agents
@@ -355,6 +454,7 @@ function AvatarEye({
   blinkClass,
   wanderClass,
   blinkDelay,
+  bold = false,
 }: {
   cx: number;
   style: EyeStyle;
@@ -363,7 +463,11 @@ function AvatarEye({
   blinkClass: string | null;
   wanderClass: string | null;
   blinkDelay: string;
+  /** Thicker strokes for the editor wheel glyphs (measured: the
+      original's wheel faces are drawn bold). */
+  bold?: boolean;
 }) {
+  const sw = bold ? 2.4 : 1.8;
   const cy = 17.5 + lookY;
   const x = cx + (style === "side" ? lookX : 0);
   if (style === "closed") {
@@ -371,7 +475,7 @@ function AvatarEye({
       <path
         d={`M${cx - 2.2} 17.5h4.4`}
         stroke="#262626"
-        strokeWidth="1.8"
+        strokeWidth={sw}
         fill="none"
         strokeLinecap="round"
       />
@@ -382,23 +486,23 @@ function AvatarEye({
       <path
         d={`M${cx - 2.4} 18.2Q${cx} 14.8 ${cx + 2.4} 18.2`}
         stroke="#262626"
-        strokeWidth="1.8"
+        strokeWidth={sw}
         fill="none"
         strokeLinecap="round"
       />
     );
   }
-  const ry = style === "wide" ? 4.1 : style === "narrow" ? 2.2 : style === "half" ? 2.1 : 3.3;
-  const rx = style === "wide" ? 2.9 : 2.3;
+  const ry = (style === "wide" ? 4.1 : style === "narrow" ? 2.2 : style === "half" ? 2.1 : 3.3) + (bold ? 0.4 : 0);
+  const rx = (style === "wide" ? 2.9 : 2.3) + (bold ? 0.4 : 0);
   const eye = (
     <g>
+      {/* No white highlight: the original's eyes are solid black pills. */}
       <ellipse cx={x} cy={cy} rx={rx} ry={ry} fill="#262626" />
-      <circle cx={x + 0.9} cy={cy - 1.2} r="0.8" fill="#fff" />
       {style === "half" && (
         <path
           d={`M${x - 2.4} ${cy - 1.6}h4.8`}
           stroke="#262626"
-          strokeWidth="1.4"
+          strokeWidth={bold ? 2 : 1.4}
           strokeLinecap="round"
         />
       )}
@@ -420,14 +524,13 @@ function AgentAvatar({
   blinkDelay = "0s",
   className,
 }: {
-  agent: Pick<Agent, "body" | "shape" | "name"> & { expression?: AvatarExpression };
+  agent: Pick<Agent, "body" | "deep" | "shape" | "name"> & { expression?: AvatarExpression };
   size?: number;
   blinkDelay?: string;
   className?: string;
 }) {
   const rawId = useId().replace(/:/g, "");
   const expr = EXPRESSIONS[agent.expression ?? "Neutral"] ?? EXPRESSIONS.Neutral;
-  const color = AVATAR_COLORS.find((c) => c.from.toLowerCase() === agent.body.toLowerCase());
   const gid = `bui-grad-${rawId}`;
   const cid = `bui-clip-${rawId}`;
   const d = SHAPE_PATHS[agent.shape];
@@ -442,12 +545,12 @@ function AgentAvatar({
       className="block"
     >
       <defs>
-        {color && (
-          <radialGradient id={gid} cx="50%" cy="42%" r="68%">
-            <stop offset="0%" stopColor={color.from} />
-            <stop offset="100%" stopColor={color.to} />
-          </radialGradient>
-        )}
+        {/* Pastel fill: light at upper-left, deeper at the edge — the
+            original's radial gradient, measured off its sidebar faces. */}
+        <radialGradient id={gid} cx="42%" cy="38%" r="75%">
+          <stop offset="0%" stopColor={agent.body} />
+          <stop offset="100%" stopColor={agent.deep} />
+        </radialGradient>
         <clipPath id={cid}>
           <path d={d} />
         </clipPath>
@@ -456,12 +559,11 @@ function AgentAvatar({
           change reads as a morph, not a hard cut. The intermediate frames
           are our own easing, not the original canvas morph. */}
       <g key={agent.shape} className="bui-morph">
-        <path d={d} fill={color ? `url(#${gid})` : agent.body} />
+        <path d={d} fill={`url(#${gid})`} />
         <g clipPath={`url(#${cid})`}>
-          <ellipse cx="13" cy="10" rx="9" ry="5.5" fill="#fff" opacity="0.38" transform="rotate(-18 13 10)" />
-          {/* Fold-layer stand-in: a translucent dark band + a pale fold edge. */}
-          <path d="M4 31Q20 37 36 30L36 40 4 40Z" fill="#000" opacity="0.08" />
-          <path d="M4 31Q20 37 36 30" fill="none" stroke="#fff" strokeWidth="0.7" opacity="0.28" />
+          {/* Fold shadow: a deeper band down the right side, as on the
+              original's large editor face and sidebar faces. */}
+          <path d="M31 2C37.5 10 37.5 30 31 38L38 38 38 2Z" fill={agent.deep} opacity="0.45" />
         </g>
       </g>
       <AvatarEye
@@ -485,11 +587,9 @@ function AgentAvatar({
       {expr.brows && (
         <path d={expr.brows} stroke="#262626" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       )}
-      {expr.mouthFill ? (
-        <path d={expr.mouth} fill="#262626" />
-      ) : (
-        <path d={expr.mouth} stroke="#262626" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      )}
+      {/* No mouth: the original's avatars — sidebar and the large editor
+          face — show eyes only. Mouths survive only on the wheel glyphs
+          (MiniFace below). */}
       {expr.blush && (
         <>
           <ellipse cx="10.5" cy="22.5" rx={expr.strongBlush ? 2.6 : 2} ry="1.2" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
@@ -522,15 +622,15 @@ function MiniFace({ expression, size = 28 }: { expression: AvatarExpression; siz
   const lookY = expr.lookY ?? 0;
   return (
     <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true" className="block shrink-0">
-      <AvatarEye cx={14} style={expr.leftEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" />
-      <AvatarEye cx={26} style={expr.rightEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" />
+      <AvatarEye cx={14} style={expr.leftEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold />
+      <AvatarEye cx={26} style={expr.rightEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold />
       {expr.brows && (
-        <path d={expr.brows} stroke="#262626" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        <path d={expr.brows} stroke="#262626" strokeWidth="2.1" fill="none" strokeLinecap="round" />
       )}
       {expr.mouthFill ? (
         <path d={expr.mouth} fill="#262626" />
       ) : (
-        <path d={expr.mouth} stroke="#262626" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d={expr.mouth} stroke="#262626" strokeWidth="2.4" fill="none" strokeLinecap="round" />
       )}
       {expr.blush && (
         <>
@@ -555,6 +655,7 @@ function Sidebar({
   searchOpen,
   setSearchOpen,
   agents,
+  groups,
   onOpenMarketplace,
   onOpenSettings,
   onCreateAgent,
@@ -567,6 +668,8 @@ function Sidebar({
   searchOpen: boolean;
   setSearchOpen: (v: boolean) => void;
   agents: Agent[];
+  /** Groups created from the picker (the original starts with none). */
+  groups: GroupChat[];
   onOpenMarketplace: () => void;
   onOpenSettings: () => void;
   onCreateAgent: () => void;
@@ -577,8 +680,9 @@ function Sidebar({
 }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
-  const showGroup =
-    !q || GROUP.name.toLowerCase().includes(q) || GROUP.desc.toLowerCase().includes(q);
+  const visibleGroups = groups.filter(
+    (g) => !q || g.name.toLowerCase().includes(q) || GROUP_DESC.toLowerCase().includes(q),
+  );
   const visibleAgents = q
     ? agents.filter((a) =>
         [a.name, a.label, a.intro, a.desc].some((t) => t.toLowerCase().includes(q)),
@@ -682,41 +786,37 @@ function Sidebar({
             tabIndex={0}
             className="flex h-full flex-col gap-2 overflow-y-auto overscroll-contain outline-none [scrollbar-width:none] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
           >
-            {/* Group chat (first item) */}
-            {showGroup && (
-            <button
-              type="button"
-              onClick={() => onSelect(GROUP.id)}
-              aria-current={selectedId === GROUP.id ? "page" : undefined}
-              className={cx(
-                "flex min-h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                selectedId === GROUP.id
-                  ? "bg-background-tertiary-default"
-                  : "hover:bg-background-secondary-hover",
-              )}
-            >
-              <span className="flex shrink-0 items-center">
-                <AgentAvatar
-                  agent={{ body: "#36c15c", shape: "shield", name: "landing page designer" }}
-                  size={22}
-                />
-                <AgentAvatar
-                  agent={{ body: "#E34798", shape: "star", name: "marketing bot" }}
-                  size={22}
-                  className="-ms-2"
-                />
-                <AgentAvatar
-                  agent={{ body: "#1bb4ce", shape: "diamond", name: "Product planner" }}
-                  size={22}
-                  className="-ms-2"
-                />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span title={GROUP.name} className="line-clamp-2 break-words text-body-medium text-text-primary">{GROUP.name}</span>
-                <span className="truncate text-body-regular text-text-tertiary">{GROUP.desc}</span>
-              </span>
-            </button>
-            )}
+            {/* Group chats (first items) — only groups the user created
+                from the picker; the original starts with none. */}
+            {visibleGroups.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                onClick={() => onSelect(group.id)}
+                aria-current={selectedId === group.id ? "page" : undefined}
+                className={cx(
+                  "flex h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                  selectedId === group.id
+                    ? "bg-background-tertiary-default"
+                    : "hover:bg-background-secondary-hover",
+                )}
+              >
+                <span className="flex shrink-0 items-center">
+                  {group.members.slice(0, 3).map((m, i) => (
+                    <AgentAvatar
+                      key={m.id}
+                      agent={m}
+                      size={22}
+                      className={i > 0 ? "-ms-2" : undefined}
+                    />
+                  ))}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span title={group.name} className="truncate text-body-medium text-text-primary">{group.name}</span>
+                  <span className="truncate text-body-regular text-text-tertiary">{GROUP_DESC}</span>
+                </span>
+              </button>
+            ))}
             {visibleAgents.map((agent, i) => {
               const active = agent.id === selectedId;
               return (
@@ -726,14 +826,14 @@ function Sidebar({
                   onClick={() => onSelect(agent.id)}
                   aria-current={active ? "page" : undefined}
                   className={cx(
-                    "flex min-h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    "flex h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                     active ? "bg-background-tertiary-default" : "hover:bg-background-secondary-hover",
                   )}
                 >
                   <AgentAvatar agent={agent} size={40} blinkDelay={`${(i % 5) * 0.7}s`} />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate text-body-medium text-text-primary">{agent.name}</span>
-                    <span title={agent.intro} className="line-clamp-2 break-words text-body-regular text-text-tertiary">{agent.intro}</span>
+                    <span title={agent.intro} className="truncate text-body-regular text-text-tertiary">{agent.intro}</span>
                   </span>
                 </button>
               );
@@ -868,11 +968,11 @@ function ReplyFooter({
   return (
     <div className="flex items-center justify-between gap-2 px-3">
       {/* The original button holds two overlapping layers — "Thinking…"
-          (opacity 0) and the agent name (opacity 1) — cross-fading while a
-          reply generates. This replica mounts only one of the two: the
-          "Thinking…" label exists in the DOM only while a reply is being
-          generated, so it can never flash on first load. Clicking it opens
-          the agent editor, like the header pill. */}
+          and the agent name — cross-fading while a reply generates: the
+          "Thinking…" layer is in the DOM after every reply (it shows in
+          the original's body text) and only becomes visible while a
+          reply is being generated. Clicking it opens the agent editor,
+          like the header pill. */}
       <button
         type="button"
         aria-label={agent.name}
@@ -885,11 +985,22 @@ function ReplyFooter({
           </span>
         </span>
         <span className="grid">
-          {thinking ? (
-            <span className="col-start-1 row-start-1">Thinking…</span>
-          ) : (
-            <span className="col-start-1 row-start-1">{agent.name}</span>
-          )}
+          <span
+            className={cx(
+              "col-start-1 row-start-1 transition-opacity duration-200",
+              thinking ? "opacity-100" : "opacity-0",
+            )}
+          >
+            Thinking…
+          </span>
+          <span
+            className={cx(
+              "col-start-1 row-start-1 transition-opacity duration-200",
+              thinking ? "opacity-0" : "opacity-100",
+            )}
+          >
+            {agent.name}
+          </span>
         </span>
       </button>
       <div
@@ -942,17 +1053,28 @@ function ReplyFooter({
   );
 }
 
-function GroupEmptyState() {
+function GroupEmptyState({ members }: { members: PickerMember[] }) {
+  const shown = members.slice(0, 3);
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
       <div className="relative mb-5 flex h-16 items-end justify-center">
-        <AgentAvatar agent={{ body: "#36c15c", shape: "shield", name: "landing page designer" }} size={40} className="relative z-[1] -me-2" />
-        <AgentAvatar agent={{ body: "#E34798", shape: "star", name: "marketing bot" }} size={40} className="relative z-[2] -mt-3" />
-        <AgentAvatar agent={{ body: "#1bb4ce", shape: "diamond", name: "Product planner" }} size={40} className="relative z-[1] -ms-2" />
+        {shown.map((m, i) => (
+          <AgentAvatar
+            key={m.id}
+            agent={m}
+            size={40}
+            className={cx(
+              "relative",
+              i === 1 ? "z-[2] -mt-3" : "z-[1]",
+              i === 0 && shown.length > 1 ? "-me-2" : undefined,
+              i === 2 ? "-ms-2" : undefined,
+            )}
+          />
+        ))}
       </div>
       <p className="text-title-2-medium text-text-primary">A few minds. One conversation.</p>
       <p className="mt-2 max-w-md text-body-regular text-text-secondary">
-        landing page designer, marketing bot, Product planner are here. Send a message to get
+        {members.map((m) => m.name).join(", ")} are here. Send a message to get
         everyone&rsquo;s perspective.
       </p>
     </div>
@@ -963,36 +1085,28 @@ function ChatMain({
   agent,
   agents,
   messages,
-  groupName,
+  group,
   thinking,
   onOpenEditor,
   onOpenMobileNav,
-  onRename,
-  onDelete,
-  onClear,
+  onOpenGroupPicker,
 }: {
   agent: Agent | null;
   agents: Agent[];
   messages: ChatMsg[];
-  groupName: string;
+  group: GroupChat | null;
   /** A reply is being generated — the latest agent message shows Thinking…. */
   thinking: boolean;
   /** Opens the editor; with an id, selects that agent first (group replies). */
   onOpenEditor: (agentId?: string) => void;
   onOpenMobileNav: () => void;
-  /** Rename the current agent (or the group when no agent is selected). */
-  onRename: (name: string) => void;
-  /** Delete the current agent conversation. Not offered for the group. */
-  onDelete: () => void;
-  /** Clear the current agent's messages. Not offered for the group. */
-  onClear: () => void;
+  /** Opens the "Chat with your agents" group picker. */
+  onOpenGroupPicker: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [copiedResponseId, setCopiedResponseId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<number, "helpful" | "unhelpful" | null>>({});
   const [menuOpen, setMenuOpen] = useState(false);
-  const [renaming, setRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState(0);
 
@@ -1044,21 +1158,6 @@ function ChatMain({
     if (m.role === "agent") lastAgentIdx = i;
   });
 
-  const startRename = () => {
-    setRenameValue(agent ? agent.name : groupName);
-    setRenaming(true);
-  };
-
-  /* Inline rename: Enter saves, Escape or clicking away discards. (A
-     cancel flag was tried first and removed: when the input unmounts
-     without focus, no blur fires, so a stale flag swallowed the next
-     Enter save. Blur discarding needs no flag.) */
-  const commitRename = () => {
-    const next = renameValue.trim();
-    if (next) onRename(next);
-    setRenaming(false);
-  };
-
   /* Opening the editor from the header capsule or a reply footer must
      dismiss the Conversation options menu first: the menu is anchored to
      the header, and once the editor panel opens the main column narrows —
@@ -1083,22 +1182,7 @@ function ChatMain({
         >
           <RiMenuLine className="size-4 shrink-0" aria-hidden />
         </button>
-        {renaming ? (
-          <div className="flex min-w-0 flex-1">
-            <input
-              autoFocus
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitRename();
-                if (e.key === "Escape") setRenaming(false);
-              }}
-              onBlur={() => setRenaming(false)}
-              aria-label="Conversation name"
-              className="h-[31px] min-w-0 max-w-full rounded-full bg-background-tertiary-default px-3 text-body-2-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-            />
-          </div>
-        ) : agent ? (
+        {agent ? (
           <div className="flex min-w-0 flex-1">
             <button
               type="button"
@@ -1109,12 +1193,23 @@ function ChatMain({
             >
               <AgentAvatar agent={agent} size={20} />
               <span className="truncate">{agent.name}</span>
-              <RiArrowDownSLine className="size-4 shrink-0 text-foreground-icon-tertiary" aria-hidden />
             </button>
           </div>
         ) : (
-          <div className="flex min-w-0 flex-1 items-center">
-            <span className="truncate text-body-2-medium text-text-secondary">{groupName}</span>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            {group && (
+              <span className="flex shrink-0 items-center">
+                {group.members.slice(0, 3).map((m, i) => (
+                  <AgentAvatar
+                    key={m.id}
+                    agent={m}
+                    size={20}
+                    className={i > 0 ? "-ms-2" : undefined}
+                  />
+                ))}
+              </span>
+            )}
+            <span className="truncate text-body-2-medium text-text-secondary">{group?.name ?? ""}</span>
           </div>
         )}
         {/* Template-switcher entry: an icon-only grid button in the header
@@ -1154,47 +1249,40 @@ function ChatMain({
           <DropdownPopover
             aria-label="Conversation options"
             placement="bottom end"
-            className="w-[220px] overflow-x-hidden p-2"
+            offset={9}
+            crossOffset={-5}
+            className="w-[256px] overflow-x-hidden p-[6px]"
           >
+            {/* Measured live (orig-convopts-lw.json): a 256×98 dialog at
+                [799,57] with the section label "In this conversation",
+                "Edit <agent>" and "Start a group chat". */}
+            <DropdownGroup label="In this conversation" className="gap-1 pt-0">
+              {agent ? (
+                <DropdownItem
+                  onSelect={() => {
+                    setMenuOpen(false);
+                    handleOpenEditor();
+                  }}
+                  className="px-2 py-1"
+                >
+                  <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
+                    Edit {agent.name}
+                  </span>
+                </DropdownItem>
+              ) : null}
+            </DropdownGroup>
             <DropdownGroup>
               <DropdownItem
                 onSelect={() => {
                   setMenuOpen(false);
-                  startRename();
+                  onOpenGroupPicker();
                 }}
-                className="px-2 py-1.5"
+                className="px-2 py-1"
               >
                 <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
-                  {agent ? "Rename conversation" : "Rename group"}
+                  Start a group chat
                 </span>
               </DropdownItem>
-              {agent ? (
-                <>
-                  <DropdownItem
-                    onSelect={() => {
-                      setMenuOpen(false);
-                      onClear();
-                    }}
-                    className="px-2 py-1.5"
-                  >
-                    <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
-                      Clear conversation
-                    </span>
-                  </DropdownItem>
-                  <DropdownDivider />
-                  <DropdownItem
-                    onSelect={() => {
-                      setMenuOpen(false);
-                      onDelete();
-                    }}
-                    className="px-2 py-1.5"
-                  >
-                    <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-error-primary">
-                      Delete conversation
-                    </span>
-                  </DropdownItem>
-                </>
-              ) : null}
             </DropdownGroup>
           </DropdownPopover>
         </Dropdown>
@@ -1208,7 +1296,7 @@ function ChatMain({
           className="h-full overflow-y-auto overscroll-contain pb-4 pt-2 outline-none [scrollbar-width:none] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-focus-ring"
         >
           {agent === null && messages.length === 0 ? (
-            <GroupEmptyState />
+            <GroupEmptyState members={group?.members ?? []} />
           ) : (
             <>
               <div className="mb-4 mt-3 flex justify-center">
@@ -1291,11 +1379,14 @@ function ChatMain({
 }
 
 /* ------------------------------------------------------------------ */
-/* Add to chat menu — measured from the live original (browser        */
-/* 1919x998): a 359px "Add to chat" dialog above the composer, 7      */
-/* items in 2 groups, icon + bold title + grey description on one    */
-/* line per row. Grey line icons for Add, coloured solid tiles with   */
-/* white icons for Plugins.                                           */
+/* Add menu — measured from the live original (orig-menu-rect.json):  */
+/* a 361×346 dialog titled "Add" above the composer at [302,484],     */
+/* 16px radius, 7 items in 2 groups ("Add" / "Plugins"), icon + bold  */
+/* title + grey description on one line per row, NO dash between      */
+/* title and description. The trigger's aria-label is "Add           */
+/* attachment"; the original's DOM contains no "Add to chat" text.    */
+/* Grey line icons for Add, coloured solid tiles with white icons    */
+/* for Plugins.                                                       */
 /* ------------------------------------------------------------------ */
 
 type AddMenuItemId =
@@ -1568,21 +1659,22 @@ function Composer({
               />
             </div>
             <div className="flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-2">
-                {/* Add to chat — measured from the live original: a 359px
-                    "Add to chat" dialog floating above the composer, its
-                    bottom edge 2px above the input box top edge and its
-                    left edge aligned with this button's left edge. A
-                    trigger-anchored Popover cannot sit there (it would
-                    hang off the button, inside the composer), so the
-                    panel is absolutely positioned against the composer
-                    panel instead, reusing the BoardUI menu surface and
+              <div className="relative flex min-w-0 shrink-0 items-center gap-2">
+                {/* Add — measured from the live original: a 361×346 "Add"
+                    dialog floating above the composer, its bottom edge
+                    8px above this bottom row's top edge (menu bottom
+                    830, row top 838) and its left edge aligned with
+                    this row's left edge (302). A trigger-anchored
+                    Popover cannot sit there (it would hang off the
+                    button, inside the composer), so the panel is
+                    absolutely positioned against this relative row
+                    instead, reusing the BoardUI menu surface and
                     DropdownGroup / DropdownItem rows. While open the
                     trigger is a black "×"; clicking it closes the menu. */}
                 <button
                   ref={addTriggerRef}
                   type="button"
-                  aria-label="Add to chat"
+                  aria-label="Add attachment"
                   aria-expanded={addMenuOpen}
                   aria-haspopup="dialog"
                   onClick={() => setAddMenuOpen((v) => !v)}
@@ -1603,16 +1695,16 @@ function Composer({
                   <div
                     ref={addMenuRef}
                     role="dialog"
-                    aria-label="Add to chat"
+                    aria-label="Add"
                     className={cx(
-                      "bui-add-menu absolute bottom-[calc(100%+2px)] left-2.5 z-50 w-[359px]",
+                      "bui-add-menu absolute bottom-[calc(100%+8px)] left-0 z-50 w-[361px] max-w-[calc(100vw-32px)]",
                       MENU_POPOVER_SURFACE,
-                      "rounded-[14px] p-3",
+                      "rounded-[16px] p-2",
                     )}
                   >
                     <div className="flex flex-col gap-1 outline-none">
                       {ADD_MENU_GROUPS.map((group) => (
-                        <DropdownGroup key={group.label} label={group.label}>
+                        <DropdownGroup key={group.label} label={group.label} className="pt-0">
                           {group.items.map((item) => (
                             <DropdownItem
                               key={item.id}
@@ -1626,7 +1718,7 @@ function Composer({
                                 </span>
                                 {item.desc ? (
                                   <span className="truncate text-body-2-regular text-text-secondary">
-                                    — {item.desc}
+                                    {item.desc}
                                   </span>
                                 ) : null}
                               </span>
@@ -1637,20 +1729,18 @@ function Composer({
                     </div>
                   </div>
                 )}
-                {/* Permission — the original shows only the mode ("Bypass
-                    all") with "Permission: " in the aria-label, but the
-                    visible text is widened here to the full "Permission:
-                    Bypass all" so the prefix is never clipped. The menu
-                    items are the standard modes; the original's menu
-                    content is not in the snapshot. */}
+                {/* Permission — measured live (orig-probe2): a 110×30 chip
+                    showing only the mode ("Bypass all"); "Permission: "
+                    lives in the aria-label only. The menu items are the
+                    standard modes. */}
                 <Dropdown>
                   <DropdownTrigger
                     aria-label={`Permission: ${permission}`}
-                    className="flex h-[30px] shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-2 py-[5px] pe-2.5 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    className="flex h-[30px] w-[110px] shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                   >
                     <RiShieldLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
                     <span className="whitespace-nowrap text-body-medium text-text-secondary">
-                      Permission: {permission}
+                      {permission}
                     </span>
                   </DropdownTrigger>
                   <DropdownPopover aria-label="Permission" placement="top start" className="w-[190px] p-2">
@@ -1669,7 +1759,7 @@ function Composer({
                   </DropdownPopover>
                 </Dropdown>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {/* Model — a real dropdown, but with only the one model the
                     snapshot shows ("Fable 5"). The old "Fable 4" toggle
                     option was invented and is gone; the original's other
@@ -1677,10 +1767,9 @@ function Composer({
                 <Dropdown>
                   <DropdownTrigger
                     aria-label="Model"
-                    className="flex cursor-pointer items-center gap-0.5 rounded-full px-1 py-1 text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    className="flex h-[32px] w-[87px] shrink-0 cursor-pointer items-center justify-center rounded-full text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                   >
-                    <span className="whitespace-nowrap px-0.5 text-body-medium text-text-secondary">Fable 5</span>
-                    <RiArrowDownSLine className="size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease" aria-hidden />
+                    <span className="whitespace-nowrap text-body-medium text-text-secondary">Fable 5</span>
                   </DropdownTrigger>
                   <DropdownPopover aria-label="Model" placement="top end" className="w-[190px] p-2">
                     <DropdownGroup>
@@ -1738,13 +1827,11 @@ function AgentEditor({
   onClose,
 }: {
   agent: Agent;
-  /** Persists the edited fields back to the page's agent list. */
+  /** Persists an edit immediately — the original has no Save button at
+      all (orig-probe3/4: savePresent false); edits apply live. */
   onSave: (patch: Partial<Agent>) => void;
   onClose: () => void;
 }) {
-  const [name, setName] = useState(agent.name);
-  const [label, setLabel] = useState(agent.label);
-  const [desc, setDesc] = useState(agent.desc);
   // Language codes match the original's native select: "" + auto/en/tr/es/
   // fr/de/ja/pt. Voice is disabled in the original (Off / System voice).
   const [language, setLanguage] = useState("auto");
@@ -1753,40 +1840,32 @@ function AgentEditor({
   const [previewing, setPreviewing] = useState(false);
   const [voiceToast, setVoiceToast] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
-  const [colorIdx, setColorIdx] = useState(() => {
-    const i = AVATAR_COLORS.findIndex((c) => c.from.toLowerCase() === agent.body.toLowerCase());
-    return i >= 0 ? i : -1;
-  });
-  const [customColor, setCustomColor] = useState("#437EF7");
-  const [avatar, setAvatar] = useState({ body: agent.body, shape: agent.shape });
-  const [expression, setExpression] = useState<AvatarExpression>(agent.expression ?? "Neutral");
+  const [customColor, setCustomColor] = useState(agent.body);
   const [dragOver, setDragOver] = useState(false);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
 
-  /* REPLICA NOTE: the original editor has no visible save affordance in the
-     public template, but edits here used to be discarded on close — every
-     field above was local useState with no callback. Save persists name,
-     label, description and the picked avatar (body + shape + expression) to the page's
-     agent list; closing via X saves too, so edits are never lost. */
+  /* Derived from the agent record (the editor is fully controlled — every
+     change below calls onSave at once, so the sidebar and chat update
+     live, exactly like the original). */
+  const expression = agent.expression ?? "Neutral";
+  const colorIdx = agent.colorId
+    ? AVATAR_COLORS.findIndex((c) => c.id === agent.colorId)
+    : -1;
+
+  /* Escape closes the editor only when the keypress targets the editor
+     itself (or nothing focusable, i.e. body). A menu, picker or modal
+     open on top handles its own Escape — without this guard the editor
+     closed behind the "…" menu whenever Escape dismissed the menu. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") saveAndClose();
+      if (e.key !== "Escape") return;
+      const t = e.target as Node | null;
+      if (t === document.body || (rootRef.current && t && rootRef.current.contains(t))) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
-
-  const saveAndClose = () => {
-    onSave({
-      name: name.trim() || agent.name,
-      label,
-      desc,
-      body: avatar.body,
-      shape: avatar.shape,
-      expression,
-    });
-    onClose();
-  };
+  }, [onClose]);
 
   /* Stop any preview speech when the editor unmounts. */
   useEffect(() => {
@@ -1820,7 +1899,7 @@ function AgentEditor({
       return;
     }
     const utter = new SpeechSynthesisUtterance(
-      `Hi, I'm ${name.trim() || agent.name}. ${desc.trim() || agent.desc}`,
+      `Hi, I'm ${agent.name}. ${agent.desc}`,
     );
     utter.rate = parseFloat(speed) || 1;
     const voices = window.speechSynthesis.getVoices();
@@ -1838,43 +1917,83 @@ function AgentEditor({
     setPreviewing(true);
   };
 
+  /** Picking a named colour paints its pastel (pastelOf), like the
+      original's canvas; a custom colour applies as picked. */
+  const pickColor = (i: number) => {
+    const c = AVATAR_COLORS[i];
+    const pastel = pastelOf(c.from);
+    onSave({ body: pastel, deep: deepOf(pastel, c.from), colorId: c.id });
+  };
+  const pickCustomColor = (hex: string) => {
+    setCustomColor(hex);
+    onSave({ body: hex, deep: deepOf(hex), colorId: undefined });
+  };
+
   return (
-    <aside
+    <section
+      ref={rootRef}
       aria-label="Agent editor"
-      className="ms-4 hidden w-[360px] shrink-0 flex-col rounded-3xl border border-border-button-white bg-background-secondary-default shadow-sidebar lg:flex"
+      className="flex h-full min-h-0 flex-col bg-background-full ps-1 pe-2 max-lg:fixed max-lg:inset-y-2 max-lg:right-2 max-lg:z-40 max-lg:h-auto max-lg:w-[340px] max-lg:max-w-[calc(100vw-16px)] max-lg:rounded-3xl max-lg:shadow-sidebar lg:ms-4 lg:w-[340px] lg:shrink-0"
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3 [scrollbar-width:none]">
-        <div className="flex shrink-0 items-center justify-between px-1 pb-2">
-          <p className="truncate text-title-3-semibold text-text-primary">{agent.name}</p>
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={saveAndClose}
-              className="flex h-8 cursor-pointer items-center rounded-full bg-button-primary px-3 text-body-2-medium text-text-white shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              aria-label="Close agent editor"
-              onClick={saveAndClose}
-              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-            >
-              <RiCloseLine className="size-5" aria-hidden />
-            </button>
-          </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto ps-1 [scrollbar-width:none]">
+        <div className="flex shrink-0 items-center justify-between pb-3 pt-3">
+          <p className="min-w-0 flex-1 truncate text-center text-title-3-semibold text-text-primary lg:text-start">{agent.name}</p>
+          <button
+            type="button"
+            aria-label="Close agent editor"
+            onClick={onClose}
+            className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            <RiCloseLine className="size-5" aria-hidden />
+          </button>
         </div>
 
         {/* Avatar: the original's 360px region — a 268px emotion ring of 16
-            dots around a large central avatar. In the snapshot each dot is
-            a plain 34px circle (all hsl(181 49% 80%)) holding a blank
-            canvas; the live original draws the expression face on that
-            canvas, so each dot here draws the same face as an SVG
-            (MiniFace, from the EXPRESSIONS table) with the name on hover
-            and in the caption below. Shapes can also be dragged from the
-            row below onto the central preview. */}
-        <div className="relative h-[360px] shrink-0 overflow-hidden">
-          <div className="pointer-events-none absolute left-1/2 top-[30px] z-10 -translate-x-1/2">
+            dots around a large central avatar, with the 9 shape chips on
+            an elliptical arc around it (SHAPE_RING_POS, measured live).
+            Each dot is a 34px circle in the agent's pastel colour holding
+            the expression face (MiniFace, from the EXPRESSIONS table);
+            the selected dot's ring is dark grey, not blue. There is no
+            "Expression: …" caption anywhere on the original. Shapes can
+            also be dragged from the arc onto the central preview. */}
+        <div className="relative h-[360px] w-[calc(100%+8px)] shrink-0 overflow-hidden">
+          <div role="listbox" aria-label="Agent shape" className="absolute inset-0">
+            {ringOrder(agent.shape).map((sh, i) => {
+              const cap = sh[0].toUpperCase() + sh.slice(1);
+              const selectedShape = agent.shape === sh;
+              const pos = SHAPE_RING_POS[i];
+              return (
+                <button
+                  key={sh}
+                  type="button"
+                  role="option"
+                  aria-selected={selectedShape}
+                  aria-label={`${cap} shape`}
+                  title={`${cap} shape — drag onto the preview to apply`}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("text/plain", sh);
+                    e.dataTransfer.effectAllowed = "copy";
+                  }}
+                  onClick={() => onSave({ shape: sh })}
+                  className={cx(
+                    "absolute flex size-14 cursor-grab items-center justify-center rounded-2xl outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing",
+                    selectedShape
+                      ? "bg-background-secondary-default ring-1 ring-border-button-default"
+                      : "bg-transparent",
+                  )}
+                  style={{ left: pos.left, top: pos.top }}
+                >
+                  {/* Pure silhouette in the agent's pastel: the original's
+                      shape chips hold a 56px canvas silhouette, no name. */}
+                  <svg viewBox="0 0 40 40" width={40} height={40} aria-hidden="true" className="block" style={{ color: agent.body }}>
+                    <path d={SHAPE_PATHS[sh]} fill="currentColor" />
+                  </svg>
+                </button>
+              );
+            })}
+          </div>
+          <div className="pointer-events-none absolute left-1/2 top-[18px] z-10 -translate-x-1/2">
             <div role="group" aria-label="Agent emotion" className="pointer-events-auto relative size-[268px] touch-none rounded-full">
               <div className="pointer-events-none absolute inset-0">
                 {EXPRESSION_ORDER.map((e, i) => (
@@ -1888,14 +2007,14 @@ function AgentEditor({
                       aria-label={e}
                       aria-pressed={expression === e}
                       title={e}
-                      onClick={() => setExpression(e)}
+                      onClick={() => onSave({ expression: e })}
                       className={cx(
-                        "pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow,transform] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                        "pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                         expression === e
-                          ? "scale-110 border-foreground-icon-primary ring-2 ring-border-focus-ring"
+                          ? "border-foreground-icon-secondary"
                           : "border-transparent",
                       )}
-                      style={{ backgroundColor: "hsl(181 49% 80%)" }}
+                      style={{ backgroundColor: agent.body }}
                     >
                       <MiniFace expression={e} size={28} />
                     </button>
@@ -1906,7 +2025,7 @@ function AgentEditor({
           </div>
           <div
             className={cx(
-              "absolute left-1/2 top-[164px] z-0 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition-shadow",
+              "absolute left-1/2 top-[152px] z-0 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition-shadow",
               dragOver && "ring-2 ring-accent-500",
             )}
             onDragOver={(e) => {
@@ -1919,61 +2038,18 @@ function AgentEditor({
               setDragOver(false);
               const shape = e.dataTransfer.getData("text/plain") as AvatarShape;
               if ((AVATAR_SHAPES as string[]).includes(shape)) {
-                setAvatar((prev) => ({ ...prev, shape }));
+                onSave({ shape });
               }
             }}
           >
-            <AgentAvatar agent={{ ...agent, body: avatar.body, shape: avatar.shape, expression }} size={150} />
+            <AgentAvatar agent={agent} size={150} />
           </div>
         </div>
 
-        {/* Selected expression, always visible: the ring dots are small, so
-            the current emotion's name is spelled out here as well as on
-            each dot's hover tooltip. */}
-        <p aria-live="polite" className="shrink-0 pb-1 text-center text-body-2-medium text-text-secondary">
-          Expression: <span className="text-text-primary">{expression}</span>
-        </p>
-
-        {/* Shape options + colour dots */}
-        <div className="flex shrink-0 flex-col items-center gap-3 pb-1">
-          <div className="grid w-full grid-cols-3 gap-2" role="listbox" aria-label="Agent shape">
-            {AVATAR_SHAPES.map((s) => {
-              const cap = s[0].toUpperCase() + s.slice(1);
-              const selectedShape = avatar.shape === s;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  role="option"
-                  aria-selected={selectedShape}
-                  aria-label={`${cap} shape`}
-                  title={`${cap} shape — drag onto the preview to apply`}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData("text/plain", s);
-                    e.dataTransfer.effectAllowed = "copy";
-                  }}
-                  onClick={() => setAvatar((prev) => ({ ...prev, shape: s }))}
-                  className={cx(
-                    "flex min-h-[76px] cursor-grab flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing",
-                    selectedShape
-                      ? "border-border-button-default bg-background-primary-default ring-1 ring-border-button-default"
-                      : "border-transparent bg-transparent",
-                  )}
-                >
-                  {/* Pure silhouette, no face: the shape itself is the
-                      preview (the snapshot's shape buttons hold a 56px
-                      canvas silhouette, no visible name). */}
-                  <svg viewBox="0 0 40 40" width={40} height={40} aria-hidden="true" className="block text-foreground-icon-secondary">
-                    <path d={SHAPE_PATHS[s]} fill="currentColor" />
-                  </svg>
-                  <span className={cx("text-body-2-medium", selectedShape ? "text-text-primary" : "text-text-secondary")}>
-                    {cap}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Colour dots (26px, measured live): the 9 named colours plus a
+            custom-colour rainbow dot. Only Security has a named colour
+            pressed (Teal); the rest sit on the custom dot. */}
+        <div className="flex shrink-0 flex-col items-center gap-3 pb-1 pt-1">
           <div className="flex items-center gap-1.5">
             {AVATAR_COLORS.map((c, i) => (
               <button
@@ -1982,12 +2058,9 @@ function AgentEditor({
                 aria-label={`${c.label} avatar`}
                 title={c.id}
                 aria-pressed={i === colorIdx}
-                onClick={() => {
-                  setColorIdx(i);
-                  setAvatar((prev) => ({ ...prev, body: c.from }));
-                }}
+                onClick={() => pickColor(i)}
                 className={cx(
-                  "size-5 cursor-pointer rounded-full outline-none transition-transform focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                  "size-[26px] cursor-pointer rounded-full outline-none transition-transform focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                   i === colorIdx ? "scale-110 ring-2 ring-offset-2 ring-border-focus-ring" : "hover:scale-110",
                 )}
                 style={{ background: `radial-gradient(closest-side circle at 50% 50%, ${c.from} 0%, ${c.to} 100%)` }}
@@ -2002,7 +2075,7 @@ function AgentEditor({
               title="Custom avatar color"
               onClick={() => colorInputRef.current?.click()}
               className={cx(
-                "flex size-5 cursor-pointer items-center justify-center rounded-full outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                "flex size-[26px] cursor-pointer items-center justify-center rounded-full outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                 colorIdx === -1 && "scale-110 ring-2 ring-offset-2 ring-border-focus-ring",
               )}
               style={{ background: "conic-gradient(#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444)" }}
@@ -2013,11 +2086,7 @@ function AgentEditor({
               aria-hidden="true"
               tabIndex={-1}
               value={customColor}
-              onChange={(e) => {
-                setCustomColor(e.target.value);
-                setColorIdx(-1);
-                setAvatar((prev) => ({ ...prev, body: e.target.value }));
-              }}
+              onChange={(e) => pickCustomColor(e.target.value)}
               className="sr-only"
             />
           </div>
@@ -2029,8 +2098,8 @@ function AgentEditor({
             <label className="flex min-h-14 items-center justify-between gap-3 border-b border-separator-border py-3">
               <span className="shrink-0 text-body-medium text-text-primary">Name</span>
               <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={agent.name}
+                onChange={(e) => onSave({ name: e.target.value })}
                 aria-label="Agent name"
                 placeholder="Michael Scott"
                 maxLength={48}
@@ -2040,8 +2109,8 @@ function AgentEditor({
             <label className="flex min-h-14 items-center justify-between gap-3 border-b border-separator-border py-3">
               <span className="shrink-0 text-body-medium text-text-primary">Label</span>
               <input
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
+                value={agent.label}
+                onChange={(e) => onSave({ label: e.target.value })}
                 aria-label="Agent label"
                 placeholder="Manager, marketing, painter"
                 maxLength={60}
@@ -2052,8 +2121,8 @@ function AgentEditor({
               <span className="text-body-medium text-text-primary">Description</span>
               <textarea
                 rows={4}
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
+                value={agent.desc}
+                onChange={(e) => onSave({ desc: e.target.value })}
                 aria-label="Agent description"
                 placeholder="Details for the agent"
                 maxLength={500}
@@ -2175,7 +2244,7 @@ function AgentEditor({
           </div>
         </div>
       </div>
-    </aside>
+    </section>
   );
 }
 
@@ -2184,15 +2253,275 @@ function AgentEditor({
 /* page. Lists the addable agents; Add appends one to the sidebar.    */
 /* ------------------------------------------------------------------ */
 
-function MarketplacePane() {
+/* ------------------------------------------------------------------ */
+/* Marketplace roster — measured live (orig-marketplace-full.json +   */
+/* orig-probe2.json marketplace buttons, 2026-11-08): Discover /      */
+/* Plugins / Bots / Installed tabs; "Meet your next teammate" with 4  */
+/* bot cards; "Tools for your workflow" with 4 tools; "Everyday       */
+/* essentials" with 4 installed tools (Added). Bot avatars reuse the */
+/* template's pastel avatar palette; tool marks are simplified        */
+/* redraws of the brands' marks (no logo assets for these eight live */
+/* in ~/workspace/vendor-logos/).                                     */
+/* ------------------------------------------------------------------ */
+
+type MarketplaceBot = { id: string; name: string; category: string; body: string; deep: string; shape: AvatarShape };
+const MARKETPLACE_BOTS: MarketplaceBot[] = [
+  { id: "pitch", name: "Pitch partner", category: "Writing", body: "#EBC7AD", deep: "#DCA87E", shape: "petal" },
+  { id: "meeting", name: "Meeting notes", category: "Productivity", body: "#B9DFD0", deep: "#8EC7AE", shape: "pocket" },
+  { id: "launch", name: "Launch planner", category: "Marketing", body: "#B9ABED", deep: "#9A86E2", shape: "flower" },
+  { id: "code", name: "Code reviewer", category: "Development", body: "#B3E4E5", deep: "#85CCD3", shape: "cloud" },
+];
+
+type MarketplaceTool = { id: string; name: string; category: string; desc: string; installed: boolean };
+const MARKETPLACE_TOOLS: MarketplaceTool[] = [
+  { id: "notion", name: "Notion", category: "Productivity", desc: "Bring your notes, docs, and projects together.", installed: false },
+  { id: "figma", name: "Figma", category: "Design", desc: "Keep designs and conversations in sync.", installed: false },
+  { id: "linear", name: "Linear", category: "Project management", desc: "Turn the next step into an issue.", installed: false },
+  { id: "appwrite", name: "Appwrite", category: "Development", desc: "A little help with your application backend.", installed: false },
+];
+const MARKETPLACE_ESSENTIALS: MarketplaceTool[] = [
+  { id: "gmail", name: "Gmail", category: "Communication", desc: "Find the important details in your inbox.", installed: true },
+  { id: "gcal", name: "Google Calendar", category: "Productivity", desc: "Make a little more room in your day.", installed: true },
+  { id: "gdrive", name: "Google Drive", category: "Productivity", desc: "Your files, right where you need them.", installed: true },
+  { id: "slack", name: "Slack", category: "Communication", desc: "Catch up with your team’s conversations.", installed: true },
+];
+
+/** Simplified redraws of the eight tools' brand marks (24px). */
+function ToolMark({ id }: { id: string }) {
+  const box = "block size-6 shrink-0";
+  switch (id) {
+    case "notion":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#000" />
+          <path d="M7 17.5v-11l9.5 11v-11" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "figma":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <path d="M8.5 2h3.5a3 3 0 0 1 0 6H8.5V2Z" fill="#F24E1E" />
+          <path d="M12 2h3.5a3 3 0 0 1 0 6H12V2Z" fill="#FF7262" />
+          <path d="M8.5 8h3.5a3 3 0 0 1 0 6H8.5V8Z" fill="#A259FF" />
+          <circle cx="15" cy="11" r="3" fill="#1ABCFE" />
+          <path d="M8.5 14h3.5a3 3 0 0 1 0 6H8.5v-6Z" fill="#0ACF83" />
+        </svg>
+      );
+    case "linear":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <circle cx="12" cy="12" r="11" fill="#5E6AD2" />
+          <path d="M8 15.5 15.5 8M8 8h7.5v7.5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "appwrite":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <rect width="24" height="24" rx="5" fill="#FD366E" />
+          <path d="M12 6.5c2.6 2.8 4 5 4 7a4 4 0 1 1-8 0c0-2 1.4-4.2 4-7Z" fill="#fff" />
+        </svg>
+      );
+    case "gmail":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <rect x="2" y="4.5" width="20" height="15" rx="2.5" fill="#fff" stroke="#DADCE0" />
+          <path d="M3.5 6.5 12 13l8.5-6.5" fill="none" stroke="#EA4335" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M3.5 6.5 9 12M20.5 6.5 15 12" fill="none" stroke="#FBBC04" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      );
+    case "gcal":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <rect x="2.5" y="3.5" width="19" height="17" rx="3" fill="#fff" stroke="#DADCE0" />
+          <rect x="2.5" y="3.5" width="19" height="5" rx="2.5" fill="#4285F4" />
+          <text x="12" y="17.5" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#4285F4" fontFamily="inherit">31</text>
+        </svg>
+      );
+    case "gdrive":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <path d="M9 3.5h6L21 13.5h-6L9 3.5Z" fill="#FBBC04" />
+          <path d="M9 3.5 3 13.5l3.5 6L12 10 9 3.5Z" fill="#34A853" />
+          <path d="M15 13.5h6l-3.5 6h-12l3.5-6h6Z" fill="#4285F4" />
+        </svg>
+      );
+    case "slack":
+      return (
+        <svg viewBox="0 0 24 24" className={box} aria-hidden="true">
+          <path d="M6 4.5a2 2 0 1 1 0 4H4.5a2 2 0 1 1 0-4H6Zm0 0v15M4.5 12a2 2 0 1 1 4 0v1.5a2 2 0 1 1-4 0V12Z" fill="none" stroke="#E01E5A" strokeWidth="2" strokeLinecap="round" />
+          <path d="M19.5 6a2 2 0 1 1-4 0V4.5a2 2 0 1 1 4 0V6Zm0 0H4.5M12 4.5a2 2 0 1 1 0 4H10.5a2 2 0 1 1 0-4H12Z" fill="none" stroke="#36C5F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M18 19.5a2 2 0 1 1 0-4h1.5a2 2 0 1 1 0 4H18Zm0 0V4.5M19.5 12a2 2 0 1 1-4 0v-1.5a2 2 0 1 1 4 0V12Z" fill="none" stroke="#2EB67D" strokeWidth="2" strokeLinecap="round" />
+          <path d="M4.5 18a2 2 0 1 1 4 0v1.5a2 2 0 1 1-4 0V18Zm0 0h15M12 19.5a2 2 0 1 1 0-4h1.5a2 2 0 1 1 0 4H12Z" fill="none" stroke="#ECB22E" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function MarketplacePane({ onClose }: { onClose: () => void }) {
+  const [tab, setTab] = useState("Discover");
+  const [query, setQuery] = useState("");
+  const [added, setAdded] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const t of MARKETPLACE_ESSENTIALS) init[t.id] = true;
+    return init;
+  });
+  const q = query.trim().toLowerCase();
+  const match = (name: string, category: string, desc = "") =>
+    !q || [name, category, desc].some((t) => t.toLowerCase().includes(q));
+  const bots = MARKETPLACE_BOTS.filter((b) => match(b.name, b.category));
+  const tools = MARKETPLACE_TOOLS.filter((t) => match(t.name, t.category, t.desc));
+  const essentials = MARKETPLACE_ESSENTIALS.filter((t) => match(t.name, t.category, t.desc));
+  const showBots = tab === "Discover" || tab === "Bots";
+  const showTools = tab === "Discover" || tab === "Plugins";
+  const showEssentials = tab === "Discover" || tab === "Plugins" || tab === "Installed";
+  const tabs = ["Discover", "Plugins", "Bots", "Installed"];
+
+  const toolCard = (tool: MarketplaceTool) => {
+    const isAdded = added[tool.id] ?? tool.installed;
+    return (
+      <div key={tool.id} className="flex flex-col gap-2 rounded-2xl bg-background-secondary-default p-3">
+        <button
+          type="button"
+          aria-label={`View ${tool.name}`}
+          className="flex cursor-pointer items-center gap-2.5 text-start outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <ToolMark id={tool.id} />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-body-medium text-text-primary">{tool.name}</span>
+            <span className="truncate text-body-regular text-text-tertiary">{tool.category}</span>
+          </span>
+        </button>
+        <p className="text-body-regular text-text-secondary">{tool.desc}</p>
+        <button
+          type="button"
+          aria-label={isAdded ? `View added ${tool.name}` : `Add ${tool.name}`}
+          onClick={() => setAdded((prev) => ({ ...prev, [tool.id]: true }))}
+          className={cx(
+            "flex h-8 w-full cursor-pointer items-center justify-center rounded-full border border-border-button-default text-body-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+            isAdded
+              ? "bg-background-tertiary-default text-text-secondary"
+              : "bg-background-primary-default text-text-primary hover:bg-background-primary-hover",
+          )}
+        >
+          {isAdded ? "Added" : "Add"}
+        </button>
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-body-regular text-text-secondary">
-        The Marketplace listing is not included in the original page&apos;s
-        server-rendered snapshot, so no agent list can be shown here yet.
-        The roster that used to appear here was invented and has been
-        removed; it will be restored from the live page once verified.
-      </p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex shrink-0 items-center justify-between px-8 pt-8">
+        <h2 className="text-title-3-medium text-text-primary">Marketplace</h2>
+        <button
+          type="button"
+          aria-label="Close marketplace"
+          onClick={onClose}
+          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full bg-background-tertiary-default text-foreground-icon-secondary outline-none transition-colors duration-150 ease hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <RiCloseLine className="size-4" aria-hidden />
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-8 pb-8 [scrollbar-width:none]">
+        <div className="relative mt-4 flex h-9 items-center gap-2 rounded-full bg-background-tertiary-default px-3">
+          <RiSearchLine className="size-5 shrink-0 text-foreground-icon-tertiary" aria-hidden />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Find your next tool or teammate"
+            aria-label="Find your next tool or teammate"
+            className="min-w-0 flex-1 bg-transparent text-body-regular text-text-primary outline-none placeholder:text-text-tertiary"
+          />
+        </div>
+        <div className="mt-4 flex items-center gap-1" role="tablist" aria-label="Marketplace sections">
+          {tabs.map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={cx(
+                "flex h-[30px] cursor-pointer items-center justify-center rounded-full px-3 text-body-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                tab === t
+                  ? "bg-background-tertiary-default text-text-primary"
+                  : "text-text-secondary hover:bg-background-tertiary-default/60",
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {showBots && bots.length > 0 && (
+          <>
+            <div className="mt-5 flex items-center justify-between gap-2">
+              <h3 className="text-title-3-medium text-text-primary">Meet your next teammate</h3>
+              <button
+                type="button"
+                onClick={() => setTab("Bots")}
+                className="flex h-8 shrink-0 cursor-pointer items-center gap-0.5 rounded-full px-2 text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              >
+                View all
+                <RiArrowRightSLine className="size-4 shrink-0" aria-hidden />
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  type="button"
+                  aria-label={`View ${bot.name}`}
+                  className="flex h-[130px] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl bg-background-secondary-default p-2 outline-none transition-colors hover:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  <AgentAvatar agent={bot} size={52} />
+                  <span className="truncate text-body-medium text-text-primary">{bot.name}</span>
+                  <span className="truncate text-body-regular text-text-tertiary">{bot.category}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {showTools && tools.length > 0 && (
+          <>
+            <div className="mt-5 flex items-center justify-between gap-2">
+              <h3 className="text-title-3-medium text-text-primary">Tools for your workflow</h3>
+              <button
+                type="button"
+                onClick={() => setTab("Plugins")}
+                className="flex h-8 shrink-0 cursor-pointer items-center gap-0.5 rounded-full px-2 text-body-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              >
+                View all
+                <RiArrowRightSLine className="size-4 shrink-0" aria-hidden />
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-x-9 gap-y-4">
+              {tools.map((tool) => toolCard(tool))}
+            </div>
+          </>
+        )}
+
+        {showEssentials && essentials.length > 0 && (
+          <>
+            <div className="mt-5 flex items-center justify-between gap-2">
+              <h3 className="text-title-3-medium text-text-primary">Everyday essentials</h3>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-x-9 gap-y-4">
+              {essentials.map((tool) => toolCard(tool))}
+            </div>
+          </>
+        )}
+
+        {bots.length === 0 && tools.length === 0 && essentials.length === 0 && (
+          <p className="px-2 py-6 text-body-regular text-text-tertiary">
+            No tools or teammates match “{query.trim()}”.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -2200,6 +2529,151 @@ function MarketplacePane() {
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Group picker — measured live (orig-group-via-menu.json +           */
+/* orig-probe2.json picker): a 520×526 dialog, "Chat with your       */
+/* agents" / "Choose who’s joining the conversation.", the 10 agents  */
+/* as centred wrap pills (40px), current agent pre-selected, and a   */
+/* full-width "Start chat · N agent(s)" button.                        */
+/* ------------------------------------------------------------------ */
+
+function GroupPicker({
+  agents,
+  currentAgentId,
+  onClose,
+  onStart,
+}: {
+  agents: Agent[];
+  currentAgentId: string | null;
+  onClose: () => void;
+  onStart: (members: PickerMember[]) => void;
+}) {
+  const all: PickerMember[] = [
+    ...agents.map((a) => ({ id: a.id, name: a.name, body: a.body, deep: a.deep, shape: a.shape })),
+    ...PICKER_EXTRA,
+  ];
+  const [selected, setSelected] = useState<string[]>(() =>
+    currentAgentId ? [currentAgentId] : [],
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const members = selected
+    .map((id) => all.find((m) => m.id === id))
+    .filter((m): m is PickerMember => Boolean(m));
+  const n = members.length;
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Chat with your agents"
+        onClick={(e) => e.stopPropagation()}
+        className="flex h-[526px] max-h-[calc(100dvh-32px)] w-[520px] max-w-[calc(100vw-32px)] flex-col rounded-3xl bg-background-primary-default p-6 shadow-xl"
+      >
+        <div className="flex shrink-0 items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h2 className="text-title-2-medium text-text-primary">Chat with your agents</h2>
+            <p className="text-body-regular text-text-secondary">Choose who’s joining the conversation.</p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close group picker"
+            onClick={onClose}
+            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full bg-background-tertiary-default text-foreground-icon-secondary outline-none transition-colors duration-150 ease hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+          >
+            <RiCloseLine className="size-4" aria-hidden />
+          </button>
+        </div>
+        <div className="mt-auto flex min-h-0 flex-wrap content-center items-center justify-center gap-2 overflow-y-auto py-4 [scrollbar-width:none]">
+          {all.map((m) => {
+            const on = selected.includes(m.id);
+            return (
+              <button
+                key={m.id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggle(m.id)}
+                className={cx(
+                  "flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border-button-default px-3 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                  on
+                    ? "bg-background-tertiary-default"
+                    : "bg-background-primary-default hover:bg-background-primary-hover",
+                )}
+              >
+                <AgentAvatar agent={m} size={20} />
+                <span className="whitespace-nowrap text-body-medium text-text-primary">{m.name}</span>
+              </button>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          disabled={n === 0}
+          onClick={() => onStart(members)}
+          className="flex h-9 w-full shrink-0 cursor-pointer items-center justify-center rounded-full bg-button-primary text-body-medium text-text-white outline-none transition-opacity duration-150 ease hover:opacity-90 disabled:cursor-default disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+        >
+          Start chat · {n} agent{n === 1 ? "" : "s"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pro banner — measured live (orig-probe2.json banner +              */
+/* orig-marketplace-full.png): a fixed card at the viewport's bottom  */
+/* left (280×194 @12,694 desktop, full-width @12,656 on mobile),     */
+/* logo + "Dismiss Pro template prompt" × on top, "This template is  */
+/* part of Pro" / "Buy once and install the full source with the     */
+/* CLI." and a full-width blue "Get Pro" button. It overlays the     */
+/* sidebar footer until dismissed.                                    */
+/* ------------------------------------------------------------------ */
+
+function ProBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="fixed inset-x-3 bottom-3 z-60 flex w-auto flex-col items-start gap-3 overflow-hidden rounded-2xl border border-border-button-white bg-background-secondary-default p-4 shadow-waitlist sm:inset-x-auto sm:w-[280px]">
+      <div className="flex w-full items-start justify-between gap-2">
+        <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-lg bg-blue-300 text-blue-900">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/boardui_logo_circle.webp" alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+        </span>
+        <button
+          type="button"
+          aria-label="Dismiss Pro template prompt"
+          onClick={onDismiss}
+          className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <RiCloseLine className="size-4" aria-hidden />
+        </button>
+      </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-body-medium text-text-primary">This template is part of Pro</p>
+        <p className="text-body-regular text-text-secondary">Buy once and install the full source with the CLI.</p>
+      </div>
+      <a
+        href="/pricing"
+        className="flex h-9 w-full items-center justify-center rounded-full bg-button-primary text-body-medium text-text-white outline-none transition-opacity duration-150 ease hover:opacity-90 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+      >
+        Get Pro
+      </a>
+    </div>
+  );
+}
 
 function seedMessages(agent: Agent): ChatMsg[] {
   return [
@@ -2210,19 +2684,24 @@ function seedMessages(agent: Agent): ChatMsg[] {
 
 export default function MultiAgentChatTemplatePage() {
   /* REPLICA NOTE: the roster is state, not the module const — the editor
-     saves name/avatar/description here, and the options menu renames/
-     deletes here, so every change is visible in the sidebar and the chat
-     header immediately. Nothing is persisted beyond the session (the
-     original template is a demo the same way). */
+     saves name/avatar/description here (live, no Save button), so every
+     change is visible in the sidebar and the chat header immediately.
+     Nothing is persisted beyond the session (the original template is a
+     demo the same way). Default state matches the original (measured
+     live): the landing conversation is selected, the editor is open for
+     the Security agent, and there is no group chat yet. */
   const [agents, setAgents] = useState<Agent[]>(AGENTS);
-  const [groupName, setGroupName] = useState(GROUP.name);
+  const [groups, setGroups] = useState<GroupChat[]>([]);
   const [selectedId, setSelectedId] = useState("landing");
-  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(true);
+  const [editorAgentId, setEditorAgentId] = useState("security");
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [proDismissed, setProDismissed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPage, setSettingsPage] = useState<SettingsPage>("general");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [groupMsgs, setGroupMsgs] = useState<ChatMsg[]>([]);
+  const [groupMsgsById, setGroupMsgsById] = useState<Record<string, ChatMsg[]>>({});
   const [thinking, setThinking] = useState(false);
   const [input, setInput] = useState("");
   const [convs, setConvs] = useState<Record<string, ChatMsg[]>>(() => {
@@ -2233,17 +2712,24 @@ export default function MultiAgentChatTemplatePage() {
   const nextId = useRef(100);
   const replyIdx = useRef<Record<string, number>>({});
 
+  const group = groups.find((g) => g.id === selectedId) ?? null;
   const agent =
-    selectedId === GROUP.id ? null : (agents.find((a) => a.id === selectedId) ?? agents[0] ?? null);
-  const messages = agent ? (convs[agent.id] ?? seedMessages(agent)) : groupMsgs;
+    group ? null : (agents.find((a) => a.id === selectedId) ?? agents[0] ?? null);
+  const editorAgent =
+    agents.find((a) => a.id === editorAgentId) ?? agent ?? agents[0] ?? null;
+  const messages = agent ? (convs[agent.id] ?? seedMessages(agent)) : (groupMsgsById[selectedId] ?? []);
 
-  const saveAgent = (patch: Partial<Agent>) => {
-    if (!agent) return;
-    setAgents((prev) => prev.map((a) => (a.id === agent.id ? { ...a, ...patch } : a)));
+  /** Editor edits apply to the editor's own agent (which need not be the
+      selected conversation's agent — by default the editor shows the
+      Security agent while the landing conversation is selected). */
+  const saveEditorAgent = (patch: Partial<Agent>) => {
+    if (!editorAgent) return;
+    setAgents((prev) => prev.map((a) => (a.id === editorAgent.id ? { ...a, ...patch } : a)));
   };
 
   const openEditor = (agentId?: string) => {
-    if (agentId) setSelectedId(agentId);
+    if (agentId) setEditorAgentId(agentId);
+    else if (agent) setEditorAgentId(agent.id);
     setEditorOpen(true);
   };
 
@@ -2262,8 +2748,9 @@ export default function MultiAgentChatTemplatePage() {
       name: "New agent",
       label: "Custom",
       desc: "A new agent. Give it a name, a label and a description in the editor.",
-      intro: "A new agent. Give it a name, a label and a description in the editor.",
-      body: "#437EF7",
+      intro: "Hi — I'm a new agent. Tell me what you'd like me to help with and I'll get started.",
+      body: "#B9D2F2",
+      deep: "#8FB4E8",
       shape: "star",
       userMsg: "Hello! What should we work on?",
       replyP1: "Hi — I'm a new agent. Tell me what you'd like me to help with and I'll get started.",
@@ -2272,48 +2759,31 @@ export default function MultiAgentChatTemplatePage() {
     setAgents((prev) => [...prev, created]);
     setConvs((prev) => ({ ...prev, [id]: seedMessages(created) }));
     setSelectedId(id);
+    setEditorAgentId(id);
     setEditorOpen(true);
   };
 
   const newChat = () => {
     if (agent) setConvs((prev) => ({ ...prev, [agent.id]: [] }));
-    else setGroupMsgs([]);
+    else setGroupMsgsById((prev) => ({ ...prev, [selectedId]: [] }));
     setEditorOpen(false);
   };
 
-  const newGroup = () => {
-    setSelectedId(GROUP.id);
-    setEditorOpen(false);
-  };
-
-  const renameCurrent = (name: string) => {
-    if (agent) {
-      setAgents((prev) => prev.map((a) => (a.id === agent.id ? { ...a, name } : a)));
-    } else {
-      setGroupName(name);
-    }
-  };
-
-  const deleteCurrent = () => {
-    if (!agent) return;
-    const id = agent.id;
-    const remaining = agents.filter((a) => a.id !== id);
-    setAgents(remaining);
-    setConvs((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-    setEditorOpen(false);
-    setSelectedId(remaining[0]?.id ?? GROUP.id);
-  };
-
-  const clearCurrent = () => {
-    if (!agent) {
-      setGroupMsgs([]);
-      return;
-    }
-    setConvs((prev) => ({ ...prev, [agent.id]: [] }));
+  /** Group name rule (orig-group-start.json): each member's first
+      name-word, capitalised, joined with " + ", in pick order. */
+  const createGroup = (members: PickerMember[]) => {
+    const firstWord = (name: string) => {
+      const w = name.trim().split(/\s+/)[0] ?? name;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    };
+    const created: GroupChat = {
+      id: `group-${Date.now()}`,
+      name: members.map((m) => firstWord(m.name)).join(" + "),
+      members,
+    };
+    setGroups((prev) => [...prev, created]);
+    setSelectedId(created.id);
+    setPickerOpen(false);
   };
 
   const nextFollowUp = (member: Agent) => {
@@ -2334,14 +2804,13 @@ export default function MultiAgentChatTemplatePage() {
     };
     setInput("");
     if (!agent) {
-      // Group chat — this used to be dead (submit() returned early when no
-      // agent was selected). Each roster member of the group now replies in
-      // its own voice, staggered: "按 agent 回复". "Product planner" is
-      // named in the group empty state but has no agent record in the
-      // snapshot, so it does not reply.
-      setGroupMsgs((prev) => [...prev, userMsg]);
-      const members = ["landing", "marketing"]
-        .map((id) => agents.find((a) => a.id === id))
+      // Group chat: each roster member of the group replies in its own
+      // voice, staggered. Picker-only members (Product planner, Support
+      // guide, Data analyst) have no agent record, so they do not reply.
+      const gid = selectedId;
+      setGroupMsgsById((prev) => ({ ...prev, [gid]: [...(prev[gid] ?? []), userMsg] }));
+      const members = (group?.members ?? [])
+        .map((m) => agents.find((a) => a.id === m.id))
         .filter((a): a is Agent => Boolean(a));
       if (members.length === 0) return;
       setThinking(true);
@@ -2354,7 +2823,7 @@ export default function MultiAgentChatTemplatePage() {
             text: replyText,
             agentId: member.id,
           };
-          setGroupMsgs((prev) => [...prev, reply]);
+          setGroupMsgsById((prev) => ({ ...prev, [gid]: [...(prev[gid] ?? []), reply] }));
           if (i === members.length - 1) setThinking(false);
         }, 700 * (i + 1));
       });
@@ -2384,11 +2853,12 @@ export default function MultiAgentChatTemplatePage() {
         searchOpen={searchOpen}
         setSearchOpen={setSearchOpen}
         agents={agents}
+        groups={groups}
         onOpenMarketplace={() => openSettings("marketplace")}
         onOpenSettings={() => openSettings("general")}
         onCreateAgent={createAgent}
         onNewChat={newChat}
-        onNewGroup={newGroup}
+        onNewGroup={() => setPickerOpen(true)}
       />
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
@@ -2409,11 +2879,12 @@ export default function MultiAgentChatTemplatePage() {
               searchOpen={searchOpen}
               setSearchOpen={setSearchOpen}
               agents={agents}
+              groups={groups}
               onOpenMarketplace={() => openSettings("marketplace")}
               onOpenSettings={() => openSettings("general")}
               onCreateAgent={createAgent}
               onNewChat={newChat}
-              onNewGroup={newGroup}
+              onNewGroup={() => setPickerOpen(true)}
               forceVisible
             />
           </div>
@@ -2427,26 +2898,49 @@ export default function MultiAgentChatTemplatePage() {
           agent={agent}
           agents={agents}
           messages={messages}
-          groupName={groupName}
+          group={group}
           thinking={thinking}
           onOpenEditor={openEditor}
           onOpenMobileNav={() => setMobileNavOpen(true)}
-          onRename={renameCurrent}
-          onDelete={deleteCurrent}
-          onClear={clearCurrent}
+          onOpenGroupPicker={() => setPickerOpen(true)}
         />
         <Composer value={input} onValueChange={setInput} onSubmit={submit} />
       </main>
-      {editorOpen && agent && (
-        <AgentEditor agent={agent} onSave={saveAgent} onClose={() => setEditorOpen(false)} />
+      {editorOpen && editorAgent && (
+        <>
+          {/* Mobile only: the editor is a fixed right drawer over a dimmed
+              backdrop (measured live: panel [42,8,340,828] inside a fixed
+              inset-0 z-40 backdrop). On desktop the section below is a
+              plain in-flow flex sibling (340px, main column 784px). */}
+          <div
+            aria-hidden="true"
+            onClick={() => setEditorOpen(false)}
+            className="fixed inset-0 z-30 bg-background-secondary-default/70 backdrop-blur-sm lg:hidden"
+          />
+          <AgentEditor
+            key={editorAgent.id}
+            agent={editorAgent}
+            onSave={saveEditorAgent}
+            onClose={() => setEditorOpen(false)}
+          />
+        </>
+      )}
+      {pickerOpen && (
+        <GroupPicker
+          agents={agents}
+          currentAgentId={agent?.id ?? null}
+          onClose={() => setPickerOpen(false)}
+          onStart={createGroup}
+        />
       )}
       <SettingsModal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         defaultPage={settingsPage}
         planArtSrc="/templates/settings-plan-art.png"
-        marketplace={<MarketplacePane />}
+        marketplace={<MarketplacePane onClose={() => setSettingsOpen(false)} />}
       />
+      {!proDismissed && <ProBanner onDismiss={() => setProDismissed(true)} />}
     </div>
   );
 }
