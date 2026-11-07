@@ -54,6 +54,8 @@ npm run build    # 生产构建（静态导出到 out/）
 
 另有总览页 `/templates`（11 套入口 + Pro 组件入口）。
 
+> **`/templates` 不跟原版跳转（2026-11-07 确认）：** 原版 `boardui.com/templates` 返回 307 跳到 `/templates/dashboard`，没有列表页；本站保留 `/templates` 列表页不动，作为 11 套模板的切换入口（用户需要它）。
+
 共享外壳：9 套仪表盘模板 + HR Management 共用侧栏导航（Home、Project board、Marketing、Calendar、Finance、Medical Report、HR Management、AI Chat、AI Image Generation、Profile、Multi-Agent Chat，底部 Support、Settings），点侧栏切模板路由；窄屏收起为汉堡抽屉。Multi-Agent Chat 页同样有完整侧栏入口（2026-11-07 已补，之前缺失）。
 
 ## Pro 组件（30 个）
