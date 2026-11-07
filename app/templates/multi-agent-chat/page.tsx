@@ -363,13 +363,15 @@ const AGENTS: Agent[] = [
     once created through "…" → Start a group chat → picker
     (orig-group-via-menu.json). The picker lists the 7 sidebar agents
     plus three more the original knows (Product planner, Support guide,
-    Data analyst) — their pastel avatars below are our own pick, the
-    original's picker shows no colour data for them. */
+    Data analyst) — their pastel fills + shapes below were measured live
+    from the original's picker (probe-picker-avatars.json + screenshot:
+    planner = blue diamond, support = green heart, analyst = blue
+    rounded square "pocket"). */
 type PickerMember = { id: string; name: string; body: string; deep: string; shape: AvatarShape };
 const PICKER_EXTRA: PickerMember[] = [
-  { id: "planner", name: "Product planner", body: "#D9C8F2", deep: "#B79CE6", shape: "diamond" },
-  { id: "support-guide", name: "Support guide", body: "#F6CFCF", deep: "#E8AFAF", shape: "heart" },
-  { id: "analyst", name: "Data analyst", body: "#BFE3E0", deep: "#8FC9C4", shape: "cloud" },
+  { id: "planner", name: "Product planner", body: "#91B6EB", deep: "#7492BC", shape: "diamond" },
+  { id: "support-guide", name: "Support guide", body: "#A6E0B5", deep: "#85B391", shape: "heart" },
+  { id: "analyst", name: "Data analyst", body: "#9CC8E8", deep: "#7DA0BA", shape: "pocket" },
 ];
 
 /** A group created from the picker. `members` are in pick order; the
