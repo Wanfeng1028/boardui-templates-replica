@@ -71,3 +71,10 @@
 2. **官方 /templates 返回 307 跳转**：目标地址未确认，无法复刻该列表页本身；本站 /templates 列表页已存在且 11 个模板全部可达。
 3. **其他官方页面（blog、docs/cli、docs/introduction、installation、mcp、skill、rtl、pricing）**：本轮任务范围是组件/模板/详情页缺口，未建这些文档页；pro-installation 文档页已建。是否建这些文档页待用户定。
 4. **头像像素 1:1**：原版 canvas 动画头像无公开像素数据，沿用此前已说明的 SVG 近似（见 README 残留项）。
+
+## lib 核查补充（2026-11-07 晚，提交 28d535b）
+
+- 15 个免费 lib 按注册表路径逐个核：13 个已在，2 个缺。
+- 已补：`rules` → `docs/agent-rules.md`（5357 字节，按注册表原样装入，与注册表字节一致）。
+- 未补：`agent-runtime` → `app/api/chat/route.ts`，因静态导出已移入 `docs/api-chat-route.ts.bak`（有意排除，恢复会破坏静态导出构建；模板不依赖它）。
+- lib 覆盖：**14/15**（1 个有意排除）。
