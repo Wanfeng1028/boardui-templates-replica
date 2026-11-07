@@ -1,33 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightLine, RiLayoutGridLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
-import { Button } from "@/components/base/buttons/button";
+import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
+import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
+import AiImageGenerationTemplatePage from "@/app/templates/ai-image-generation/page";
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <Button
-      variant="secondary"
-      size="medium"
-      leadingIcon={copied ? RiCheckLine : RiFileCopyLine}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 2000);
-        } catch {
-          // Clipboard access can be refused; leave the icon unchanged.
-        }
-      }}
-    >
-      {copied ? "Copied" : "Copy"}
-    </Button>
-  );
-}
+const AIG_PREVIEW_CODE = `import { AiChatShell } from "@/components/application/ai-chat/ai-chat-shell";
+
+export default function AiImageGenerationPage() {
+  // Same shell as AI Chat, opened on the image-generation
+  // thread: the right panel becomes the generations gallery.
+  return <AiChatShell defaultScenario="image-generation" />;
+}`;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -35,18 +22,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-title-3-semibold text-text-primary">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function CommandRow({ label, command }: { label: string; command: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-body-2-medium text-text-secondary">{label}</p>
-      <div className="flex items-center justify-between gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-        <code className="text-body-2-regular overflow-x-auto text-text-primary">{command}</code>
-        <CopyButton text={command} />
-      </div>
-    </div>
   );
 }
 
@@ -74,17 +49,22 @@ export default function AiImageGenerationPage() {
         actions.
       </p>
 
+      <TemplatePreview title="AI image generation" slug="ai-image-generation" previewCode={AIG_PREVIEW_CODE}>
+        <AiImageGenerationTemplatePage />
+      </TemplatePreview>
+
       <Section title="Installation">
-        <p className="text-body-regular text-text-secondary">
-          AI Image Generation is a BoardUI Pro template, sold separately. Dark mode ready — this template follows
-          BoardUI semantic tokens automatically.
+        <p className="text-headline-medium text-text-secondary">
+          AI Image Generation is a BoardUI Pro template, sold separately.
         </p>
         <p className="text-body-regular text-text-secondary">
-          AI Image Generation is a Pro template. Your BoardUI Pro license unlocks this template and all of its
-          source files. Activate your license once, then install it directly into your project with the CLI.
+          Dark mode ready - this template follows BoardUI semantic tokens automatically.{" "}
+          <a className="text-accent-500 hover:underline" href="/installation#dark-mode">
+            Set up theme switching
+          </a>
+          .
         </p>
-        <CommandRow label="01 — Activate your license" command="npx boardui@latest login YOUR_LICENSE_KEY" />
-        <CommandRow label="02 — Install the template" command="npx boardui@latest add template-ai-image-generation" />
+        <ProLicenseCard name="AI Image Generation" kind="template" installSlug="template-ai-image-generation" />
       </Section>
 
       <Section title="What's included">

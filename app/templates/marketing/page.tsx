@@ -601,9 +601,11 @@ export default function MarketingTemplatePage() {
                   <span className={cx("size-2 rounded-full", channel.dot)} aria-hidden />
                   {channel.name}
                 </span>
-                <span className="text-body-medium text-text-secondary tabular-nums">
-                  {formatMoney(channel.value)}
-                  <span className="ms-2 text-text-tertiary">{Math.round((channel.value / CHANNEL_TOTAL) * 100)}%</span>
+                <span className="flex flex-col items-end text-text-secondary tabular-nums">
+                  <span className="text-body-medium text-text-primary">{formatMoney(channel.value)}</span>
+                  <span className="text-body-2-regular text-text-tertiary">
+                    {Math.round((channel.value / CHANNEL_TOTAL) * 100)}%
+                  </span>
                 </span>
               </div>
             ))}

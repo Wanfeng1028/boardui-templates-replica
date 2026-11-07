@@ -1,35 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import { CodeTabs, PkgCommand } from "@/components/application/docs/code-tabs";
+import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const done = () => {
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        };
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(done);
-        } else {
-          done();
-        }
-      }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-semibold text-text-secondary transition-colors hover:text-text-primary"
-    >
-      {copied ? <RiCheckLine className="size-3.5" aria-hidden /> : <RiFileCopyLine className="size-3.5" aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -45,15 +21,6 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
     <div className="flex flex-col gap-2">
       <h3 className="text-title-3-semibold text-text-primary">{title}</h3>
       {children}
-    </div>
-  );
-}
-
-function Command({ cmd }: { cmd: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-      <code className="font-mono text-caption-1-medium text-text-primary">{cmd}</code>
-      <CopyButton text={cmd} />
     </div>
   );
 }
@@ -83,7 +50,14 @@ export default function SkillPage() {
             in the project, so the skill rides your repo and your whole team&apos;s agents pick it up. Global
             and the agents directory cover user-wide installs and clients like Codex or Gemini.
           </p>
-          <Command cmd="npx boardui@latest skill" />
+          <CodeTabs
+            tabs={[
+              { value: "Project (default)", code: "npx boardui@latest skill" },
+              { value: "Global", code: "npx boardui@latest skill --global" },
+              { value: "Codex & Gemini", code: "npx boardui@latest skill --client codex" },
+              { value: "Custom path", code: "npx boardui@latest skill --path .agents/skills/boardui" },
+            ]}
+          />
           <p className="text-body-regular text-text-secondary">
             Already connected to the BoardUI MCP server? Just ask your agent to run{" "}
             <code className="font-mono text-caption-1-medium text-text-primary">install_skill</code>, no
@@ -153,7 +127,11 @@ export default function SkillPage() {
             <code className="font-mono text-caption-1-medium text-text-primary">--force</code> to update in
             place; the command prints installed and fetched versions so you can see what changed.
           </p>
-          <Command cmd="npx boardui@latest skill --force" />
+          <PkgCommand
+            npm="npx boardui@latest skill --force"
+            pnpm="pnpm dlx boardui@latest skill --force"
+            yarn="yarn dlx boardui@latest skill --force"
+          />
         </Section>
 
         <Section title="Skill vs MCP">
@@ -186,13 +164,10 @@ export default function SkillPage() {
           </div>
         </Section>
 
-        <Link
-          href="/mcp"
-          className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
-        >
-          <RiArrowLeftLine className="size-4" aria-hidden />
-          Back to MCP server
-        </Link>
+        <PrevNext
+          prev={{ href: "/mcp", label: "MCP Server", sub: "Agents install for you" }}
+          next={{ href: "/rtl", label: "RTL Support" }}
+        />
       </div>
     </AppShell>
   );

@@ -26,8 +26,10 @@ import {
   RiShareLine,
   RiShuffleLine,
   RiSideBarLine,
+  RiThumbDownLine,
+  RiThumbUpLine,
 } from "@remixicon/react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
@@ -39,15 +41,19 @@ import { cx } from "@/utils/cx";
  * AI Image Generation template replica.
  * Official: boardui.com/templates/ai-image-generation — "vibl coding
  * project / image generation" thread, Messi prompt, Fable 5 / Main /
- * project-sea, Gallery / Styles panel, 20 gallery images, 57% ring.
+ * project-sea, Gallery / Styles panel, 21 gallery images (the completed
+ * Messi generation first, then the 20 gallery originals), 57% ring.
  *
  * Source of truth: tpl-pages/ai-image-generation.html (BoardUI SSR
- * snapshot). The snapshot freezes the page mid-generation at 57%: exactly
- * one user prompt bubble, no generation result, no feedback actions, no
- * lightbox. Anything the snapshot does not show (avatar menu items,
- * attachment menu items, model options, Main / project-sea / Agent
- * dropdown contents, More options, Styles tab content, Enlarge / Download
- * / More actions behaviour) is marked "待实测确认" in
+ * snapshot) plus the live page (harness probe 2026-11-08): the live
+ * thread completes the Messi generation — "Image generated" with the
+ * countdown at 0 seconds remaining and the result revealed through a
+ * feathered radial mask, with Good / Bad / Copy feedback — so the
+ * generation result is rendered after the Messi prompt (see
+ * GenerationResult below). Anything the snapshot does not show (avatar
+ * menu items, attachment menu items, model options, Main / project-sea /
+ * Agent dropdown contents, More options, Styles tab content, Enlarge /
+ * Download / More actions behaviour) is marked "待实测确认" in
  * audit/ai-image-generation-gaps.md and is NOT invented here.
  *
  * The 20 gallery images are the originals, downloaded from
@@ -114,9 +120,12 @@ const REPOS: RepoGroup[] = [
 
 const ALL_THREADS = REPOS.flatMap((r) => r.threads.map((t) => ({ ...t, repo: r.name })));
 
-// 20 gallery originals (prompt + file + original aspect-ratio, verbatim from
-// the SSR snapshot; left masonry column = first 7, right column = rest 13).
+// 21 gallery originals (prompt + file + original aspect-ratio, verbatim from
+// the original page; the first is the completed Messi generation — the
+// original /ai-chat/generated-footballer.jpg, not a gallery webp — then the
+// 20 gallery webps; left masonry column = first 7, right column = rest 14).
 const GALLERY_ITEMS = [
+  { slug: "generated-footballer", prompt: "Vintage editorial Messi, Argentina kit", ratio: "449/600", src: "/ai-chat/generated-footballer.jpg" },
   { slug: "green-ape", prompt: "Green ape, screenprint halftone", ratio: "1/1" },
   { slug: "cloud-crown", prompt: "Cloud crown, editorial portrait", ratio: "1333/2000" },
   { slug: "cat-with-beer", prompt: "Cat with a beer, bold linework", ratio: "928/1232" },
@@ -194,9 +203,9 @@ export default function AiImageGenerationTemplatePage() {
     (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
-      // The original snapshot freezes at 57% with no assistant reply, so a
-      // submitted prompt only adds the user bubble and runs the composer
-      // loader; no canned assistant reply is invented.
+      // The live original completes a generation with the result frame;
+      // a newly submitted prompt only adds the user bubble and runs the
+      // composer loader; no canned assistant reply is invented.
       setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text: trimmed, at: Date.now() }]);
       setInput("");
       setBusy(true);
@@ -233,8 +242,11 @@ export default function AiImageGenerationTemplatePage() {
     onToggleCollapse: () => setSidebarCollapsed((c) => !c),
   };
 
+  // Height follows the preview container when embedded in a docs preview
+  // (--template-preview-height set by TemplatePreview), and falls back to
+  // the full viewport on the standalone route.
   return (
-    <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
+    <div className="relative flex h-[var(--template-preview-height,100dvh)] w-full gap-4 overflow-hidden bg-background-full p-3">
       <style>{`@keyframes agent-msg-in{from{opacity:0;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}@keyframes agent-card-in{from{opacity:0;filter:blur(8px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}`}</style>
       <div className="hidden xl:flex">
         <AgentSidebar {...sidebarProps} />
@@ -298,13 +310,15 @@ export default function AiImageGenerationTemplatePage() {
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]">
             <div className="flex min-h-full flex-col justify-end gap-5 px-4 pt-4 pb-6">
               {messages.map((message) => (
-                <p
-                  key={message.id}
-                  className="ms-auto w-fit max-w-[calc(50%+6px)] rounded-2xl bg-background-primary-default px-3 py-[11px] text-start text-body-regular break-words whitespace-pre-wrap text-text-primary shadow-card"
-                  style={{ animation: "agent-msg-in 0.45s ease-out both" }}
-                >
-                  {message.text}
-                </p>
+                <Fragment key={message.id}>
+                  <p
+                    className="ms-auto w-fit max-w-[calc(50%+6px)] rounded-2xl bg-background-primary-default px-3 py-[11px] text-start text-body-regular break-words whitespace-pre-wrap text-text-primary shadow-card"
+                    style={{ animation: "agent-msg-in 0.45s ease-out both" }}
+                  >
+                    {message.text}
+                  </p>
+                  {message.id === "m-vintage-messi" && <GenerationResult />}
+                </Fragment>
               ))}
             </div>
           </div>
@@ -344,6 +358,90 @@ export default function AiImageGenerationTemplatePage() {
             onResize={(w) => { setGalleryExpanded(false); setGalleryWidth(w); }}
             onNew={() => inputRef.current?.focus()}
           />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Generation result (live, from the original page): the Vintage        */
+/* editorial Messi prompt completes into this frame — "Image generated" */
+/* with the countdown at 0 seconds remaining, the result revealed       */
+/* through a feathered radial mask, and Good / Bad / Copy feedback.    */
+/* ------------------------------------------------------------------ */
+
+function GenerationResult() {
+  const [feedback, setFeedback] = useState<"good" | "bad" | null>(null);
+  const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
+  const onCopy = () => {
+    navigator.clipboard?.writeText("Vintage editorial Messi, Argentina kit").catch(() => {});
+    setCopied(true);
+    window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  const feedbackBtn =
+    "group flex cursor-pointer items-center rounded-lg bg-background-tertiary-default p-1.5 hover:bg-background-secondary-hover outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+  const feedbackIcon = "size-4 text-foreground-icon-secondary";
+
+  return (
+    <div className="flex w-full flex-col items-start gap-2">
+      <div className="flex w-[200px] items-baseline text-body-regular">
+        <span className="text-text-primary">Image generated</span>
+      </div>
+      <div className="w-[200px] overflow-hidden">
+        <div
+          className="relative h-[250px] w-[200px] overflow-hidden rounded-2xl bg-background-primary-default shadow-card"
+          aria-live="polite"
+          aria-label="Generated image: Vintage-style illustration of a football player in Argentina's striped kit"
+        >
+          <canvas aria-hidden className="absolute inset-0 size-full opacity-0" width={200} height={250} />
+          <div
+            className="absolute inset-0"
+            style={
+              {
+                "--reveal": "132%",
+                maskImage:
+                  "radial-gradient(circle at 50% 50%, #000 calc(var(--reveal) - 26%), transparent var(--reveal))",
+              } as React.CSSProperties
+            }
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/ai-chat/generated-footballer.jpg"
+              alt="Vintage-style illustration of a football player in Argentina's striped kit"
+              className="size-full object-cover"
+            />
+          </div>
+          <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 text-body-2-medium text-text-tertiary opacity-0">
+            <span className="agent-progress-loading-text">Generating image</span>
+            <span className="flex items-baseline gap-0.5">
+              <span>0</span>
+              <span>s</span>
+              <span className="sr-only">0 seconds remaining</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <button type="button" aria-label="Good response" aria-pressed={feedback === "good"} onClick={() => setFeedback((f) => (f === "good" ? null : "good"))} className={cx(feedbackBtn, feedback === "good" && "bg-background-secondary-hover")}>
+          <RiThumbUpLine className={feedbackIcon} aria-hidden />
+        </button>
+        <button type="button" aria-label="Bad response" aria-pressed={feedback === "bad"} onClick={() => setFeedback((f) => (f === "bad" ? null : "bad"))} className={cx(feedbackBtn, feedback === "bad" && "bg-background-secondary-hover")}>
+          <RiThumbDownLine className={feedbackIcon} aria-hidden />
+        </button>
+        <button type="button" aria-label="Copy response" onClick={onCopy} className={feedbackBtn}>
+          <RiFileCopyLine className={feedbackIcon} aria-hidden />
+        </button>
+        {copied && (
+          <span role="status" className="text-body-2-medium text-text-secondary">
+            Copied to clipboard.
+          </span>
         )}
       </div>
     </div>
@@ -981,7 +1079,7 @@ function GalleryFigure({
   moreFor: string | null;
   onMore: (id: string | null) => void;
 }) {
-  const src = `/ai-chat/gallery/${item.slug}.webp`;
+  const src = item.src ?? `/ai-chat/gallery/${item.slug}.webp`;
   const open = moreFor === item.slug;
   return (
     <figure

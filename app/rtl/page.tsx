@@ -1,42 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
-import { Button } from "@/components/base/buttons/button";
-import { Chip } from "@/components/base/badges/chip";
+import { PkgCommand } from "@/components/application/docs/code-tabs";
+import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
-import { DirectionProvider } from "@/components/foundations/direction/direction";
+import { RtlComponentDemo, RtlProviderDemo, RtlTemplateDemo } from "./rtl-demos";
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
+function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={() => {
-        const done = () => {
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        };
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(done);
-        } else {
-          done();
-        }
-      }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-semibold text-text-secondary transition-colors hover:text-text-primary"
-    >
-      {copied ? <RiCheckLine className="size-3.5" aria-hidden /> : <RiFileCopyLine className="size-3.5" aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3">
+    <section id={id} className="flex scroll-mt-14 flex-col gap-3">
       <h2 className="text-title-2-medium text-text-primary">{title}</h2>
       {children}
     </section>
@@ -57,23 +31,6 @@ function CodeBlock({ code }: { code: string }) {
     <pre dir="ltr" className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
       {code}
     </pre>
-  );
-}
-
-function Command({ cmd }: { cmd: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-      <code className="font-mono text-caption-1-medium text-text-primary">{cmd}</code>
-      <CopyButton text={cmd} />
-    </div>
-  );
-}
-
-function Demo({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-3xl border border-border-button-default bg-background-primary-default p-6">
-      {children}
-    </div>
   );
 }
 
@@ -103,7 +60,8 @@ const MIXED_CODE = `// Works in Next.js, Vite, React Router, and other React app
   </DirectionProvider>
 </DirectionProvider>`;
 
-const DIRECTION_SOURCE = `"use client";
+const DIRECTION_SOURCE = `// components/foundations/direction/direction.tsx
+"use client";
 
 import type { HTMLAttributes, ReactNode } from "react";
 import { I18nProvider, useLocale } from "react-aria-components";
@@ -153,12 +111,6 @@ function CustomOverlay() {
   return createPortal(<div dir={direction}>…</div>, document.body);
 }`;
 
-const VISITORS: [string, string][] = [
-  ["السعودية", "5,980"],
-  ["مصر", "3,020"],
-  ["الإمارات", "820"],
-];
-
 /** RTL Support page, mirroring boardui.com/rtl. */
 export default function RtlPage() {
   return (
@@ -171,98 +123,42 @@ export default function RtlPage() {
           </p>
         </div>
 
-        <Section title="Component examples">
+        <Section id="examples" title="Component examples">
           <p className="text-body-regular text-text-secondary">
             Switch languages and try the controls. Layout, text alignment, spacing, navigation arrows, slider
             behavior, and overlay placement follow the selected direction. The examples include a Pro chart
             card.
           </p>
-          <p className="text-caption-1-semibold text-text-secondary">Right to left</p>
-          <Demo>
-            <div dir="rtl" lang="ar" className="flex flex-col gap-6">
-              <div className="flex flex-col gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-                <h3 className="text-title-2-medium text-text-primary">تسجيل الدخول إلى BoardUI Pro</h3>
-                <p className="text-body-regular text-text-secondary">
-                  يتيح لك ترخيصك الوصول إلى جميع مكونات وقوالب Pro.
-                </p>
-                <Button variant="primary">تسجيل الدخول إلى BoardUI Pro</Button>
-                <p className="text-center text-body-2-regular text-text-tertiary">أو تابع باستخدام</p>
-                <p className="text-center text-body-regular text-text-secondary">جديد هنا؟ إنشاء حساب</p>
-              </div>
-              <div className="flex flex-col gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-                <h3 className="text-title-2-medium text-text-primary">اختيار نطاق التواريخ</h3>
-                <p className="text-body-regular text-text-secondary">
-                  اختر تاريخ البداية والنهاية، أو استخدم إحدى الفترات المحددة مسبقًا.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Chip variant="bold" color="blue">البداية للمشاريع الجانبية والتجارب.</Chip>
-                  <Chip variant="bold" color="lime">Pro للفرق المتنامية التي تحتاج إلى المزيد.</Chip>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-title-2-medium text-text-primary">الزوار حسب البلد</h3>
-                  <Chip variant="bold" color="blue">Pro</Chip>
-                </div>
-                <p className="text-body-2-regular text-text-tertiary">الزوار حسب البلد الزوار</p>
-                <div className="flex flex-col gap-2">
-                  {VISITORS.map(([country, count]) => (
-                    <div key={country} className="flex items-center justify-between gap-3 border-b border-separator-border pb-2 last:border-b-0 last:pb-0">
-                      <span className="text-body-medium text-text-primary">{country}</span>
-                      <span dir="ltr" className="font-mono text-caption-1-medium text-text-secondary">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <p className="text-body-regular text-text-secondary">
-                الملف الشخصي, الأمان, تعديل تفضيلات حسابك, مستوى الصوت, رمز التحقق, إشعارات البريد الإلكتروني,
-                تحديثات المنتج
-              </p>
-              <p className="text-body-regular text-text-secondary">
-                إدارة حسابك وتفضيلاتك من مكان واحد. <bdi dir="ltr">sara@example.com</bdi>
-              </p>
-            </div>
-          </Demo>
+          <RtlComponentDemo />
         </Section>
 
-        <Section title="Template examples">
+        <Section id="templates" title="Template examples">
           <p className="text-body-regular text-text-secondary">
             Explore the actual templates with Arabic, Hebrew, and English sample content. Switch languages to
             see the copy, layout, and interactions together.
           </p>
-          <div>
-            <LinkButton href="/templates" trailingIcon={RiArrowRightSLine}>
-              Browse templates
-            </LinkButton>
-          </div>
+          <RtlTemplateDemo />
         </Section>
 
-        <Section title="Direction Provider">
+        <Section id="direction-provider" title="Direction Provider">
           <p className="text-body-regular text-text-secondary">
             An explicit locale keeps CSS direction, keyboard navigation, calendars, and portalled menus in sync.
             Nest providers for mixed-language regions; the default contents wrapper preserves your layout.
           </p>
-          <Demo>
-            <DirectionProvider locale="ar">
-              <div dir="rtl" lang="ar" className="flex flex-col gap-3">
-                <h3 className="text-title-2-medium text-text-primary">تسجيل الدخول إلى BoardUI Pro</h3>
-                <p className="text-body-regular text-text-secondary">
-                  يتيح لك ترخيصك الوصول إلى جميع مكونات وقوالب Pro.
-                </p>
-                <p className="text-center text-body-2-regular text-text-tertiary">أو تابع باستخدام</p>
-                <p className="text-center text-body-regular text-text-secondary">جديد هنا؟ إنشاء حساب</p>
-              </div>
-            </DirectionProvider>
-          </Demo>
+          <RtlProviderDemo />
         </Section>
 
-        <Section title="Set up RTL">
+        <Section id="setup" title="Set up RTL">
           <p className="text-body-regular text-text-secondary">
             Install the <code className="font-mono text-caption-1-medium text-text-primary">DirectionProvider</code>,
             then set your application&apos;s language and direction. No RTL CLI flag or separate component
             version is needed.
           </p>
-          <Command cmd="npx boardui@latest add direction" />
+          <PkgCommand
+            npm="npx boardui@latest add direction"
+            pnpm="pnpm dlx boardui@latest add direction"
+            yarn="yarn dlx boardui@latest add direction"
+          />
           <p className="text-caption-1-semibold text-text-secondary">app/layout.tsx</p>
           <CodeBlock code={LAYOUT_CODE} />
           <p className="text-body-regular text-text-secondary">
@@ -293,7 +189,7 @@ export default function RtlPage() {
           <CodeBlock code={DIRECTION_SOURCE} />
         </Section>
 
-        <Section title="Existing projects">
+        <Section id="existing-projects" title="Existing projects">
           <p className="text-body-regular text-text-secondary">
             BoardUI installs source into your project. Add the provider, then refresh components installed
             before RTL support. Back up your customizations before using{" "}
@@ -301,7 +197,11 @@ export default function RtlPage() {
             the current source into your edited files. Refresh shared dependencies such as buttons, menu
             styles, icons, and global CSS as well as your template.
           </p>
-          <Command cmd="npx boardui@latest add button select tabs --overwrite" />
+          <PkgCommand
+            npm="npx boardui@latest add button select tabs --overwrite"
+            pnpm="pnpm dlx boardui@latest add button select tabs --overwrite"
+            yarn="yarn dlx boardui@latest add button select tabs --overwrite"
+          />
           <p className="text-body-regular text-text-secondary">
             Pro components and templates use the same provider and logical styles. Install updates through your
             licensed CLI, or download the updated source package. Your application can switch locale at runtime
@@ -309,7 +209,7 @@ export default function RtlPage() {
           </p>
         </Section>
 
-        <Section title="Directional styles">
+        <Section id="directional-styles" title="Directional styles">
           <p className="text-body-regular text-text-secondary">
             Use <code className="font-mono text-caption-1-medium text-text-primary">ps / pe</code>,{" "}
             <code className="font-mono text-caption-1-medium text-text-primary">ms / me</code>,{" "}
@@ -348,7 +248,7 @@ export default function RtlPage() {
           </p>
         </Section>
 
-        <Section title="Localization & fonts">
+        <Section id="localization" title="Localization & fonts">
           <p className="text-body-regular text-text-secondary">
             RTL support handles layout and interactions. The examples above include Arabic and Hebrew sample
             translations. Your application labels, accessible names, currencies, and messages belong to your
@@ -370,13 +270,10 @@ export default function RtlPage() {
           </p>
         </Section>
 
-        <Link
-          href="/components"
-          className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
-        >
-          <RiArrowLeftLine className="size-4" aria-hidden />
-          Back to all components
-        </Link>
+        <PrevNext
+          prev={{ href: "/skill", label: "Agent Skills", sub: "Knowledge for your agent" }}
+          next={{ href: "/components/color", label: "Color", sub: "Semantic color tokens" }}
+        />
       </div>
     </AppShell>
   );

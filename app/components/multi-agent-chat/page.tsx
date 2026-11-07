@@ -3,8 +3,19 @@
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import { CodeTabs } from "@/components/application/docs/code-tabs";
+import { PrevNext } from "@/components/application/docs/prev-next";
+import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
+import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
+import MultiAgentChatTemplatePage from "@/app/templates/multi-agent-chat/page";
+
+const MAC_PREVIEW_CODE = `import { MultiAgentChat } from "@/components/application/multi-agent-chat/multi-agent-chat";
+
+export default function ChatPage() {
+  return <MultiAgentChat />;
+}`;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -62,33 +73,20 @@ export default function MultiAgentChatPage() {
           </p>
         </div>
 
+        <TemplatePreview title="Multi-agent chat" slug="multi-agent-chat" previewCode={MAC_PREVIEW_CODE}>
+          <MultiAgentChatTemplatePage />
+        </TemplatePreview>
+
         <Section title="Installation">
-          <h3 className="text-title-3-semibold text-text-primary">Multi-agent Chat is a Pro template.</h3>
-          <p className="text-body-regular text-text-secondary">Multi-agent Chat is a BoardUI Pro template.</p>
+          <h3 className="text-headline-medium text-text-secondary">Multi-agent Chat is a BoardUI Pro template.</h3>
           <p className="text-body-regular text-text-secondary">
-            Dark mode ready - this template follows BoardUI semantic tokens automatically. Set up theme switching.
+            Dark mode ready - this template follows BoardUI semantic tokens automatically.{" "}
+            <a className="text-accent-500 hover:underline" href="/installation#dark-mode">
+              Set up theme switching
+            </a>
+            .
           </p>
-          <p className="text-body-regular text-text-secondary">
-            Your BoardUI Pro license unlocks this template and all of its source files. Activate your license
-            once, then install it directly into your project with the CLI.
-          </p>
-          <p className="text-caption-1-semibold text-text-secondary">1 — Activate your license</p>
-          <pre className={PRE_STYLE}>{`npx boardui@latest login YOUR_LICENSE_KEY`}</pre>
-          <p className="text-body-regular text-text-secondary">
-            Use the key from your Lemon Squeezy purchase email. You only need to do this once per machine.
-          </p>
-          <p className="text-caption-1-semibold text-text-secondary">2 — Install the template</p>
-          <pre className={PRE_STYLE}>{`npx boardui@latest add template-multi-agent-chat`}</pre>
-          <p className="text-body-regular text-text-secondary">
-            The CLI copies the source and resolves every BoardUI and npm dependency for you.
-          </p>
-          <p className="text-body-regular text-text-secondary">
-            This template is included in BoardUI Pro. Get BoardUI Pro now and install it end away.
-          </p>
-          <p className="text-body-regular text-text-secondary">
-            Using a shared UI package or custom import aliases? Configure your installation paths before running the
-            CLI. Copy-paste examples use the default imports.
-          </p>
+          <ProLicenseCard name="Multi-agent Chat" kind="template" installSlug="template-multi-agent-chat" />
         </Section>
 
         <Section title="What’s included">
@@ -133,10 +131,17 @@ export default function ChatPage() {
             together with their folded layer, and reduced-motion preferences are respected. The emotion selector
             repeats as you scroll and supports arrow keys.
           </p>
-          <pre className={PRE_STYLE}>{`import { AgentAvatar } from "@/components/application/agent-avatar/agent-avatar";
+          <CodeTabs
+            tabs={[
+              {
+                value: "Avatar",
+                code: `import { AgentAvatar } from "@/components/application/agent-avatar/agent-avatar";
 import { FOLD_CONFIG } from "@/components/application/agent-avatar/model";
 
-<AgentAvatar config={{ ...FOLD_CONFIG, foldShape: "slender", foldDepth: 15, lookAt: "wander" }} size={162} />`}</pre>
+<AgentAvatar config={{ ...FOLD_CONFIG, foldShape: "slender", foldDepth: 15, lookAt: "wander" }} size={162} />`,
+              },
+            ]}
+          />
         </Section>
 
         <Section title="Connect your agents">
@@ -147,7 +152,11 @@ import { FOLD_CONFIG } from "@/components/application/agent-avatar/model";
             <code>defaultEditorId=&#123;null&#125;</code> to start with the editor closed. Set{" "}
             <code>storageKey</code> to a custom key, or <code>null</code> to disable browser persistence.
           </p>
-          <pre className={PRE_STYLE}>{`"use client";
+          <CodeTabs
+            tabs={[
+              {
+                value: "Integration",
+                code: `"use client";
 import { MultiAgentChat } from "@/components/application/multi-agent-chat/multi-agent-chat";
 
 export function Chat() {
@@ -162,7 +171,10 @@ export function Chat() {
     const data = await response.json();
     return data.text;
   }} />;
-}`}</pre>
+}`,
+              },
+            ]}
+          />
         </Section>
 
         <Section title="Marketplace and settings">
@@ -172,6 +184,11 @@ export function Chat() {
             Preferences and conversations save in the browser by default.
           </p>
         </Section>
+
+        <PrevNext
+          prev={{ href: "/components/medical-profile", label: "Medical Profile", sub: "Patient health report" }}
+          next={{ href: "/components/project-board", label: "Project Board", sub: "Kanban workspace and ticket details" }}
+        />
 
         <div>
           <LinkButton href="/components" leadingIcon={RiArrowLeftLine}>

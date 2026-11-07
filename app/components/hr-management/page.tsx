@@ -1,36 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiArrowRightSLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightSLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
 import { Chip } from "@/components/base/badges/chip";
+import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
+import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
+import HrManagementTemplatePage from "@/app/templates/hr-management/page";
+
+const HR_PREVIEW_CODE = `import { HrShell } from "@/components/application/hr/hr-shell";
+
+export default function HrPage() {
+  // Full screen: headcount KPIs, recent hires, the hiring
+  // pipeline, the engagement score radar, hires vs. attrition,
+  // team breakdowns, and the employees data table.
+  return <HrShell />;
+}`;
 
 /** Detail page for hr-management - content mirrors boardui.com/components/hr-management. */
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 2000);
-        } catch {
-          // Clipboard access can be refused; leave the icon unchanged.
-        }
-      }}
-      className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-border-button-default bg-background-primary-default px-3 py-1.5 text-caption-1-medium text-text-primary"
-    >
-      {copied ? <RiCheckLine className="size-4 text-foreground-icon-secondary" aria-hidden /> : <RiFileCopyLine className="size-4 text-foreground-icon-secondary" aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
 
 export default function HrManagementPage() {
   return (
@@ -41,26 +30,20 @@ export default function HrManagementPage() {
           <span className="text-caption-1-regular text-text-tertiary">ui.gemmae.dev/components/hr-management</span>
         </div>
         <p className="text-body-regular text-text-secondary">A complete HR screen - headcount KPI cards, the recent hires grid, the hiring pipeline as stage bars, an engagement score radar, hires vs. attrition on twin axes, tabbed team breakdowns, and an employees data table. Fully responsive, down to a slide-in drawer on mobile.</p>
+        <TemplatePreview title="HR management" slug="hr-management" previewCode={HR_PREVIEW_CODE}>
+          <HrManagementTemplatePage />
+        </TemplatePreview>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Installation</h2>
-          <h3 className="text-title-3-semibold text-text-primary">HR Management is a Pro template.</h3>
-          <p className="text-body-regular text-text-secondary">HR Management is a BoardUI Pro template, sold separately.</p>
-          <p className="text-body-regular text-text-secondary">Dark mode ready - this template follows BoardUI semantic tokens automatically. Set up theme switching.</p>
-          <p className="text-body-regular text-text-secondary">Your BoardUI Pro license unlocks this template and all of its source files. Activate your license once, then install it directly into your project with the CLI.</p>
-          <p className="text-caption-1-semibold text-text-secondary">1 — Activate your license</p>
-          <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-3">
-            <code className="flex-1 whitespace-nowrap text-body-2-regular text-text-primary">npx boardui@latest login YOUR_LICENSE_KEY</code>
-            <CopyButton text={"npx boardui@latest login YOUR_LICENSE_KEY"} />
-          </div>
-          <p className="text-body-regular text-text-secondary">Use the key from your Lemon Squeezy purchase email. You only need to do this once per machine.</p>
-          <p className="text-caption-1-semibold text-text-secondary">2 — Install the template</p>
-          <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-3">
-            <code className="flex-1 whitespace-nowrap text-body-2-regular text-text-primary">npx boardui@latest add template-hr</code>
-            <CopyButton text={"npx boardui@latest add template-hr"} />
-          </div>
-          <p className="text-body-regular text-text-secondary">The CLI copies the source and resolves every BoardUI and npm dependency for you.</p>
-          <p className="text-body-regular text-text-secondary">This template is included in BoardUI Pro. Get BoardUI Pro now and install it end away.</p>
-          <p className="text-body-regular text-text-secondary">Using a shared UI package or custom import aliases? Configure your installation paths before running the CLI. Copy-paste examples use the default imports.</p>
+          <p className="text-headline-medium text-text-secondary">HR Management is a BoardUI Pro template, sold separately.</p>
+          <p className="text-body-regular text-text-secondary">
+            Dark mode ready - this template follows BoardUI semantic tokens automatically.{" "}
+            <a className="text-accent-500 hover:underline" href="/installation#dark-mode">
+              Set up theme switching
+            </a>
+            .
+          </p>
+          <ProLicenseCard name="HR Management" kind="template" installSlug="template-hr" />
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">What&apos;s included</h2>

@@ -215,6 +215,7 @@ export interface TextareaProps
   extends Omit<TextFieldProps, "children">,
     Pick<
       TextareaBaseProps,
+      | "size"
       | "rows"
       | "autoResize"
       | "maxRows"
@@ -239,6 +240,7 @@ export function Textarea({
   hint,
   tooltip,
   placeholder,
+  size,
   rows,
   autoResize,
   maxRows,
@@ -292,6 +294,7 @@ export function Textarea({
             ref={ref}
             groupRef={groupRef}
             placeholder={placeholder}
+            size={size}
             rows={rows}
             autoResize={autoResize}
             maxRows={maxRows}

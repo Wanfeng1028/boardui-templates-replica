@@ -16,7 +16,7 @@ import {
   RiUserSharedLine,
 } from "@remixicon/react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import {
   DASHBOARD_NAV,
@@ -25,6 +25,7 @@ import {
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
+import { Select, SelectItem } from "@/components/base/select/select";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
 import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
@@ -56,8 +57,11 @@ function HrShell({
   children: ReactNode;
 }) {
   const [navOpen, setNavOpen] = useState(false);
+  // Height follows the preview container when embedded in a docs preview
+  // (--template-preview-height set by TemplatePreview), and falls back to
+  // the full viewport on the standalone route.
   return (
-    <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
+    <div className="relative flex h-[var(--template-preview-height,100dvh)] w-full gap-4 overflow-hidden bg-background-full p-3">
       <DashboardSidebar items={DASHBOARD_NAV} selected="hr-management" className="hidden lg:flex" />
       {navOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
@@ -113,128 +117,103 @@ function HrShell({
 
 /* `up` is the direction the value moved (arrow); `good` is whether that
  * move is favorable (chip color), defaulting to `up`. They differ for
- * attrition, where down is good: Q3 4.2% is down 0.8 pts, so the chip
- * shows a down arrow in green — previously it showed an up arrow next to
- * a "−0.8 pts" delta. */
+ * attrition and time-to-hire, where down is good. */
 type Kpi = { label: string; value: string; delta: string; up: boolean; good?: boolean };
 
-const KPI_PERIODS: { label: string; kpis: Kpi[] }[] = [
-  {
-    label: "Q3 2026",
-    kpis: [
-      { label: "Total headcount", value: "248", delta: "+18 YoY", up: true },
-      { label: "New hires", value: "24", delta: "+6 vs Q2", up: true },
-      { label: "Attrition rate", value: "4.2%", delta: "-0.8 pts", up: false, good: true },
-      { label: "Avg. engagement", value: "78%", delta: "+3 pts", up: true },
-    ],
-  },
-  {
-    label: "Q2 2026",
-    kpis: [
-      { label: "Total headcount", value: "230", delta: "+11 YoY", up: true },
-      { label: "New hires", value: "18", delta: "−1 vs Q1", up: false },
-      { label: "Attrition rate", value: "5.0%", delta: "+0.4 pts", up: true, good: false },
-      { label: "Avg. engagement", value: "75%", delta: "+1 pt", up: true },
-    ],
-  },
-  {
-    label: "2026",
-    kpis: [
-      { label: "Total headcount", value: "248", delta: "+29 YTD", up: true },
-      { label: "New hires", value: "61", delta: "YTD", up: true },
-      { label: "Attrition rate", value: "4.6%", delta: "-1.1 pts YoY", up: false, good: true },
-      { label: "Avg. engagement", value: "77%", delta: "+4 pts YoY", up: true },
-    ],
-  },
+/* Single KPI set, from the live template: no period switcher on the original. */
+const KPIS: Kpi[] = [
+  { label: "Employees", value: "248", delta: "+4.2%", up: true },
+  { label: "Open roles", value: "12", delta: "+8.3%", up: true },
+  { label: "Time to hire", value: "24 days", delta: "-8.3%", up: false, good: true },
+  { label: "Attrition", value: "3.8%", delta: "-0.6%", up: false, good: true },
 ];
 
 const FUNNEL = [
-  { stage: "Applied", value: 1240 },
-  { stage: "Screened", value: 486 },
-  { stage: "Interviewed", value: 132 },
-  { stage: "Offered", value: 31 },
-  { stage: "Hired", value: 24 },
+  { stage: "Applications", value: 412 },
+  { stage: "Screens", value: 156 },
+  { stage: "Interviews", value: 68 },
+  { stage: "Offers", value: 21 },
+  { stage: "Hires", value: 12 },
 ];
 
-const RADAR_AXES = ["Growth", "Recognition", "Balance", "Leadership", "Compensation"];
-// "All teams" averages 78/100, matching the Q3 "Avg. engagement 78%" KPI.
-const RADAR_TEAMS: Record<string, number[]> = {
-  "All teams": [80, 74, 83, 78, 75],
-  Engineering: [84, 70, 76, 79, 74],
-  Design: [80, 82, 85, 74, 66],
-  Sales: [71, 76, 73, 81, 70],
-};
+const RADAR_AXES = ["Growth", "Compensation", "Culture", "Management", "Balance", "Tools"];
+// Q3 survey, all teams: average 80/100 ("Strong").
+const RADAR_SCORES = [84, 71, 88, 79, 66, 91];
 
 /**
- * Monthly hires vs leavers, Apr–Sep 2026. These reconcile with the KPI
- * periods above: Q2 hires 18 (5+6+7), Q3 hires 24 (8+7+9), matching the
- * Q2/Q3 "New hires" KPIs and the funnel's 24 hires; YTD hires are
- * 61 (Q1 19 + Q2 18 + Q3 24). Net +21 over these 6 months, and with Q1
- * net +8 (219 → 227) the headcount path is 219 → 227 → 230 → 248,
- * i.e. +29 YTD as the 2026 KPI states.
+ * Monthly hires (bars) vs attrition % (line), Jan–Dec. The original only
+ * exposes the totals in text — 146 hires this year, attrition averaging
+ * 4.3% — so the monthly split below is reconstructed to reconcile with
+ * those totals (hires sum to 146, attrition averages 4.3%), not copied
+ * from the original's chart data.
  */
-const HIRES_LEAVERS = [
-  { month: "Apr", hires: 5, leavers: 5 },
-  { month: "May", hires: 6, leavers: 6 },
-  { month: "Jun", hires: 7, leavers: 4 },
-  { month: "Jul", hires: 8, leavers: 3 },
-  { month: "Aug", hires: 7, leavers: 2 },
-  { month: "Sep", hires: 9, leavers: 1 },
+const HIRES_ATTRITION = [
+  { month: "Jan", hires: 9, attrition: 4.8 },
+  { month: "Feb", hires: 11, attrition: 4.5 },
+  { month: "Mar", hires: 13, attrition: 4.2 },
+  { month: "Apr", hires: 10, attrition: 4.6 },
+  { month: "May", hires: 12, attrition: 4.1 },
+  { month: "Jun", hires: 14, attrition: 3.9 },
+  { month: "Jul", hires: 11, attrition: 4.4 },
+  { month: "Aug", hires: 13, attrition: 4.2 },
+  { month: "Sep", hires: 15, attrition: 3.8 },
+  { month: "Oct", hires: 12, attrition: 4.5 },
+  { month: "Nov", hires: 14, attrition: 4.3 },
+  { month: "Dec", hires: 12, attrition: 4.3 },
 ];
 
 const TEAMS = [
-  { name: "Engineering", count: 86, color: "var(--color-chart-1)" },
-  { name: "Sales", count: 54, color: "var(--color-chart-2)" },
-  { name: "Design", count: 32, color: "var(--color-chart-3)" },
-  { name: "Product", count: 28, color: "var(--color-chart-4)" },
-  { name: "People", count: 18, color: "var(--color-chart-5)" },
-  { name: "Finance", count: 16, color: "var(--color-chart-1)" },
-  { name: "Support", count: 14, color: "var(--color-chart-2)" },
+  { name: "Engineering", count: 96, color: "var(--color-chart-1)" },
+  { name: "Sales", count: 44, color: "var(--color-chart-2)" },
+  { name: "Support", count: 38, color: "var(--color-chart-3)" },
+  { name: "Marketing", count: 26, color: "var(--color-chart-4)" },
+  { name: "Design", count: 22, color: "var(--color-chart-5)" },
 ];
 
 const RECENT_HIRES = [
-  { name: "Ava Bergström", role: "Product Designer", team: "Design", start: "Sep 22, 2026" },
-  { name: "Liam Kowalski", role: "Frontend Engineer", team: "Engineering", start: "Sep 15, 2026" },
-  { name: "Sofia Tanaka", role: "Sales Manager", team: "Sales", start: "Sep 8, 2026" },
-  { name: "Noah Novak", role: "Data Analyst", team: "Product", start: "Sep 1, 2026" },
-  { name: "Maya Silva", role: "People Partner", team: "People", start: "Aug 25, 2026" },
+  { name: "Livia Saris", role: "Backend Engineer", team: "Sales", when: "Joined today", avatar: "/avatars/livia-saris.webp" },
+  { name: "Jaydon Aminoff", role: "UI Designer", team: "Support", when: "2 days ago", avatar: "/avatars/jaydon-aminoff.webp" },
+  { name: "Maria Lubin", role: "User Researcher", team: "Marketing", when: "5 days ago", avatar: "/avatars/maria-lubin.webp" },
+  { name: "Ann Press", role: "DevOps Engineer", team: "Operations", when: "A week ago", avatar: "/avatars/ann-press.webp" },
 ];
 
 type Employee = {
   name: string;
   role: string;
   team: string;
-  location: string;
   start: string;
-  status: "Active" | "On leave" | "Probation";
+  status: "Active" | "On leave" | "Contract";
+  salary: string;
+  avatar?: string;
 };
 
 const EMPLOYEES: Employee[] = [
-  { name: "Ava Bergström", role: "Product Designer", team: "Design", location: "Berlin", start: "Sep 22, 2026", status: "Probation" },
-  { name: "Liam Kowalski", role: "Frontend Engineer", team: "Engineering", location: "Warsaw", start: "Sep 15, 2026", status: "Probation" },
-  { name: "Sofia Tanaka", role: "Sales Manager", team: "Sales", location: "Tokyo", start: "Sep 8, 2026", status: "Active" },
-  { name: "Noah Novak", role: "Data Analyst", team: "Product", location: "Prague", start: "Sep 1, 2026", status: "Active" },
-  { name: "Maya Silva", role: "People Partner", team: "People", location: "Lisbon", start: "Aug 25, 2026", status: "Active" },
-  { name: "Ethan Moreau", role: "Backend Engineer", team: "Engineering", location: "Paris", start: "Aug 18, 2026", status: "Active" },
-  { name: "Zoe Kim", role: "UX Researcher", team: "Design", location: "Seoul", start: "Aug 11, 2026", status: "On leave" },
-  { name: "Lucas Larsen", role: "Account Executive", team: "Sales", location: "Copenhagen", start: "Aug 4, 2026", status: "Active" },
-  { name: "Nora Petrov", role: "Engineering Manager", team: "Engineering", location: "Sofia", start: "Jul 28, 2026", status: "Active" },
-  { name: "Owen Nguyen", role: "Financial Analyst", team: "Finance", location: "Sydney", start: "Jul 21, 2026", status: "Active" },
-  { name: "Ivy Costa", role: "Support Lead", team: "Support", location: "Porto", start: "Jul 14, 2026", status: "Active" },
-  { name: "Caleb Weber", role: "Product Manager", team: "Product", location: "Munich", start: "Jul 7, 2026", status: "Active" },
+  { name: "John Clarkson", role: "Backend Engineer", team: "Engineering", start: "Apr 06, 2023", status: "Active", salary: "$78K", avatar: "/avatars/john-clarkson.webp" },
+  { name: "Aspen Lubin", role: "Legal Counsel", team: "Operations", start: "Mar 03, 2026", status: "Active", salary: "$125K", avatar: "/avatars/aspen-lubin.webp" },
+  { name: "Michael Ekstrom", role: "Finance Ops", team: "Operations", start: "Jun 19, 2026", status: "Active", salary: "$48K", avatar: "/avatars/michael-ekstrom.webp" },
+  { name: "Kianna Vaccaro", role: "Design Lead", team: "Design", start: "Oct 05, 2025", status: "Active", salary: "$64K", avatar: "/avatars/kianna-vaccaro.webp" },
+  { name: "Livia Saris", role: "SDR", team: "Sales", start: "Nov 19, 2025", status: "Contract", salary: "$147K", avatar: "/avatars/livia-saris.webp" },
+  { name: "Jaydon Aminoff", role: "Support Specialist", team: "Support", start: "Nov 27, 2025", status: "Active", salary: "$103K", avatar: "/avatars/jaydon-aminoff.webp" },
+  { name: "Maria Lubin", role: "Content Lead", team: "Marketing", start: "Oct 05, 2024", status: "On leave", salary: "$88K", avatar: "/avatars/maria-lubin.webp" },
+  { name: "Ann Press", role: "Legal Counsel", team: "Operations", start: "Jul 22, 2022", status: "Active", salary: "$110K", avatar: "/avatars/ann-press.webp" },
+  { name: "Dulce Calzoni", role: "Product Designer", team: "Design", start: "Aug 03, 2024", status: "Active", salary: "$65K" },
+  { name: "Gretchen Rosser", role: "User Researcher", team: "Design", start: "Jan 24, 2025", status: "Active", salary: "$78K" },
 ];
-
-const STATUS_STYLE: Record<Employee["status"], string> = {
-  Active: "bg-status-lime-background text-status-lime-text",
-  "On leave": "bg-amber-100 text-amber-800",
-  Probation: "bg-sky-100 text-sky-700",
-};
 
 function initialsOf(name: string) {
   return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 }
 
-/** Radar chart (pentagon, 5 axes) with hover tooltips. */
+function salaryInBand(salary: string, band: string) {
+  const value = Number(salary.replace(/[^0-9]/g, ""));
+  if (band === "Under $60K") return value < 60;
+  if (band === "$60K – $90K") return value >= 60 && value <= 90;
+  if (band === "$90K – $120K") return value > 90 && value <= 120;
+  if (band === "Over $120K") return value > 120;
+  return true;
+}
+
+/** Radar chart (hexagon, 6 axes) with hover tooltips. */
 function EngagementRadar({ values, onHover }: { values: number[]; onHover: (axis: string | null, value: number | null) => void }) {
   const cx0 = 200;
   const cy0 = 140;
@@ -275,29 +254,19 @@ function EngagementRadar({ values, onHover }: { values: number[]; onHover: (axis
           <circle cx={p.x} cy={p.y} r="4.5" fill="var(--color-chart-2)" stroke="var(--color-background-primary-default)" strokeWidth="2" />
         </g>
       ))}
-      {RADAR_AXES.map((axis, i) => {
-        const angle = (Math.PI * 2 * i) / RADAR_AXES.length - Math.PI / 2;
-        const lx = cx0 + (R + 20) * Math.cos(angle);
-        const ly = cy0 + (R + 20) * Math.sin(angle);
-        const anchor = lx < cx0 - 12 ? "end" : lx > cx0 + 12 ? "start" : "middle";
-        return (
-          <text key={axis} x={lx} y={ly} textAnchor={anchor} dominantBaseline="middle" fontSize="12" fill="var(--color-text-secondary)">
-            {axis}
-          </text>
-        );
-      })}
     </svg>
   );
 }
 
 export default function HrManagementTemplatePage() {
-  const [periodIdx, setPeriodIdx] = useState(0);
   const [funnelStage, setFunnelStage] = useState<number | null>(null);
-  const [radarTeam, setRadarTeam] = useState("All teams");
   const [radarHover, setRadarHover] = useState<{ axis: string; value: number } | null>(null);
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [departmentFilter, setDepartmentFilter] = useState("All departments");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const [salaryFilter, setSalaryFilter] = useState("All salaries");
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, Employee["status"]>>({});
   const [sortKey, setSortKey] = useState<"name" | "start" | null>(null);
   const [sortDir, setSortDir] = useState<1 | -1>(1);
   const [page, setPage] = useState(1);
@@ -323,27 +292,38 @@ export default function HrManagementTemplatePage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [viewEmployee, hireOpen]);
 
-  const period = KPI_PERIODS[periodIdx];
-  const radarValues = RADAR_TEAMS[radarTeam] ?? RADAR_TEAMS["All teams"];
   const maxTeam = Math.max(...TEAMS.map((t) => t.count));
 
   const employees = useMemo(() => {
-    let rows = [...extraHires, ...EMPLOYEES].filter((e) => !removed.includes(e.name));
+    let rows = [...extraHires, ...EMPLOYEES]
+      .map((e) => ({ ...e, status: statusOverrides[e.name] ?? e.status }))
+      .filter((e) => !removed.includes(e.name));
     if (teamFilter) rows = rows.filter((e) => e.team === teamFilter);
-    if (statusFilter !== "All") rows = rows.filter((e) => e.status === statusFilter);
+    if (departmentFilter !== "All departments") rows = rows.filter((e) => e.team === departmentFilter);
+    if (statusFilter !== "All statuses") rows = rows.filter((e) => e.status === statusFilter);
+    if (salaryFilter !== "All salaries") rows = rows.filter((e) => salaryInBand(e.salary, salaryFilter));
     if (query.trim()) {
       const q = query.trim().toLowerCase();
-      rows = rows.filter((e) => `${e.name} ${e.role} ${e.team} ${e.location}`.toLowerCase().includes(q));
+      rows = rows.filter((e) => `${e.name} ${e.role} ${e.team}`.toLowerCase().includes(q));
     }
     if (sortKey === "name") rows = [...rows].sort((a, b) => sortDir * a.name.localeCompare(b.name));
     if (sortKey === "start") rows = [...rows].sort((a, b) => sortDir * (new Date(a.start).getTime() - new Date(b.start).getTime()));
     return rows;
-  }, [extraHires, removed, teamFilter, statusFilter, query, sortKey, sortDir]);
+  }, [extraHires, removed, teamFilter, departmentFilter, statusFilter, salaryFilter, statusOverrides, query, sortKey, sortDir]);
 
-  const perPage = 6;
-  const totalPages = Math.max(1, Math.ceil(employees.length / perPage));
+  const perPage = 10;
+  // The original ships 248 employees across 25 pages; only the first
+  // page's 10 rows are recoverable from the live page, so later pages
+  // show the empty state.
+  const totalPages = 25;
   const safePage = Math.min(page, totalPages);
-  const pageRows = employees.slice((safePage - 1) * perPage, safePage * perPage);
+  const pageRows = safePage === 1 ? employees.slice(0, perPage) : [];
+  const pageNumbers: (number | "…")[] = (() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (safePage <= 3) return [1, 2, 3, 4, 5, "…", totalPages];
+    if (safePage >= totalPages - 2) return [1, "…", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, "…", safePage - 1, safePage, safePage + 1, "…", totalPages];
+  })();
 
   const toggleSort = (key: "name" | "start") => {
     if (sortKey === key) setSortDir((d) => (d === 1 ? -1 : 1));
@@ -359,7 +339,7 @@ export default function HrManagementTemplatePage() {
     const role = hireRole.trim() || "New hire";
     if (!name) return;
     setExtraHires((prev) => [
-      { name, role, team: hireTeam, location: "Remote", start: "Nov 6, 2026", status: "Probation" },
+      { name, role, team: hireTeam, start: "Nov 6, 2026", status: "Active", salary: "—" },
       ...prev,
     ]);
     setHireOpen(false);
@@ -374,8 +354,8 @@ export default function HrManagementTemplatePage() {
       actions={
         <>
           <NotificationBell />
-          <Button variant="secondary" size="medium" leadingIcon={RiFilter3Fill} onClick={() => setStatusFilter(statusFilter === "All" ? "Active" : "All")}>
-            {statusFilter === "All" ? "Filters" : `Status: ${statusFilter}`}
+          <Button variant="secondary" size="medium" leadingIcon={RiFilter3Fill} onClick={() => setStatusFilter(statusFilter === "All statuses" ? "Active" : "All statuses")}>
+            {statusFilter === "All statuses" ? "Filters" : `Status: ${statusFilter}`}
           </Button>
           <Button variant="primary" size="medium" leadingIcon={RiAddFill} onClick={() => setHireOpen(true)}>
             Add employee
@@ -383,33 +363,9 @@ export default function HrManagementTemplatePage() {
         </>
       }
     >
-      <div className="flex items-start gap-2 rounded-2xl border border-border-button-default bg-background-secondary-default p-3">
-        <RiTeamLine className="mt-0.5 size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
-        <p className="text-body-regular text-text-secondary">
-          Built from the official template description — <span className="text-text-primary">按官方描述搭建，无原版演示对照</span>.
-          The original /templates/hr-management page returns 404, so there is no demo page to match against.
-        </p>
-      </div>
-
       {/* Headcount KPIs */}
-      <div className="flex flex-wrap items-center gap-2">
-        {KPI_PERIODS.map((p, i) => (
-          <button
-            key={p.label}
-            type="button"
-            aria-pressed={periodIdx === i}
-            onClick={() => setPeriodIdx(i)}
-            className={cx(
-              "cursor-pointer rounded-full px-3 py-1.5 text-body-2-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-              periodIdx === i ? "bg-accent-500 text-white" : "bg-background-secondary-default text-text-secondary hover:bg-background-tertiary-default",
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
       <div className="grid w-full grid-cols-2 gap-4 xl:grid-cols-4">
-        {period.kpis.map((kpi) => (
+        {KPIS.map((kpi) => (
           <section key={kpi.label} className="flex flex-col gap-1.5 rounded-2xl bg-background-secondary-default p-4">
             <p className="text-body-medium text-text-secondary">{kpi.label}</p>
             <p className="text-title-1-medium text-text-primary tabular-nums">{kpi.value}</p>
@@ -421,12 +377,58 @@ export default function HrManagementTemplatePage() {
         ))}
       </div>
 
+      {/* Recent hires */}
+      <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
+        <div className="flex items-center gap-2">
+          <RiUserAddLine className="size-5 text-foreground-icon-primary" aria-hidden />
+          <p className="text-body-medium text-text-secondary">Recent hires</p>
+          <span className="text-body-2-medium text-text-tertiary tabular-nums">56</span>
+        </div>
+        <p className="text-body-2-regular text-text-tertiary">Board team</p>
+        <div className="grid w-full gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          {RECENT_HIRES.map((h) => (
+            <button
+              key={h.name}
+              type="button"
+              onClick={() => {
+                setQuery(h.name.split(" ")[0]);
+                setPage(1);
+                document.getElementById("employee-table")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-background-inner-default px-3 py-2.5 text-start outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <Avatar size="sm" src={h.avatar} alt={h.name} initials={initialsOf(h.name)} />
+              <span className="min-w-0">
+                <span className="block truncate text-body-medium text-text-primary">{h.name}</span>
+                <span className="block truncate text-body-2-regular text-text-tertiary">{h.when}</span>
+                <span className="block truncate text-body-2-regular text-text-tertiary">{h.role}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <button type="button" disabled aria-label="Previous hires" className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
+            Previous
+          </button>
+          <button type="button" disabled aria-label="Next hires" className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
+            Next
+          </button>
+        </div>
+      </section>
+
       <div className="flex w-full flex-col gap-4 xl:flex-row">
-        {/* Hiring funnel */}
+        {/* Hiring pipeline */}
         <section className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-body-medium text-text-secondary">Hiring funnel</p>
-            <span className="text-body-2-medium text-text-tertiary">1,240 applicants</span>
+            <p className="text-body-medium text-text-secondary">Hiring pipeline</p>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <p className="text-title-1-medium text-text-primary tabular-nums">412</p>
+            <span className="flex items-center gap-0.5 rounded-full bg-status-lime-background px-2 py-0.5 text-body-2-medium text-status-lime-text">
+              <RiArrowUpSLine className="size-3.5" aria-hidden />
+              +6.2%
+            </span>
+            <span className="text-body-2-medium text-text-tertiary">Last 30 days</span>
           </div>
           <div className="flex flex-col gap-2">
             {FUNNEL.map((stage, i) => {
@@ -448,88 +450,105 @@ export default function HrManagementTemplatePage() {
                     <span className="text-body-medium text-text-primary">{stage.stage}</span>
                     <span className="text-body-medium text-text-primary tabular-nums">
                       {stage.value.toLocaleString("en-US")}
-                      <span className="ms-1.5 text-body-2-regular text-text-tertiary">{pct}%</span>
                     </span>
                   </span>
                   <span className="mt-2 block h-2 w-full overflow-hidden rounded-full bg-background-tertiary-default">
                     <span className="block h-full rounded-full bg-chart-2" style={{ width: `${Math.max(pct, 2)}%` }} />
                   </span>
+                  <span className="mt-1 block text-end text-body-2-regular text-text-tertiary tabular-nums">{pct}%</span>
                   {active && conv && <span className="mt-1.5 block text-body-2-regular text-text-secondary">{conv} · {stage.value} candidates</span>}
                   {active && !conv && <span className="mt-1.5 block text-body-2-regular text-text-secondary">All applicants enter here.</span>}
                 </button>
               );
             })}
           </div>
-          <p className="text-body-2-regular text-text-tertiary">Tap a stage to see its conversion. Overall: 24 hires from 1,240 applicants (1.9%).</p>
+          <div className="flex flex-col gap-1.5 border-t border-separator-border pt-3">
+            {FUNNEL.map((stage) => (
+              <div key={stage.stage} className="flex items-center justify-between gap-2">
+                <span className="text-body-medium text-text-primary">{stage.stage}</span>
+                <span className="text-body-medium text-text-primary tabular-nums">{stage.value.toLocaleString("en-US")}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Engagement radar */}
         <section className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-body-medium text-text-secondary">Engagement radar</p>
-            <select
-              value={radarTeam}
-              onChange={(e) => setRadarTeam(e.target.value)}
-              aria-label="Radar team"
-              className="cursor-pointer rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1.5 text-body-2-medium text-text-primary shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-            >
-              {Object.keys(RADAR_TEAMS).map((t) => (
-                <option key={t}>{t}</option>
-              ))}
-            </select>
+            <p className="text-body-medium text-text-secondary">Team engagement</p>
+            <span className="text-body-2-medium text-text-tertiary">Q3 survey</span>
           </div>
           <EngagementRadar
-            values={radarValues}
+            values={RADAR_SCORES}
             onHover={(axis, value) => setRadarHover(axis && value !== null ? { axis, value } : null)}
           />
+          <div className="grid grid-cols-3 gap-2">
+            {RADAR_AXES.map((axis, i) => (
+              <div key={axis} className="flex flex-col items-center gap-0.5 rounded-xl bg-background-inner-default px-2 py-2">
+                <span className="text-body-2-regular text-text-tertiary">{axis}</span>
+                <span className="text-body-medium text-text-primary tabular-nums">{RADAR_SCORES[i]}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <p className="text-title-1-medium text-text-primary tabular-nums">80</p>
+            <p className="text-body-medium text-text-secondary">Strong</p>
+          </div>
           <p className="min-h-5 text-center text-body-medium text-text-primary tabular-nums" aria-live="polite">
-            {radarHover ? `${radarHover.axis}: ${radarHover.value}/100` : `${radarTeam} · avg ${Math.round(radarValues.reduce((a, b) => a + b, 0) / radarValues.length)}/100 — hover a point for its score`}
+            {radarHover ? `${radarHover.axis}: ${radarHover.value}/100` : ""}
           </p>
         </section>
       </div>
 
       <div className="flex w-full flex-col gap-4 xl:flex-row">
-        {/* Hires vs leavers */}
+        {/* Hires vs attrition */}
         <section className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-body-medium text-text-secondary">Hires vs leavers</p>
-            <span className="flex items-center gap-3 text-body-2-medium text-text-tertiary">
-              <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-chart-2" aria-hidden /> Hires</span>
-              <span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-rose-400" aria-hidden /> Leavers</span>
+            <p className="text-body-medium text-text-secondary">Hires · Attrition 4.3%</p>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <p className="text-title-1-medium text-text-primary tabular-nums">146</p>
+            <span className="flex items-center gap-0.5 rounded-full bg-status-lime-background px-2 py-0.5 text-body-2-medium text-status-lime-text">
+              <RiArrowUpSLine className="size-3.5" aria-hidden />
+              +8.4%
             </span>
+            <span className="text-body-2-medium text-text-tertiary">This year</span>
           </div>
           <div className="h-[220px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={HIRES_LEAVERS} margin={{ top: 4, right: 4, bottom: 0, left: 0 }} barCategoryGap="28%">
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
-                <YAxis width={30} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
+              <ComposedChart data={HIRES_ATTRITION} margin={{ top: 4, right: 4, bottom: 0, left: 0 }} barCategoryGap="28%">
+                <YAxis yAxisId="left" width={30} domain={[0, 18]} ticks={[0, 6, 12, 18]} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
+                <YAxis yAxisId="right" orientation="right" width={36} domain={[0, 6]} ticks={[0, 2, 4, 6]} tickFormatter={(v: number) => `${v}%`} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
+                <XAxis dataKey="month" ticks={["Jan", "Mar", "May", "Jul", "Sep", "Dec"]} tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
                 <Tooltip
                   cursor={{ fill: "var(--color-background-tertiary-default)" }}
                   content={({ active, payload }) =>
                     active && payload?.length ? (
                       <span className="rounded-lg bg-background-primary-default px-2.5 py-1.5 text-body-2-medium text-text-primary shadow-dropdown">
-                        {payload[0].payload.month}: {payload[0].payload.hires} hires, {payload[0].payload.leavers} leavers
+                        {payload[0].payload.month}: {payload[0].payload.hires} hires, {payload[0].payload.attrition}% attrition
                       </span>
                     ) : null
                   }
                 />
-                <Bar dataKey="hires" fill="var(--color-chart-2)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="leavers" fill="#fb7185" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <Bar yAxisId="left" dataKey="hires" fill="var(--color-chart-2)" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="attrition" stroke="var(--color-chart-5)" strokeWidth={2} dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-body-2-regular text-text-tertiary">Net +21 over the last 6 months (42 hires, 21 leavers).</p>
+          <p className="text-body-2-regular text-text-tertiary">Hires · total</p>
+          <p className="text-body-medium text-text-primary tabular-nums">146</p>
+          <p className="text-body-2-regular text-text-tertiary">Attrition · average</p>
+          <p className="text-body-medium text-text-primary tabular-nums">4.3%</p>
         </section>
 
-        {/* Team breakdown */}
+        {/* Departments */}
         <section className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-body-medium text-text-secondary">Team breakdown</p>
-            <span className="text-body-2-medium text-text-tertiary">248 total</span>
+            <p className="text-body-medium text-text-secondary">Departments</p>
           </div>
+          <p className="text-caption-1-medium uppercase text-text-tertiary">People</p>
           <div className="flex flex-col gap-2">
             {TEAMS.map((team) => {
-              const pct = Math.round((team.count / 248) * 100);
               const active = teamFilter === team.name;
               return (
                 <button
@@ -552,7 +571,6 @@ export default function HrManagementTemplatePage() {
                     </span>
                     <span className="text-body-medium text-text-primary tabular-nums">
                       {team.count}
-                      <span className="ms-1.5 text-body-2-regular text-text-tertiary">{pct}%</span>
                     </span>
                   </span>
                   <span className="mt-2 block h-2 w-full overflow-hidden rounded-full bg-background-tertiary-default">
@@ -562,41 +580,13 @@ export default function HrManagementTemplatePage() {
               );
             })}
           </div>
+          <p className="text-body-2-regular text-text-tertiary">Total Results</p>
+          <p className="text-body-medium text-text-primary tabular-nums">248 employees</p>
           <p className="text-body-2-regular text-text-tertiary">
             {teamFilter ? `Filtering the employee table to ${teamFilter} — tap again to clear.` : "Tap a team to filter the employee table below."}
           </p>
         </section>
       </div>
-
-      {/* Recent hires */}
-      <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
-        <div className="flex items-center gap-2">
-          <RiUserAddLine className="size-5 text-foreground-icon-primary" aria-hidden />
-          <p className="text-body-medium text-text-secondary">Recent hires</p>
-        </div>
-        <div className="grid w-full gap-2 sm:grid-cols-2 xl:grid-cols-5">
-          {RECENT_HIRES.map((h) => (
-            <button
-              key={h.name}
-              type="button"
-              onClick={() => {
-                setQuery(h.name.split(" ")[0]);
-                setPage(1);
-                document.getElementById("employee-table")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-background-inner-default px-3 py-2.5 text-start outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-            >
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-background-tertiary-default text-body-2-medium text-text-secondary">
-                {initialsOf(h.name)}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-body-medium text-text-primary">{h.name}</span>
-                <span className="block truncate text-body-2-regular text-text-tertiary">{h.role} · {h.start}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
 
       {/* Employee table */}
       <section id="employee-table" className="flex w-full scroll-mt-4 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
@@ -604,7 +594,6 @@ export default function HrManagementTemplatePage() {
           <div className="flex items-center gap-2">
             <RiBriefcaseLine className="size-5 text-foreground-icon-primary" aria-hidden />
             <p className="text-body-medium text-text-secondary">Employees</p>
-            <span className="text-body-2-medium text-text-tertiary tabular-nums">{employees.length} shown</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <label className="flex items-center gap-2 rounded-2lg border border-border-button-default bg-background-primary-default px-2.5 py-1.5">
@@ -620,19 +609,51 @@ export default function HrManagementTemplatePage() {
                 className="w-[160px] bg-transparent text-body-2-medium text-text-primary outline-none placeholder:text-text-tertiary sm:w-[200px]"
               />
             </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value as Employee["status"] | "All");
-                setPage(1);
+            <Select
+              aria-label="Filter by department"
+              selectedKey={departmentFilter}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setDepartmentFilter(key);
+                  setPage(1);
+                }
               }}
-              aria-label="Filter by employment status"
-              className="cursor-pointer rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1.5 text-body-2-medium text-text-primary shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className="w-[172px]"
             >
-              {["All", "Active", "On leave", "Probation"].map((s) => (
-                <option key={s}>{s}</option>
+              {["All departments", "Engineering", "Design", "Sales", "Marketing", "Support", "Operations"].map((d) => (
+                <SelectItem key={d} id={d} textValue={d}>{d}</SelectItem>
               ))}
-            </select>
+            </Select>
+            <Select
+              aria-label="Filter by employment status"
+              selectedKey={statusFilter}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setStatusFilter(key);
+                  setPage(1);
+                }
+              }}
+              className="w-[132px]"
+            >
+              {["All statuses", "Active", "On leave", "Contract"].map((st) => (
+                <SelectItem key={st} id={st} textValue={st}>{st}</SelectItem>
+              ))}
+            </Select>
+            <Select
+              aria-label="Filter by salary"
+              selectedKey={salaryFilter}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setSalaryFilter(key);
+                  setPage(1);
+                }
+              }}
+              className="w-[148px]"
+            >
+              {["All salaries", "Under $60K", "$60K – $90K", "$90K – $120K", "Over $120K"].map((band) => (
+                <SelectItem key={band} id={band} textValue={band}>{band}</SelectItem>
+              ))}
+            </Select>
           </div>
         </div>
         {teamFilter && (
@@ -652,15 +673,14 @@ export default function HrManagementTemplatePage() {
                     Employee {sortKey === "name" ? (sortDir === 1 ? "↑" : "↓") : ""}
                   </button>
                 </th>
-                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Role</th>
-                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Team</th>
-                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Location</th>
+                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Status</th>
+                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Department</th>
                 <th className="py-2 pe-2 text-start">
                   <button type="button" onClick={() => toggleSort("start")} className="cursor-pointer text-body-2-medium text-text-tertiary outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring">
                     Start date {sortKey === "start" ? (sortDir === 1 ? "↑" : "↓") : ""}
                   </button>
                 </th>
-                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Status</th>
+                <th className="py-2 pe-2 text-start text-body-2-medium text-text-tertiary">Salary</th>
                 <th className="py-2 text-end text-body-2-medium text-text-tertiary">Actions</th>
               </tr>
             </thead>
@@ -669,21 +689,33 @@ export default function HrManagementTemplatePage() {
                 <tr key={e.name} className="border-b border-border-table last:border-b-0">
                   <td className="py-2 pe-2">
                     <span className="flex items-center gap-2">
-                      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-background-tertiary-default text-body-2-medium text-text-secondary">
-                        {initialsOf(e.name)}
+                      <Avatar size="sm" src={e.avatar} alt={e.name} initials={initialsOf(e.name)} />
+                      <span className="min-w-0">
+                        <span className="block whitespace-nowrap text-body-medium text-text-primary">{e.name}</span>
+                        <span className="block whitespace-nowrap text-body-2-regular text-text-tertiary">{e.role}</span>
                       </span>
-                      <span className="whitespace-nowrap text-body-medium text-text-primary">{e.name}</span>
                     </span>
                   </td>
-                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-secondary">{e.role}</td>
-                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-secondary">{e.team}</td>
-                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-secondary">{e.location}</td>
-                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-primary tabular-nums">{e.start}</td>
                   <td className="py-2 pe-2">
-                    <span className={cx("inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-body-2-medium", STATUS_STYLE[e.status])}>
-                      {e.status}
-                    </span>
+                    <Select
+                      aria-label={`Status for ${e.name}`}
+                      selectedKey={e.status}
+                      onSelectionChange={(key) => {
+                        if (typeof key === "string") {
+                          setStatusOverrides((prev) => ({ ...prev, [e.name]: key as Employee["status"] }));
+                        }
+                      }}
+                      size="sm"
+                      className="w-[128px]"
+                    >
+                      {(["Active", "On leave", "Contract"] as const).map((st) => (
+                        <SelectItem key={st} id={st} textValue={st}>{st}</SelectItem>
+                      ))}
+                    </Select>
                   </td>
+                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-secondary">{e.team}</td>
+                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-primary tabular-nums">{e.start}</td>
+                  <td className="whitespace-nowrap py-2 pe-2 text-body-medium text-text-primary tabular-nums">{e.salary}</td>
                   <td className="py-2 text-end">
                     <span className="inline-flex gap-1">
                       <button type="button" aria-label={`View ${e.name}`} onClick={() => setViewEmployee(e)} className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring">
@@ -707,32 +739,35 @@ export default function HrManagementTemplatePage() {
               ))}
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-body-regular text-text-secondary">No employees match these filters.</td>
+                  <td colSpan={6} className="py-8 text-center text-body-regular text-text-secondary">No employees match these filters.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-body-2-regular text-text-tertiary">Page {safePage} of {totalPages} · {perPage} per page</p>
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <nav className="flex items-center gap-1" aria-label="Employee pages">
             <button type="button" disabled={safePage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-              <button
-                key={n}
-                type="button"
-                aria-current={n === safePage ? "page" : undefined}
-                onClick={() => setPage(n)}
-                className={cx(
-                  "size-8 cursor-pointer rounded-lg text-body-2-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                  n === safePage ? "bg-accent-500 text-white" : "text-text-secondary hover:bg-background-tertiary-default",
-                )}
-              >
-                {n}
-              </button>
-            ))}
+            {pageNumbers.map((n) =>
+              n === "…" ? (
+                <span key="ellipsis" className="px-1 text-body-2-medium text-text-tertiary">…</span>
+              ) : (
+                <button
+                  key={n}
+                  type="button"
+                  aria-current={n === safePage ? "page" : undefined}
+                  onClick={() => setPage(n)}
+                  className={cx(
+                    "size-8 cursor-pointer rounded-lg text-body-2-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    n === safePage ? "bg-accent-500 text-white" : "text-text-secondary hover:bg-background-tertiary-default",
+                  )}
+                >
+                  {n}
+                </button>
+              ),
+            )}
             <button type="button" disabled={safePage >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
               Next
             </button>
@@ -746,9 +781,7 @@ export default function HrManagementTemplatePage() {
           <button type="button" aria-label="Close employee profile" onClick={() => setViewEmployee(null)} className="absolute inset-0 cursor-pointer bg-black/40" />
           <div className="relative w-full max-w-[420px] rounded-3xl border border-border-button-default bg-background-primary-default p-5 shadow-dropdown">
             <div className="flex items-start justify-between gap-2">
-              <span className="inline-flex size-12 items-center justify-center rounded-full bg-background-tertiary-default text-title-3-semibold text-text-secondary">
-                {initialsOf(viewEmployee.name)}
-              </span>
+              <Avatar size="lg" src={viewEmployee.avatar} alt={viewEmployee.name} initials={initialsOf(viewEmployee.name)} />
               <button type="button" aria-label="Close" onClick={() => setViewEmployee(null)} className="flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring">
                 <RiCloseLine className="size-5" aria-hidden />
               </button>
@@ -757,9 +790,9 @@ export default function HrManagementTemplatePage() {
             <div className="mt-3 flex flex-col gap-2">
               {[
                 ["Role", viewEmployee.role],
-                ["Team", viewEmployee.team],
-                ["Location", viewEmployee.location],
+                ["Department", viewEmployee.team],
                 ["Start date", viewEmployee.start],
+                ["Salary", viewEmployee.salary],
                 ["Status", viewEmployee.status],
               ].map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between rounded-xl bg-background-inner-default px-3 py-2.5">
