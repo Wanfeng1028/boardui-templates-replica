@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { RiLayoutGridLine } from "@remixicon/react";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
+
 
 import { AgentChat } from "@/components/application/agent-chat/agent-chat";
 import { ButtonLink } from "@/components/base/buttons/button";
@@ -11,9 +14,14 @@ import { ButtonLink } from "@/components/base/buttons/button";
  * (h-[calc(100dvh-3.5rem)] overrides AgentChat's h-dvh via tailwind-merge),
  * and the sidebar gains the same destination as its first row (starterNav).
  */
+export const metadata: Metadata = {
+  title: { absolute: "BoardUI - React Design System for Dashboards" },
+};
+
 export default function Page() {
   return (
     <div className="flex min-h-dvh flex-col bg-background-full">
+      <DocumentTitle />
       <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-separator-border bg-background-primary-default px-4">
         <p className="min-w-0 truncate text-body-medium text-text-secondary">
           BoardUI 模板复刻 · 共{" "}

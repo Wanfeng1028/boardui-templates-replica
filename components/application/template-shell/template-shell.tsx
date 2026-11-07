@@ -17,6 +17,7 @@ import {
   DashboardSidebar,
 } from "@/components/application/dashboard/dashboard-sidebar";
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
@@ -82,6 +83,7 @@ export function TemplateShell({
         className,
       )}
     >
+      <DocumentTitle />
       <DashboardSidebar items={DASHBOARD_NAV} selected={selected} className="hidden lg:flex" />
 
       {navOpen && (

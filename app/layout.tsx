@@ -24,8 +24,12 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Chat",
-  description: "A streaming AI chat on your own model key, built with BoardUI.",
+  title: {
+    template: "%s | BoardUI",
+    default: "BoardUI - React Design System for Dashboards",
+  },
+  description:
+    "BoardUI is a dashboard design system and UI kit for React + Tailwind CSS, with data tables, charts and dashboard templates, designed in Figma.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

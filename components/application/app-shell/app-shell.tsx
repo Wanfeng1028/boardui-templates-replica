@@ -21,6 +21,7 @@ import {
   DashboardSidebar,
   type DashboardNavItem,
 } from "@/components/application/dashboard/dashboard-sidebar";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { ProOfferCard } from "@/components/application/app-shell/pro-offer-card";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -99,6 +100,8 @@ export function AppShell({
   children,
   className,
   columnClassName,
+  documentTitle,
+  hideHeading = false,
 }: {
   /** The page's name, shown as the current breadcrumb item. */
   title: string;
@@ -112,6 +115,10 @@ export function AppShell({
   className?: string;
   /** Overrides the 1300px content column, e.g. `max-w-[964px]` for the catalogue's grids. */
   columnClassName?: string;
+  /** Explicit document.title; defaults to the route -> title map lookup. */
+  documentTitle?: string;
+  /** Hide the shell's h1 — pages that render their own h1 (blog articles). */
+  hideHeading?: boolean;
 }) {
   const localize = useTemplateCopy();
   const [navOpen, setNavOpen] = useState(false);
@@ -125,6 +132,7 @@ export function AppShell({
         className,
       )}
     >
+      <DocumentTitle title={documentTitle} />
       <DashboardSidebar items={items} selected={selected} className="hidden lg:flex" />
 
       {/* Below lg the sidebar rides in as an overlay drawer. */}
@@ -173,9 +181,11 @@ export function AppShell({
                   onClick={() => setNavOpen((open) => !open)}
                   className="lg:hidden"
                 />
-                <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">
-                  {heading}
-                </h1>
+                {hideHeading ? null : (
+                  <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">
+                    {heading}
+                  </h1>
+                )}
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2.5">
                 {actions !== undefined ? actions : (

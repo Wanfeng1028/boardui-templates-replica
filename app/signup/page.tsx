@@ -1,6 +1,8 @@
 "use client";
 
 import { useStarterBase } from "@/components/application/app-shell/app-shell";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
+
 import { AuthCard } from "@/components/application/auth/auth-card";
 import { AuthMediaCarousel } from "@/components/application/auth/auth-media-carousel";
 
@@ -9,6 +11,7 @@ export default function SignupPage() {
   const base = useStarterBase();
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background-full p-6">
+      <DocumentTitle />
       <AuthCard
         mode="signup"
         layout="grid"

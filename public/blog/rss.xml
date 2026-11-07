@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>BoardUI Blog</title>
+    <link>https://www.boardui.com/blog</link>
+    <description>Guides, comparisons and notes on building dashboards and agentic interfaces with React and Tailwind CSS, from the team behind BoardUI.</description>
+    <language>en</language>
+    <atom:link href="https://www.boardui.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 01 Nov 2026 12:00:00 GMT</lastBuildDate>
+    <item>
+      <title>The 10 best React design systems and component libraries in 2026</title>
+      <link>https://www.boardui.com/blog/best-react-design-systems</link>
+      <guid isPermaLink="true">https://www.boardui.com/blog/best-react-design-systems</guid>
+      <pubDate>Sun, 01 Nov 2026 12:00:00 GMT</pubDate>
+      <description>Compare the 10 best React design systems in 2026: what each one is best for, key features, pros and cons, and pricing. BoardUI is our product and our pick.</description>
+      <dc:creator>Mertcan Esmergul</dc:creator>
+      <category>Comparisons</category>
+    </item>
+    <item>
+      <title>A React design system for agentic products</title>
+      <link>https://www.boardui.com/blog/react-design-system-for-agentic-products</link>
+      <guid isPermaLink="true">https://www.boardui.com/blog/react-design-system-for-agentic-products</guid>
+      <pubDate>Wed, 28 Oct 2026 12:00:00 GMT</pubDate>
+      <description>Many agent products still ship with interfaces that feel like prototypes. BoardUI gives you ready-made React components for agent workflows and dashboards, which you can install through MCP or CLI.</description>
+      <dc:creator>Mertcan Esmergul</dc:creator>
+      <category>Agentic UI</category>
+    </item>
+  </channel>
+</rss>

@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
+
 
 import { ActivityRingsCard } from "@/components/application/charts/activity-rings-card";
 import { AreaChartCard } from "@/components/application/charts/area-chart-card";
@@ -148,9 +151,14 @@ const CARDS = [
   },
 ] as const;
 
+export const metadata: Metadata = {
+  title: { absolute: "Charts | BoardUI" },
+};
+
 export default function ProChartsPage() {
   return (
     <main className="min-h-screen bg-background-full px-4 py-8 sm:px-6 lg:px-10">
+      <DocumentTitle />
       <div className="mx-auto max-w-[1440px]">
         <header className="mb-6">
           <p className="text-caption-1-semibold text-text-tertiary">

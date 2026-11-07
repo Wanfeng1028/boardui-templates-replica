@@ -2,9 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightLine, RiArticleLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArticleLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import {
+  ArticleFigure,
+  TemplateFigure,
+} from "@/components/application/blog/blog-article-footer";
+import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
+import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
+import { AgentLimitsCard } from "@/components/application/pro/agent-limits-card";
+import { ComposerPanel } from "@/components/application/pro/composer-panel";
+import {
+  Questionnaire,
+  type QuestionnaireQuestion,
+} from "@/components/application/pro/questionnaire";
+import { TaskList } from "@/components/application/pro/task-list";
+import { WebSearch } from "@/components/application/pro/web-search";
+import {
+  ArticleCta,
+  MoreFromBlog,
+  SiteFooter,
+} from "@/components/application/blog/blog-article-footer";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -57,21 +76,26 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-function DocLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1 text-body-medium text-accent-600 underline"
-    >
-      {label}
-      <RiArrowRightLine className="size-4" aria-hidden />
-    </Link>
-  );
-}
-
 function P({ children }: { children: React.ReactNode }) {
   return <p className="text-body-regular text-text-secondary">{children}</p>;
 }
+
+/** The single question the original article's Questionnaire demo shows. */
+const HARNESS_QUESTIONS: QuestionnaireQuestion[] = [
+  {
+    title: "Which harness controls should stay in the top bar?",
+    kind: "multi",
+    options: [
+      {
+        label: "Show up sell toggle",
+        hint: "Forces the upsell card up without spending the 4-turn allowance first.",
+      },
+      { label: "Wallpaper picker", hint: "The chat wallpaper choices." },
+      { label: "Play level-up", hint: "Replays the free and premium animations" },
+    ],
+    other: true,
+  },
+];
 
 /**
  * "A React design system for agentic products" — full text from
@@ -81,7 +105,7 @@ function P({ children }: { children: React.ReactNode }) {
  */
 export default function AgenticProductsPostPage() {
   return (
-    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]">
+    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]" hideHeading>
       <article className="flex flex-col gap-8 pb-8">
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -99,6 +123,11 @@ export default function AgenticProductsPostPage() {
               className="aspect-[16/9] w-full object-cover"
             />
           </span>
+          <P>
+            Many agent products still ship with interfaces that feel like prototypes. BoardUI gives you
+            ready-made React components for agent workflows and dashboards, which you can install through MCP or
+            CLI.
+          </P>
           <P>
             In August 2025, Gartner predicted that 40% of enterprise apps would include task-specific AI agents
             by the end of 2026, up from less than 5% in 2025. Yet you sign up for a new agent product and find a
@@ -130,9 +159,17 @@ export default function AgenticProductsPostPage() {
             Safari and Chrome on iPhone, ignores CSS blur on SVG shapes. We moved the blur into an SVG filter,
             which WebKit renders.
           </P>
-          <P>
-            Composer Loader is free: <DocLink href="/components/composer-loader" label="Composer Loader" />
-          </P>
+          <P>Composer Loader is free:</P>
+          <ArticleFigure name="Composer Loader" slug="composer-loader">
+            <ComposerLoader active>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://www.boardui.com/accent-rainbow-well-light.png"
+                alt=""
+                className="block w-full rounded-3xl border border-border-button-default object-cover"
+              />
+            </ComposerLoader>
+          </ArticleFigure>
         </Section>
 
         <Section title="Install the agent UI with one command">
@@ -147,9 +184,9 @@ export default function AgenticProductsPostPage() {
             <code className="font-mono text-caption-1-medium text-text-primary">onEffortChange</code> and{" "}
             <code className="font-mono text-caption-1-medium text-text-primary">onPermissionChange</code>.
           </P>
-          <P>
-            <DocLink href="/components/composer-panel" label="Composer Panel" />
-          </P>
+          <ArticleFigure name="Composer Panel" slug="composer-panel" pro>
+            <ComposerPanel />
+          </ArticleFigure>
           <P>
             The CLI copies the source into your project and adds the npm packages each component needs. This adds
             the free Agent Thinking:
@@ -184,9 +221,11 @@ export default function AgenticProductsPostPage() {
           <SubSection title="Thinking and progress">
             <P>
               Before the first word of an answer, Agent Thinking shows a timer and a label you choose, such as
-              &ldquo;Searching the docs&rdquo;. It&apos;s free, with four animations to switch between:{" "}
-              <DocLink href="/components/agent-thinking" label="Agent Thinking" />
+              &ldquo;Searching the docs&rdquo;. It&apos;s free, with four animations to switch between:
             </P>
+            <ArticleFigure name="Agent Thinking" slug="agent-thinking">
+              <AgentThinking variant="spin" label="Searching the docs" />
+            </ArticleFigure>
             <P>
               For longer runs, Agent Progress steps through a plan at a pace you set and marks the active step.
               Collapsed, it shrinks to one row with the current step and how many steps are left.
@@ -198,9 +237,9 @@ export default function AgenticProductsPostPage() {
               With <code className="font-mono text-caption-1-medium text-text-primary">collapseOnComplete=&quot;all&quot;</code>,
               finished tasks stay open until the whole run ends and then close together.
             </P>
-            <P>
-              <DocLink href="/components/task-list" label="Task List" />
-            </P>
+            <ArticleFigure name="Task List" slug="task-list" pro>
+              <TaskList />
+            </ArticleFigure>
           </SubSection>
           <SubSection title="Research trail">
             <P>
@@ -209,9 +248,9 @@ export default function AgenticProductsPostPage() {
               version listed every source in a bordered table, and in a running thread that table outweighed
               everything around it.
             </P>
-            <P>
-              <DocLink href="/components/web-search" label="Web Search" />
-            </P>
+            <ArticleFigure name="Web Search" slug="web-search" pro>
+              <WebSearch />
+            </ArticleFigure>
           </SubSection>
           <SubSection title="Clarifying questions">
             <P>
@@ -220,9 +259,9 @@ export default function AgenticProductsPostPage() {
               keys, and a pick moves on to the next question. Multiple-choice questions use checkboxes, and an
               optional Other row takes a free-text answer.
             </P>
-            <P>
-              <DocLink href="/components/questionnaire" label="Questionnaire" />
-            </P>
+            <ArticleFigure name="Questionnaire" slug="questionnaire" pro>
+              <Questionnaire questions={HARNESS_QUESTIONS} />
+            </ArticleFigure>
           </SubSection>
           <SubSection title="Context and usage limits">
             <P>
@@ -230,18 +269,15 @@ export default function AgenticProductsPostPage() {
               context window went: the system prompt, tools, memory files and messages. It also lists each plan
               limit with the time it resets.
             </P>
-            <P>
-              <DocLink href="/components/agent-limits-card" label="Agent Limits" />
-            </P>
+            <ArticleFigure name="Agent Limits" slug="agent-limits-card" pro>
+              <AgentLimitsCard />
+            </ArticleFigure>
           </SubSection>
           <SubSection title="Agent identity">
             <P>
               We draw each avatar live on a canvas, and each one runs its own clock for blinks and glances. In
               Agent Creator you give an agent a name, a description and a voice, and pick one of nine paper shapes
               with an expression and a color.
-            </P>
-            <P>
-              <DocLink href="/components/agent-creator" label="Agent Creator" />
             </P>
           </SubSection>
         </Section>
@@ -255,9 +291,7 @@ export default function AgenticProductsPostPage() {
             <code className="font-mono text-caption-1-medium text-text-primary">onRespond</code> function that
             receives the agent, the messages and an abort signal.
           </P>
-          <P>
-            <DocLink href="/templates/multi-agent-chat" label="Multi-agent Chat" />
-          </P>
+          <TemplateFigure name="Multi-agent Chat" slug="multi-agent-chat" src="/templates/multi-agent-chat" />
           <P>
             Three more Pro templates cover single-agent products. AI Chat is a coding-agent screen in the style of
             Cursor or Claude Code, and AI Image Generation runs on the same shell. AI Profile turns a user&apos;s
@@ -277,9 +311,7 @@ export default function AgenticProductsPostPage() {
             paginated Data Table, and a free Data Grid with editable cells, filters and CSV export. Pro adds
             Finance, Marketing and Home dashboards, plus Medical Profile and Project Board templates.
           </P>
-          <P>
-            <DocLink href="/templates/finance" label="Finance Dashboard" />
-          </P>
+          <TemplateFigure name="Finance Dashboard" slug="finance-dashboard" src="/templates/finance" />
         </Section>
 
         <Section title="Start free, add the agent set when you need it">
@@ -295,6 +327,8 @@ export default function AgenticProductsPostPage() {
           <CodeBlock code="npx boardui@latest init" />
         </Section>
 
+        <ArticleCta />
+
         <Link
           href="/blog"
           className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
@@ -303,6 +337,8 @@ export default function AgenticProductsPostPage() {
           Back to all articles
         </Link>
       </article>
+      <MoreFromBlog currentSlug="react-design-system-for-agentic-products" />
+      <SiteFooter />
     </AppShell>
   );
 }

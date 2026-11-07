@@ -1,37 +1,15 @@
 "use client";
 
-import { RiArrowRightLine, RiArticleLine } from "@remixicon/react";
+import { RiArrowRightLine, RiArticleLine, RiRssFill } from "@remixicon/react";
 import Link from "next/link";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import { BLOG_POSTS as POSTS } from "@/components/application/blog/blog-article-footer";
 
 /**
  * Blog index — mirrors boardui.com/blog.
  * Cover images are hot-linked from the original site (not downloaded).
  */
-
-const POSTS = [
-  {
-    slug: "best-react-design-systems",
-    category: "Comparisons",
-    date: "Nov 1, 2026",
-    readTime: "9 min read",
-    title: "The 10 best React design systems and component libraries in 2026",
-    excerpt:
-      "Compare the 10 best React design systems in 2026: what each one is best for, key features, pros and cons, and pricing. BoardUI is our product and our pick.",
-    cover: "https://www.boardui.com/blog/best-react-design-systems/cover-components.png",
-  },
-  {
-    slug: "react-design-system-for-agentic-products",
-    category: "Agentic UI",
-    date: "Oct 28, 2026",
-    readTime: "5 min read",
-    title: "A React design system for agentic products",
-    excerpt:
-      "Many agent products still ship with interfaces that feel like prototypes. BoardUI gives you ready-made React components for agent workflows and dashboards, which you can install through MCP or CLI.",
-    cover: "https://www.boardui.com/blog/react-design-system-for-agentic-products/cover.png",
-  },
-];
 
 export default function BlogIndexPage() {
   return (
@@ -41,6 +19,13 @@ export default function BlogIndexPage() {
           Notes on building React interfaces for agentic products — comparisons, component
           walkthroughs, and what we noticed while building with each library.
         </p>
+        <a
+          href="/blog/rss.xml"
+          className="inline-flex w-fit items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
+        >
+          <RiRssFill className="size-4" aria-hidden />
+          RSS feed
+        </a>
         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
           {POSTS.map((post) => (
             <Link

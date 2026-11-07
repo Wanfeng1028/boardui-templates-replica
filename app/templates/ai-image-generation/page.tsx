@@ -30,6 +30,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
@@ -235,6 +236,7 @@ export default function AiImageGenerationTemplatePage() {
 
   return (
     <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
+      <DocumentTitle />
       <style>{`@keyframes agent-msg-in{from{opacity:0;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}@keyframes agent-card-in{from{opacity:0;filter:blur(8px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}`}</style>
       <div className="hidden xl:flex">
         <AgentSidebar {...sidebarProps} />
