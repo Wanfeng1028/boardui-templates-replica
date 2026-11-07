@@ -208,30 +208,21 @@ export default function NotificationPage() {
             colors.
           </p>
           <Demo>
-            <div className="flex w-full max-w-[420px] flex-col gap-3">
-              <Notification
-                status="success"
-                title="Deployment finished"
-                description="boardui.com is live on production."
-                timestamp="2m ago"
-              />
+            <div className="grid w-full gap-4 xl:grid-cols-3">
               <Notification
                 status="information"
                 title="New version available"
-                description="BoardUI 2.4.0 is ready to install."
-                timestamp="12m ago"
+                description="Refresh to start using the latest dashboard updates."
+              />
+              <Notification
+                status="success"
+                title="Changes saved"
+                description="Your workspace settings have been updated."
               />
               <Notification
                 status="error"
-                title="Build failed"
-                description="The deploy step exited with an error."
-                timestamp="26m ago"
-              />
-              <Notification
-                status="neutral"
-                title="Weekly digest ready"
-                description="Your Monday summary is waiting."
-                timestamp="1h ago"
+                title="Upload failed"
+                description="The file could not be uploaded. Check its size and try again."
               />
             </div>
           </Demo>

@@ -15,15 +15,7 @@ import { cx } from "@/utils/cx";
  *   - Page numbers are 32×32 (radius/lg) cells. Active cell borrows the
  *     secondary-button surface (white + border/button/default + shadow/xs);
  *     inactive cells are ghost with a secondary-hover background on hover.
- *   - No ellipsis: the original templates list their pages adjacently
- *     (1–5 then 14 / 45 directly), so the range just ends at the window
- *     edge and resumes at the last page.
- *
- * NOTE: dashboard-gaps.md §F10 records the Dashboard original's pagination
- * as 1–5 / … / 55 (with dots), unlike Finance (1–5 / 14) and Medical
- * (1–5 / 45), which have none. This shared component follows the
- * no-dots form per the shared-shell fix; if Dashboard needs its dots back
- * it should get its own variant rather than re-adding them here.
+ *   - Overflow collapses to leading/trailing dots around a sibling window.
  *
  * Below `COMPACT_WIDTH`, a `ResizeObserver` on the nav switches to a compact
  * layout — icon-only Previous/Next and `siblingCount` clamped to 0 — so the
@@ -45,6 +37,8 @@ export interface PaginationProps {
   "aria-label"?: string;
 }
 
+const DOTS = "dots";
+
 function range(start: number, end: number): number[] {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
@@ -53,8 +47,8 @@ function paginationRange(
   current: number,
   total: number,
   sibling: number,
-): number[] {
-  // first + last + current + 2*sibling (no ellipsis: pages sit adjacently)
+): (number | typeof DOTS)[] {
+  // first + last + current + 2*sibling + 2 dots
   const totalPageNumbers = sibling * 2 + 5;
   if (totalPageNumbers >= total) return range(1, total);
 
@@ -64,12 +58,12 @@ function paginationRange(
   const showRightDots = rightSibling < total - 2;
 
   if (!showLeftDots && showRightDots) {
-    return [...range(1, 3 + 2 * sibling), total];
+    return [...range(1, 3 + 2 * sibling), DOTS, total];
   }
   if (showLeftDots && !showRightDots) {
-    return [1, ...range(total - (2 + 2 * sibling), total)];
+    return [1, DOTS, ...range(total - (2 + 2 * sibling), total)];
   }
-  return [1, ...range(leftSibling, rightSibling), total];
+  return [1, DOTS, ...range(leftSibling, rightSibling), DOTS, total];
 }
 
 // No transition on the cells: animating background/shadow/color makes the
@@ -132,25 +126,35 @@ export function Pagination({
       </Button>
 
       <ul className="flex min-w-0 items-center gap-0.5">
-        {pages.map((item) => (
-          <li key={item}>
-            <button
-              type="button"
-              aria-label={`Go to page ${item}`}
-              aria-current={item === page ? "page" : undefined}
-              onClick={() => onChange(item)}
-              className={cx(
-                cell,
-                "cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-border-focus-ring",
-                item === page
-                  ? "border border-border-button-default bg-background-primary-default text-text-primary shadow-xs"
-                  : "text-text-secondary hover:bg-background-secondary-hover hover:text-text-primary",
-              )}
+        {pages.map((item, i) =>
+          item === DOTS ? (
+            <li
+              key={`dots-${i}`}
+              aria-hidden
+              className={cx(cell, "text-text-tertiary")}
             >
-              {item}
-            </button>
-          </li>
-        ))}
+              …
+            </li>
+          ) : (
+            <li key={item}>
+              <button
+                type="button"
+                aria-label={`Go to page ${item}`}
+                aria-current={item === page ? "page" : undefined}
+                onClick={() => onChange(item)}
+                className={cx(
+                  cell,
+                  "cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-border-focus-ring",
+                  item === page
+                    ? "border border-border-button-default bg-background-primary-default text-text-primary shadow-xs"
+                    : "text-text-secondary hover:bg-background-secondary-hover hover:text-text-primary",
+                )}
+              >
+                {item}
+              </button>
+            </li>
+          ),
+        )}
       </ul>
 
       <Button

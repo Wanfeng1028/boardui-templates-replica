@@ -77,7 +77,7 @@ export function Example() {
   );
 }`;
 export default function PaginationPage() {
-  const [page, setPage] = useState(3);
+  const [page, setPage] = useState(6);
   return (
     <AppShell title="Pagination" actions={null} columnClassName="max-w-[964px]">
       <div className="flex flex-col gap-8 pb-8">
@@ -134,10 +134,10 @@ export default function PaginationPage() {
           </ul>
           <Demo>
             <div className="w-full">
-              <Pagination page={page} totalPages={10} onChange={setPage} />
+              <Pagination page={page} totalPages={181} onChange={setPage} />
             </div>
           </Demo>
-          <p className="text-body-2-regular text-text-tertiary">Current page: {page} of 10</p>
+          <p className="text-body-2-regular text-text-tertiary">Current page: {page} of 181</p>
           <CodeBlock code={CONTROLLED_CODE} />
         </Section>
 

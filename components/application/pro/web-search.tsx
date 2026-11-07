@@ -10,8 +10,11 @@ import { cx } from "@/utils/cx";
  * Web Search (Pro replica) — streaming research trail.
  * Built only from free BoardUI components (Agent Log ticker + tree guide)
  * plus mock data. Not the official Pro source.
- * Queries appear one at a time; each query reveals its sources, which are
- * real, clickable links with a "real site" marker.
+ * Queries appear one at a time; each query reveals its sources. Sources that
+ * point at this site (boardui.com) are real links; sources that point at
+ * third-party doc sites (ai-sdk.dev, platform.openai.com, perplexity.ai,
+ * developer.mozilla.org) are mock results rendered as plain text, not links,
+ * so clicking around this site never jumps out to someone else's website.
  */
 
 type Source = { title: string; site: string; url: string };
@@ -56,20 +59,41 @@ function WebSearchLog({ runKey }: { runKey: number }) {
                 <span className="text-text-tertiary">Searched </span>“{step.query}”
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {step.sources.map((s) => (
-                  <a
-                    key={s.url}
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex max-w-full items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-medium text-text-secondary outline-none transition-colors hover:border-border-button-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                  >
-                    <span className="size-1.5 shrink-0 rounded-full bg-chart-2" aria-hidden />
-                    <span className="truncate">{s.title}</span>
-                    <span className="shrink-0 text-text-tertiary">· {s.site}</span>
-                    <RiExternalLinkLine className="size-3 shrink-0 text-foreground-icon-tertiary" />
-                  </a>
-                ))}
+                {step.sources.map((s) => {
+                  const external = s.url.startsWith("http");
+                  const chipClass =
+                    "inline-flex max-w-full items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-medium text-text-secondary outline-none";
+                  if (external) {
+                    // Mock result pointing at a third-party doc site: plain
+                    // text, not a link, so this demo never jumps off-site.
+                    return (
+                      <span
+                        key={s.url}
+                        title="Demo result — not a link"
+                        className={cx(chipClass, "cursor-default")}
+                      >
+                        <span className="size-1.5 shrink-0 rounded-full bg-chart-2" aria-hidden />
+                        <span className="truncate">{s.title}</span>
+                        <span className="shrink-0 text-text-tertiary">· {s.site}</span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <a
+                      key={s.url}
+                      href={s.url}
+                      className={cx(
+                        chipClass,
+                        "transition-colors hover:border-border-button-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                      )}
+                    >
+                      <span className="size-1.5 shrink-0 rounded-full bg-chart-2" aria-hidden />
+                      <span className="truncate">{s.title}</span>
+                      <span className="shrink-0 text-text-tertiary">· {s.site}</span>
+                      <RiExternalLinkLine className="size-3 shrink-0 text-foreground-icon-tertiary" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </LogRow>

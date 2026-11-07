@@ -135,12 +135,12 @@ export default function TextareaPage() {
             <div className="w-full max-w-[400px]">
               <Textarea
                 aria-label="Note"
-                placeholder="Leave a note"
+                placeholder="Write as much as you need"
                 value={note}
                 onChange={setNote}
                 autoResize
                 rows={2}
-                maxRows={4}
+                maxRows={8}
               />
             </div>
           </Demo>
@@ -172,7 +172,7 @@ export default function TextareaPage() {
                 autoResize
                 rows={2}
                 maxRows={4}
-                maxLength={120}
+                maxLength={160}
                 showCount
               />
             </div>
