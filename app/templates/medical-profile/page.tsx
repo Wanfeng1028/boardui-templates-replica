@@ -404,7 +404,12 @@ export default function MedicalProfileTemplatePage() {
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) setPhotoSrc(URL.createObjectURL(file));
+            if (file) {
+              setPhotoSrc((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return URL.createObjectURL(file);
+              });
+            }
             e.target.value = "";
           }}
         />
