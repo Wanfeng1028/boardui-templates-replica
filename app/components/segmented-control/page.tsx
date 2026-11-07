@@ -17,9 +17,11 @@ function CopyButton({ text }: { text: string }) {
       size="small"
       leadingIcon={copied ? RiCheckLine : RiFileCopyLine}
       onClick={() => {
-        void navigator.clipboard?.writeText(text)?.then(() => {
+        navigator.clipboard?.writeText(text)?.then(() => {
           setCopied(true);
           window.setTimeout(() => setCopied(false), 1600);
+        }).catch(() => {
+          // Clipboard access can be refused; leave the icon unchanged.
         });
       }}
     >
