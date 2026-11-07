@@ -21,8 +21,8 @@ const STEPS: QueryStep[] = [
   {
     query: "BoardUI design system components",
     sources: [
-      { title: "BoardUI — Components", site: "boardui.com", url: "https://www.boardui.com/components" },
-      { title: "BoardUI — Getting started", site: "boardui.com", url: "https://www.boardui.com/docs/getting-started" },
+      { title: "BoardUI — Components", site: "boardui.com", url: "/components" },
+      { title: "BoardUI — Getting started", site: "boardui.com", url: "/components" },
     ],
   },
   {

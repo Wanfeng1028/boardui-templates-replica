@@ -11,13 +11,15 @@ import { useThemeMode } from "@/components/application/theme/theme-toggle";
 import { ButtonLink } from "@/components/base/buttons/button";
 
 const DISMISSED_KEY = "boardui:pro-offer-dismissed";
-const PRICING_URL = "https://www.boardui.com/#pricing";
+/** No pricing page exists on this site, so "Get Pro" goes to the Pro
+ *  components showcase — the closest in-site Pro destination. */
+const PRO_COMPONENTS_URL = "/pro-components";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
  * The one mention of Pro inside the starter: the same card the Pro templates
  * show on boardui.com, ray field included, with the starter's own words and a
- * link to pricing in place of the site's dialog. Gone for good once closed.
+ * link to the Pro showcase in place of the site's dialog. Gone for good once closed.
  * Counts are the catalogue as of September 2026; update them when Pro grows.
  */
 export function ProOfferCard() {
@@ -56,7 +58,7 @@ export function ProOfferCard() {
         <HeroRays config={rays} paused={reduceMotion} className="absolute inset-0 size-full" />
       }
       cta={
-        <ButtonLink href={PRICING_URL} target="_blank" rel="noreferrer" className="w-full">
+        <ButtonLink href={PRO_COMPONENTS_URL} className="w-full">
           Get Pro
         </ButtonLink>
       }

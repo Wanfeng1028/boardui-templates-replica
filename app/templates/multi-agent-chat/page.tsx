@@ -7,20 +7,27 @@ import {
   RiAttachmentLine,
   RiCheckLine,
   RiCloseLine,
+  RiCodeLine,
   RiFileCopyLine,
+  RiFileTextLine,
   RiDownloadLine,
   RiEarthLine,
   RiHeadphoneLine,
   RiLayoutGridLine,
+  RiListCheck,
   RiMenuLine,
   RiMicLine,
-  RiMore2Fill,
+  RiMoreLine,
   RiNotification3Line,
   RiPlayFill,
   RiSearchLine,
   RiSettings3Line,
   RiShieldLine,
   RiShoppingBag3Line,
+  RiSlideshowLine,
+  RiStopFill,
+  RiTableLine,
+  RiTargetLine,
   RiThumbDownLine,
   RiThumbUpLine,
   RiVolumeUpLine,
@@ -35,8 +42,9 @@ import {
   DropdownPopover,
   DropdownTrigger,
 } from "@/components/base/dropdown/dropdown";
+import { MENU_POPOVER_SURFACE } from "@/components/base/dropdown/menu-styles";
+import { useDismissOnOutsidePress } from "@/utils/use-dismiss-on-outside-press";
 import { SettingsModal, type SettingsPage } from "@/components/application/settings/settings-modal";
-import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 
 import { Switch } from "@/components/base/switch/switch";
 import { cx } from "@/utils/cx";
@@ -503,6 +511,37 @@ function AgentAvatar({
   );
 }
 
+/* MiniFace — a standalone expression face for the editor's emotion ring.
+   The snapshot's ring dots each carry a blank 34px canvas (the live
+   original draws the face on it), so the face itself is drawn here from
+   the same EXPRESSIONS table the avatars use: eyes, brows, mouth and
+   blush per emotion, on the dot's own background. */
+function MiniFace({ expression, size = 28 }: { expression: AvatarExpression; size?: number }) {
+  const expr = EXPRESSIONS[expression];
+  const lookX = expr.lookX ?? 0;
+  const lookY = expr.lookY ?? 0;
+  return (
+    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true" className="block shrink-0">
+      <AvatarEye cx={14} style={expr.leftEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" />
+      <AvatarEye cx={26} style={expr.rightEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" />
+      {expr.brows && (
+        <path d={expr.brows} stroke="#262626" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      )}
+      {expr.mouthFill ? (
+        <path d={expr.mouth} fill="#262626" />
+      ) : (
+        <path d={expr.mouth} stroke="#262626" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      )}
+      {expr.blush && (
+        <>
+          <ellipse cx="10.5" cy="22.5" rx={expr.strongBlush ? 2.6 : 2} ry="1.2" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
+          <ellipse cx="29.5" cy="22.5" rx={expr.strongBlush ? 2.6 : 2} ry="1.2" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
+        </>
+      )}
+    </svg>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Sidebar                                                             */
 /* ------------------------------------------------------------------ */
@@ -556,7 +595,7 @@ function Sidebar({
           <div className="grid h-full grid-cols-3 gap-2">
             <div aria-hidden="true" />
             <div>
-              <button type="button" className={pillBtn} aria-label="Marketplace" onClick={onOpenMarketplace}>
+              <button type="button" className={pillBtn} aria-label="Marketplace" title="Marketplace" onClick={onOpenMarketplace}>
                 <RiShoppingBag3Line className="size-5 shrink-0" aria-hidden />
               </button>
             </div>
@@ -613,6 +652,7 @@ function Sidebar({
                 <button
                   type="button"
                   aria-label="Close search"
+                  title="Close search"
                   onClick={() => {
                     setQuery("");
                     setSearchOpen(false);
@@ -627,6 +667,7 @@ function Sidebar({
                 type="button"
                 className="absolute inset-0 flex w-full min-w-0 cursor-pointer items-center justify-center rounded-full border-0 bg-background-tertiary-default text-foreground-icon-secondary shadow-none transition-opacity duration-150 outline-none hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                 aria-label="Search conversations"
+                title="Search conversations"
                 onClick={() => setSearchOpen(true)}
               >
                 <RiSearchLine className="size-5 shrink-0" aria-hidden />
@@ -648,31 +689,30 @@ function Sidebar({
               onClick={() => onSelect(GROUP.id)}
               aria-current={selectedId === GROUP.id ? "page" : undefined}
               className={cx(
-                "flex h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                "flex min-h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                 selectedId === GROUP.id
                   ? "bg-background-tertiary-default"
                   : "hover:bg-background-secondary-hover",
               )}
             >
-              <span className="relative block size-10 shrink-0">
+              <span className="flex shrink-0 items-center">
                 <AgentAvatar
                   agent={{ body: "#36c15c", shape: "shield", name: "landing page designer" }}
                   size={22}
-                  className="absolute -left-0.5 top-0"
                 />
                 <AgentAvatar
                   agent={{ body: "#E34798", shape: "star", name: "marketing bot" }}
                   size={22}
-                  className="absolute -right-0.5 top-0"
+                  className="-ms-2"
                 />
                 <AgentAvatar
                   agent={{ body: "#1bb4ce", shape: "diamond", name: "Product planner" }}
                   size={22}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2"
+                  className="-ms-2"
                 />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="truncate text-body-medium text-text-primary">{GROUP.name}</span>
+                <span title={GROUP.name} className="line-clamp-2 break-words text-body-medium text-text-primary">{GROUP.name}</span>
                 <span className="truncate text-body-regular text-text-tertiary">{GROUP.desc}</span>
               </span>
             </button>
@@ -686,14 +726,14 @@ function Sidebar({
                   onClick={() => onSelect(agent.id)}
                   aria-current={active ? "page" : undefined}
                   className={cx(
-                    "flex h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    "flex min-h-[54px] shrink-0 items-center gap-2.5 rounded-xl p-1.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                     active ? "bg-background-tertiary-default" : "hover:bg-background-secondary-hover",
                   )}
                 >
                   <AgentAvatar agent={agent} size={40} blinkDelay={`${(i % 5) * 0.7}s`} />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate text-body-medium text-text-primary">{agent.name}</span>
-                    <span className="truncate text-body-regular text-text-tertiary">{agent.intro}</span>
+                    <span title={agent.intro} className="line-clamp-2 break-words text-body-regular text-text-tertiary">{agent.intro}</span>
                   </span>
                 </button>
               );
@@ -708,17 +748,6 @@ function Sidebar({
 
         {/* Footer: All templates / Support / Settings / Board team */}
         <footer className="mt-2 flex shrink-0 flex-col gap-1">
-          {/* REPLICA NOTE: the original template sidebar has no cross-template
-              navigation, so a visitor entering this page directly cannot leave
-              it for another template. This row links back to /templates; same
-              row style as Support / Settings below. */}
-          <a
-            href="/templates"
-            className="inline-flex h-9 w-full cursor-pointer items-center justify-start gap-0.5 rounded-2lg bg-transparent p-2 text-body-medium text-text-secondary outline-none transition-colors hover:bg-background-secondary-hover active:bg-background-secondary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-          >
-            <RiLayoutGridLine className="size-5 shrink-0" aria-hidden />
-            <span className="inline-flex items-center justify-center px-1 shrink-0">全部模板</span>
-          </a>
           <Dropdown>
             <DropdownTrigger
               aria-label="Support"
@@ -739,11 +768,11 @@ function Sidebar({
                 </DropdownItem>
                 <DropdownItem
                   onSelect={() => {
-                    window.open("https://www.boardui.com", "_blank", "noopener");
+                    window.location.href = "mailto:hi@boardui.com";
                   }}
                   className="px-2 py-1.5"
                 >
-                  <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Visit boardui.com</span>
+                  <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Email support</span>
                 </DropdownItem>
               </DropdownGroup>
             </DropdownPopover>
@@ -788,11 +817,11 @@ function Sidebar({
                   </DropdownItem>
                   <DropdownItem
                     onSelect={() => {
-                      window.open("https://www.boardui.com", "_blank", "noopener");
+                      window.location.href = "/templates";
                     }}
                     className="px-2 py-1.5"
                   >
-                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Visit boardui.com</span>
+                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">View templates</span>
                   </DropdownItem>
                 </DropdownGroup>
               </DropdownPopover>
@@ -840,8 +869,10 @@ function ReplyFooter({
     <div className="flex items-center justify-between gap-2 px-3">
       {/* The original button holds two overlapping layers — "Thinking…"
           (opacity 0) and the agent name (opacity 1) — cross-fading while a
-          reply generates. Clicking it opens the agent editor, like the
-          header pill. */}
+          reply generates. This replica mounts only one of the two: the
+          "Thinking…" label exists in the DOM only while a reply is being
+          generated, so it can never flash on first load. Clicking it opens
+          the agent editor, like the header pill. */}
       <button
         type="button"
         aria-label={agent.name}
@@ -854,23 +885,11 @@ function ReplyFooter({
           </span>
         </span>
         <span className="grid">
-          <span
-            aria-hidden={!thinking}
-            className={cx(
-              "col-start-1 row-start-1 transition-opacity duration-200",
-              thinking ? "opacity-100" : "opacity-0",
-            )}
-          >
-            Thinking…
-          </span>
-          <span
-            className={cx(
-              "col-start-1 row-start-1 transition-opacity duration-200",
-              thinking ? "opacity-0" : "opacity-100",
-            )}
-          >
-            {agent.name}
-          </span>
+          {thinking ? (
+            <span className="col-start-1 row-start-1">Thinking…</span>
+          ) : (
+            <span className="col-start-1 row-start-1">{agent.name}</span>
+          )}
         </span>
       </button>
       <div
@@ -1040,6 +1059,15 @@ function ChatMain({
     setRenaming(false);
   };
 
+  /* Opening the editor from the header capsule or a reply footer must
+     dismiss the Conversation options menu first: the menu is anchored to
+     the header, and once the editor panel opens the main column narrows —
+     a menu left open would sit on top of the user bubbles. */
+  const handleOpenEditor = (agentId?: string) => {
+    setMenuOpen(false);
+    onOpenEditor(agentId);
+  };
+
   return (
     <>
       <header className="flex h-[55px] shrink-0 items-start gap-2 px-3 pt-3">
@@ -1074,11 +1102,14 @@ function ChatMain({
           <div className="flex min-w-0 flex-1">
             <button
               type="button"
-              onClick={() => onOpenEditor()}
+              aria-label={`Edit ${agent.name}`}
+              title="Edit agent"
+              onClick={() => handleOpenEditor()}
               className="flex h-[31px] min-w-0 max-w-full cursor-pointer items-center gap-2 rounded-full bg-background-tertiary-default/60 px-2 pe-3 text-body-2-medium text-text-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
               <AgentAvatar agent={agent} size={20} />
               <span className="truncate">{agent.name}</span>
+              <RiArrowDownSLine className="size-4 shrink-0 text-foreground-icon-tertiary" aria-hidden />
             </button>
           </div>
         ) : (
@@ -1086,10 +1117,20 @@ function ChatMain({
             <span className="truncate text-body-2-medium text-text-secondary">{groupName}</span>
           </div>
         )}
-        {/* REPLICA NOTE: the sidebar is hidden below md, so this header button
-            is the only way out of this page on narrow screens. It used to be
-            an icon-only link; a text button is the findable entry. */}
-        <AllTemplatesButton size="small" />
+        {/* Template-switcher entry: an icon-only grid button in the header
+            (the original template has no cross-template navigation; the
+            text button that used to sit here broke the original's header).
+            It lives inside the main column, a flex sibling of the editor
+            panel, so opening the editor shrinks the column instead of
+            covering this button. */}
+        <a
+          href="/templates"
+          aria-label="全部模板"
+          title="全部模板"
+          className="relative inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-2lg border-0 bg-transparent text-foreground-icon-secondary shadow-none outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <RiLayoutGridLine className="size-4 shrink-0" aria-hidden />
+        </a>
         <button
           type="button"
           aria-label={copied ? "Copied to clipboard" : "Copy conversation"}
@@ -1108,12 +1149,12 @@ function ChatMain({
             aria-label="Conversation options"
             className="cursor-pointer rounded p-1 text-foreground-icon-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
-            <RiMore2Fill className="size-4" aria-hidden />
+            <RiMoreLine className="size-4" aria-hidden />
           </DropdownTrigger>
           <DropdownPopover
             aria-label="Conversation options"
             placement="bottom end"
-            className="w-[190px] p-2"
+            className="w-[220px] overflow-x-hidden p-2"
           >
             <DropdownGroup>
               <DropdownItem
@@ -1123,7 +1164,7 @@ function ChatMain({
                 }}
                 className="px-2 py-1.5"
               >
-                <span className="truncate text-body-medium whitespace-nowrap text-text-primary">
+                <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
                   {agent ? "Rename conversation" : "Rename group"}
                 </span>
               </DropdownItem>
@@ -1136,7 +1177,7 @@ function ChatMain({
                     }}
                     className="px-2 py-1.5"
                   >
-                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">
+                    <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
                       Clear conversation
                     </span>
                   </DropdownItem>
@@ -1148,7 +1189,7 @@ function ChatMain({
                     }}
                     className="px-2 py-1.5"
                   >
-                    <span className="truncate text-body-medium whitespace-nowrap text-text-error-primary">
+                    <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-error-primary">
                       Delete conversation
                     </span>
                   </DropdownItem>
@@ -1213,7 +1254,7 @@ function ChatMain({
                       <ReplyFooter
                         agent={msgAgent}
                         thinking={thinking && messageIdx === lastAgentIdx}
-                        onOpenEditor={onOpenEditor}
+                        onOpenEditor={handleOpenEditor}
                         feedback={feedback[message.id] ?? null}
                         onFeedback={(v) => toggleFeedback(message.id, v)}
                         copied={copiedResponseId === message.id}
@@ -1249,6 +1290,89 @@ function ChatMain({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Add to chat menu — measured from the live original (browser        */
+/* 1919x998): a 359px "Add to chat" dialog above the composer, 7      */
+/* items in 2 groups, icon + bold title + grey description on one    */
+/* line per row. Grey line icons for Add, coloured solid tiles with   */
+/* white icons for Plugins.                                           */
+/* ------------------------------------------------------------------ */
+
+type AddMenuItemId =
+  | "files"
+  | "goal"
+  | "plan"
+  | "documents"
+  | "spreadsheets"
+  | "presentations"
+  | "code";
+
+const ADD_MENU_GROUPS: {
+  label: string;
+  items: { id: AddMenuItemId; title: string; desc?: string }[];
+}[] = [
+  {
+    label: "Add",
+    items: [
+      { id: "files", title: "Files and folders" },
+      { id: "goal", title: "Goal", desc: "Set a goal for faster results" },
+      { id: "plan", title: "Plan mode", desc: "Manage complex tasks" },
+    ],
+  },
+  {
+    label: "Plugins",
+    items: [
+      { id: "documents", title: "Documents", desc: "Create and edit documents" },
+      { id: "spreadsheets", title: "Spreadsheets", desc: "Generate spreadsheets" },
+      { id: "presentations", title: "Presentations", desc: "Create marketing assets" },
+      { id: "code", title: "Code blocks", desc: "Write and edit existing code" },
+    ],
+  },
+];
+
+/** Starter prompt each plugin pre-fills into the composer input. */
+const PLUGIN_ACTIONS: Record<
+  "documents" | "spreadsheets" | "presentations" | "code",
+  { label: string; prompt: string }
+> = {
+  documents: { label: "Documents", prompt: "Create a document about " },
+  spreadsheets: { label: "Spreadsheets", prompt: "Generate a spreadsheet for " },
+  presentations: { label: "Presentations", prompt: "Create a presentation about " },
+  code: { label: "Code blocks", prompt: "Write or edit code for " },
+};
+
+/** The menu's icon slot: a 24px box so grey line icons and coloured
+    plugin tiles line the rows up. Plugin tiles are solid semantic
+    colours (blue / purple / teal) with a white icon. */
+function AddMenuIcon({ kind }: { kind: AddMenuItemId }) {
+  const tile = (bg: string, Icon: typeof RiTableLine) => (
+    <span className={cx("flex size-6 shrink-0 items-center justify-center rounded-lg", bg)}>
+      <Icon className="size-4 text-text-white" aria-hidden />
+    </span>
+  );
+  const plain = (Icon: typeof RiTableLine) => (
+    <span className="flex size-6 shrink-0 items-center justify-center">
+      <Icon className="size-5 text-foreground-icon-secondary" aria-hidden />
+    </span>
+  );
+  switch (kind) {
+    case "files":
+      return plain(RiAttachmentLine);
+    case "goal":
+      return plain(RiTargetLine);
+    case "plan":
+      return plain(RiListCheck);
+    case "documents":
+      return plain(RiFileTextLine);
+    case "spreadsheets":
+      return tile("bg-accent-500", RiTableLine);
+    case "presentations":
+      return tile("bg-chart-5-active", RiSlideshowLine);
+    case "code":
+      return tile("bg-chart-1-active", RiCodeLine);
+  }
+}
+
 function Composer({
   value,
   onValueChange,
@@ -1261,7 +1385,36 @@ function Composer({
   const [permission, setPermission] = useState("Bypass all");
   const [listening, setListening] = useState(false);
   const [attachment, setAttachment] = useState<{ name: string } | null>(null);
+  /* Add to chat menu + the feedback each of its items produces in the
+     composer: a goal row/chip, a plan-mode banner, and the active
+     plugin line (plus its pre-filled starter prompt). */
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [goalInputOpen, setGoalInputOpen] = useState(false);
+  const [goalDraft, setGoalDraft] = useState("");
+  const [goal, setGoal] = useState("");
+  const [planMode, setPlanMode] = useState(false);
+  const [activePlugin, setActivePlugin] = useState<{
+    id: "documents" | "spreadsheets" | "presentations" | "code";
+    label: string;
+  } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const addTriggerRef = useRef<HTMLButtonElement>(null);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  /* The menu is a custom-positioned panel (see the trigger below), so
+     dismissal is wired by hand with the same util the Dropdown recipe
+     uses: outside press closes it, the trigger toggles it. */
+  useDismissOnOutsidePress(addMenuOpen, () => setAddMenuOpen(false), [addTriggerRef, addMenuRef]);
+
+  useEffect(() => {
+    if (!addMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAddMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [addMenuOpen]);
 
   const pickFile = (accept: string) => {
     const el = fileRef.current;
@@ -1275,12 +1428,103 @@ function Composer({
     setAttachment(null);
   };
 
+  const confirmGoal = () => {
+    const next = goalDraft.trim();
+    if (next) setGoal(next);
+    setGoalInputOpen(false);
+  };
+
+  /** Every Add menu item does something visible: Files opens the file
+      picker (chip travels with the sent message), Goal opens a goal
+      input row, Plan mode raises a banner, and each plugin pre-fills
+      a starter prompt and raises its own status line. */
+  const handleAddMenuSelect = (id: AddMenuItemId) => {
+    setAddMenuOpen(false);
+    if (id === "files") {
+      pickFile("*/*");
+      return;
+    }
+    if (id === "goal") {
+      setGoalDraft(goal);
+      setGoalInputOpen(true);
+      return;
+    }
+    if (id === "plan") {
+      setPlanMode(true);
+      return;
+    }
+    const plugin = PLUGIN_ACTIONS[id];
+    setActivePlugin({ id, label: plugin.label });
+    onValueChange(value.trim() ? `${value.trimEnd()} ${plugin.prompt}` : plugin.prompt);
+    textareaRef.current?.focus();
+  };
+
+  const noticeIconBtn =
+    "flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring";
+
   return (
     <div className="shrink-0 p-1">
       <div className="flex w-full flex-col">
-        <div className="flex w-full flex-col rounded-[var(--radius-2-5xl)] bg-background-primary-default p-2.5 shadow-[0_1px_0.5px_rgba(0,0,0,0.02),0_4px_2px_rgba(0,0,0,0.02)]">
+        <div className="relative flex w-full flex-col rounded-[var(--radius-2-5xl)] bg-background-primary-default p-2.5 shadow-[0_1px_0.5px_rgba(0,0,0,0.02),0_4px_2px_rgba(0,0,0,0.02)]">
           <div className="flex flex-col gap-5 pt-1.5">
             <div className="px-1.5">
+              {/* Feedback rows for the Add menu, above the text input, so
+                  every menu item visibly does something. */}
+              {goalInputOpen && (
+                <div className="mb-2 flex items-center gap-2 rounded-xl bg-background-tertiary-default px-2.5 py-1.5">
+                  <RiTargetLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={goalDraft}
+                    onChange={(e) => setGoalDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") confirmGoal();
+                      if (e.key === "Escape") setGoalInputOpen(false);
+                    }}
+                    placeholder="Set a goal for faster results…"
+                    aria-label="Goal"
+                    className="min-w-0 flex-1 bg-transparent text-body-2-medium text-text-primary outline-none placeholder:text-text-tertiary"
+                  />
+                  <button type="button" aria-label="Save goal" onClick={confirmGoal} className={noticeIconBtn}>
+                    <RiCheckLine className="size-4" aria-hidden />
+                  </button>
+                  <button type="button" aria-label="Cancel goal" onClick={() => setGoalInputOpen(false)} className={noticeIconBtn}>
+                    <RiCloseLine className="size-4" aria-hidden />
+                  </button>
+                </div>
+              )}
+              {goal && !goalInputOpen && (
+                <span className="mb-2 flex w-fit max-w-full items-center gap-1.5 rounded-full bg-background-tertiary-default py-1 pe-1 ps-2.5 text-body-2-medium text-text-secondary">
+                  <RiTargetLine className="size-3.5 shrink-0" aria-hidden />
+                  <span className="truncate">Goal: {goal}</span>
+                  <button type="button" aria-label="Remove goal" onClick={() => setGoal("")} className={noticeIconBtn}>
+                    <RiCloseLine className="size-3.5" aria-hidden />
+                  </button>
+                </span>
+              )}
+              {planMode && (
+                <div className="mb-2 flex items-center gap-2 rounded-xl bg-background-tertiary-default px-2.5 py-1.5">
+                  <RiListCheck className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                  <span className="min-w-0 flex-1 truncate text-body-2-medium text-text-secondary">
+                    Plan mode on — I&rsquo;ll break complex tasks into steps before acting.
+                  </span>
+                  <button type="button" aria-label="Turn off plan mode" onClick={() => setPlanMode(false)} className={noticeIconBtn}>
+                    <RiCloseLine className="size-4" aria-hidden />
+                  </button>
+                </div>
+              )}
+              {activePlugin && (
+                <div className="mb-2 flex items-center gap-2 rounded-xl bg-background-tertiary-default px-2.5 py-1.5">
+                  <AddMenuIcon kind={activePlugin.id} />
+                  <span className="min-w-0 flex-1 truncate text-body-2-medium text-text-secondary">
+                    {activePlugin.label} ready — describe what you want below.
+                  </span>
+                  <button type="button" aria-label="Dismiss plugin" onClick={() => setActivePlugin(null)} className={noticeIconBtn}>
+                    <RiCloseLine className="size-4" aria-hidden />
+                  </button>
+                </div>
+              )}
               {attachment && (
                 <span className="mb-2 flex w-fit max-w-full items-center gap-1.5 rounded-full bg-background-tertiary-default py-1 pe-1 ps-2.5 text-body-2-medium text-text-secondary">
                   <RiAttachmentLine className="size-3.5 shrink-0" aria-hidden />
@@ -1296,8 +1540,9 @@ function Composer({
                 </span>
               )}
               <textarea
+                ref={textareaRef}
                 rows={1}
-                aria-label="Message"
+                aria-label="Hi, what do you need today?"
                 placeholder={listening ? "Listening…" : "Hi, what do you need today?"}
                 value={value}
                 onChange={(e) => onValueChange(e.target.value)}
@@ -1324,43 +1569,88 @@ function Composer({
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2">
-                {/* Add attachment — the original opens a menu (items not in
-                    the snapshot); the items below open the real file picker
-                    with a matching filter, and the picked file shows as a
-                    chip that travels with the sent message. */}
-                <Dropdown>
-                  <DropdownTrigger
-                    aria-label="Add attachment"
-                    className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-composer-panel-add-background p-2 outline-none transition-colors duration-150 ease hover:bg-composer-panel-add-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                {/* Add to chat — measured from the live original: a 359px
+                    "Add to chat" dialog floating above the composer, its
+                    bottom edge 2px above the input box top edge and its
+                    left edge aligned with this button's left edge. A
+                    trigger-anchored Popover cannot sit there (it would
+                    hang off the button, inside the composer), so the
+                    panel is absolutely positioned against the composer
+                    panel instead, reusing the BoardUI menu surface and
+                    DropdownGroup / DropdownItem rows. While open the
+                    trigger is a black "×"; clicking it closes the menu. */}
+                <button
+                  ref={addTriggerRef}
+                  type="button"
+                  aria-label="Add to chat"
+                  aria-expanded={addMenuOpen}
+                  aria-haspopup="dialog"
+                  onClick={() => setAddMenuOpen((v) => !v)}
+                  className={cx(
+                    "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full p-2 outline-none transition-colors duration-150 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    addMenuOpen
+                      ? "bg-text-primary hover:bg-text-primary"
+                      : "bg-composer-panel-add-background hover:bg-composer-panel-add-hover-background",
+                  )}
+                >
+                  {addMenuOpen ? (
+                    <RiCloseLine className="size-5 text-text-white" aria-hidden />
+                  ) : (
+                    <RiAddLine className="size-5 text-foreground-icon-primary" aria-hidden />
+                  )}
+                </button>
+                {addMenuOpen && (
+                  <div
+                    ref={addMenuRef}
+                    role="dialog"
+                    aria-label="Add to chat"
+                    className={cx(
+                      "bui-add-menu absolute bottom-[calc(100%+2px)] left-2.5 z-50 w-[359px]",
+                      MENU_POPOVER_SURFACE,
+                      "rounded-[14px] p-3",
+                    )}
                   >
-                    <RiAddLine className="size-5 text-foreground-icon-primary transition-transform duration-200 ease" aria-hidden />
-                  </DropdownTrigger>
-                  <DropdownPopover aria-label="Add attachment" placement="top start" className="w-[190px] p-2">
-                    <DropdownGroup>
-                      <DropdownItem onSelect={() => pickFile("image/*")} className="px-2 py-1.5">
-                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload image</span>
-                      </DropdownItem>
-                      <DropdownItem onSelect={() => pickFile(".pdf,.doc,.docx,.txt,.md")} className="px-2 py-1.5">
-                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload document</span>
-                      </DropdownItem>
-                      <DropdownItem onSelect={() => pickFile("*/*")} className="px-2 py-1.5">
-                        <span className="truncate text-body-medium whitespace-nowrap text-text-primary">Upload file</span>
-                      </DropdownItem>
-                    </DropdownGroup>
-                  </DropdownPopover>
-                </Dropdown>
-                {/* Permission — visible text is the mode only ("Bypass all");
-                    "Permission: " lives in the aria-label, as in the
-                    original. The menu items are the standard modes; the
-                    original's menu content is not in the snapshot. */}
+                    <div className="flex flex-col gap-1 outline-none">
+                      {ADD_MENU_GROUPS.map((group) => (
+                        <DropdownGroup key={group.label} label={group.label}>
+                          {group.items.map((item) => (
+                            <DropdownItem
+                              key={item.id}
+                              onSelect={() => handleAddMenuSelect(item.id)}
+                              className="px-2 py-1.5"
+                            >
+                              <AddMenuIcon kind={item.id} />
+                              <span className="flex min-w-0 flex-1 items-baseline gap-1 truncate">
+                                <span className="shrink-0 text-body-semibold text-text-primary">
+                                  {item.title}
+                                </span>
+                                {item.desc ? (
+                                  <span className="truncate text-body-2-regular text-text-secondary">
+                                    — {item.desc}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </DropdownItem>
+                          ))}
+                        </DropdownGroup>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Permission — the original shows only the mode ("Bypass
+                    all") with "Permission: " in the aria-label, but the
+                    visible text is widened here to the full "Permission:
+                    Bypass all" so the prefix is never clipped. The menu
+                    items are the standard modes; the original's menu
+                    content is not in the snapshot. */}
                 <Dropdown>
                   <DropdownTrigger
                     aria-label={`Permission: ${permission}`}
-                    className="flex h-[30px] min-w-0 cursor-pointer items-center gap-1 rounded-full px-2 py-[5px] pe-2.5 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    className="flex h-[30px] shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-2 py-[5px] pe-2.5 outline-none transition-colors duration-150 ease hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                   >
                     <RiShieldLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                    <span className="truncate text-body-2-medium text-text-secondary">
-                      {permission}
+                    <span className="whitespace-nowrap text-body-medium text-text-secondary">
+                      Permission: {permission}
                     </span>
                   </DropdownTrigger>
                   <DropdownPopover aria-label="Permission" placement="top start" className="w-[190px] p-2">
@@ -1458,8 +1748,10 @@ function AgentEditor({
   // Language codes match the original's native select: "" + auto/en/tr/es/
   // fr/de/ja/pt. Voice is disabled in the original (Off / System voice).
   const [language, setLanguage] = useState("auto");
-  const [voice] = useState("system");
+  const [voice, setVoice] = useState("system");
   const [speed, setSpeed] = useState("1");
+  const [previewing, setPreviewing] = useState(false);
+  const [voiceToast, setVoiceToast] = useState<string | null>(null);
   const [notify, setNotify] = useState(true);
   const [colorIdx, setColorIdx] = useState(() => {
     const i = AVATAR_COLORS.findIndex((c) => c.from.toLowerCase() === agent.body.toLowerCase());
@@ -1496,6 +1788,56 @@ function AgentEditor({
     onClose();
   };
 
+  /* Stop any preview speech when the editor unmounts. */
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  /** Preview voice — the original ships this button and the voice select
+      disabled (Off / System voice only, in the snapshot). They are enabled
+      here: the preview reads the agent's name + description aloud with the
+      browser's speech synthesis, at the chosen playback speed. "Mika" is
+      not in the snapshot; it maps to a device voice named Mika when one
+      exists, and falls back to the system voice otherwise. */
+  const previewVoice = () => {
+    if (!("speechSynthesis" in globalThis)) {
+      setVoiceToast("Voice preview is not supported in this browser.");
+      window.setTimeout(() => setVoiceToast(null), 3500);
+      return;
+    }
+    if (previewing) {
+      window.speechSynthesis.cancel();
+      setPreviewing(false);
+      return;
+    }
+    if (voice === "off") {
+      setVoiceToast("Voice is off — pick a voice to preview it.");
+      window.setTimeout(() => setVoiceToast(null), 3500);
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(
+      `Hi, I'm ${name.trim() || agent.name}. ${desc.trim() || agent.desc}`,
+    );
+    utter.rate = parseFloat(speed) || 1;
+    const voices = window.speechSynthesis.getVoices();
+    const picked = voice === "mika" ? voices.find((v) => /mika/i.test(v.name)) : undefined;
+    if (picked) {
+      utter.voice = picked;
+    } else if (voice === "mika") {
+      setVoiceToast("No voice named Mika on this device — using the system voice.");
+      window.setTimeout(() => setVoiceToast(null), 3500);
+    }
+    utter.onend = () => setPreviewing(false);
+    utter.onerror = () => setPreviewing(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+    setPreviewing(true);
+  };
+
   return (
     <aside
       aria-label="Agent editor"
@@ -1524,11 +1866,13 @@ function AgentEditor({
         </div>
 
         {/* Avatar: the original's 360px region — a 268px emotion ring of 16
-            coloured dots around a large central avatar. The replica's old
-            16-variant avatar ring was invented UI and is gone; the dots are
-            plain 34px circles (all hsl(181 49% 80%) in the snapshot), not
-            mini faces. Shapes can also be dragged from the row below onto
-            the central preview. */}
+            dots around a large central avatar. In the snapshot each dot is
+            a plain 34px circle (all hsl(181 49% 80%)) holding a blank
+            canvas; the live original draws the expression face on that
+            canvas, so each dot here draws the same face as an SVG
+            (MiniFace, from the EXPRESSIONS table) with the name on hover
+            and in the caption below. Shapes can also be dragged from the
+            row below onto the central preview. */}
         <div className="relative h-[360px] shrink-0 overflow-hidden">
           <div className="pointer-events-none absolute left-1/2 top-[30px] z-10 -translate-x-1/2">
             <div role="group" aria-label="Agent emotion" className="pointer-events-auto relative size-[268px] touch-none rounded-full">
@@ -1546,11 +1890,15 @@ function AgentEditor({
                       title={e}
                       onClick={() => setExpression(e)}
                       className={cx(
-                        "pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                        expression === e ? "border-foreground-icon-secondary" : "border-transparent",
+                        "pointer-events-auto flex size-[34px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 outline-none transition-[border-color,box-shadow,transform] hover:ring-2 hover:ring-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                        expression === e
+                          ? "scale-110 border-foreground-icon-primary ring-2 ring-border-focus-ring"
+                          : "border-transparent",
                       )}
                       style={{ backgroundColor: "hsl(181 49% 80%)" }}
-                    />
+                    >
+                      <MiniFace expression={e} size={28} />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1579,17 +1927,25 @@ function AgentEditor({
           </div>
         </div>
 
+        {/* Selected expression, always visible: the ring dots are small, so
+            the current emotion's name is spelled out here as well as on
+            each dot's hover tooltip. */}
+        <p aria-live="polite" className="shrink-0 pb-1 text-center text-body-2-medium text-text-secondary">
+          Expression: <span className="text-text-primary">{expression}</span>
+        </p>
+
         {/* Shape options + colour dots */}
         <div className="flex shrink-0 flex-col items-center gap-3 pb-1">
-          <div className="flex flex-wrap items-center justify-center gap-2" role="listbox" aria-label="Agent shape">
+          <div className="grid w-full grid-cols-3 gap-2" role="listbox" aria-label="Agent shape">
             {AVATAR_SHAPES.map((s) => {
               const cap = s[0].toUpperCase() + s.slice(1);
+              const selectedShape = avatar.shape === s;
               return (
                 <button
                   key={s}
                   type="button"
                   role="option"
-                  aria-selected={avatar.shape === s}
+                  aria-selected={selectedShape}
                   aria-label={`${cap} shape`}
                   title={`${cap} shape — drag onto the preview to apply`}
                   draggable
@@ -1599,13 +1955,21 @@ function AgentEditor({
                   }}
                   onClick={() => setAvatar((prev) => ({ ...prev, shape: s }))}
                   className={cx(
-                    "flex size-14 cursor-grab items-center justify-center rounded-2xl border outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing",
-                    avatar.shape === s
-                      ? "border-border-button-default bg-background-primary-default"
+                    "flex min-h-[76px] cursor-grab flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing",
+                    selectedShape
+                      ? "border-border-button-default bg-background-primary-default ring-1 ring-border-button-default"
                       : "border-transparent bg-transparent",
                   )}
                 >
-                  <AgentAvatar agent={{ body: "#d7d7d7", shape: s, name: s, expression }} size={40} />
+                  {/* Pure silhouette, no face: the shape itself is the
+                      preview (the snapshot's shape buttons hold a 56px
+                      canvas silhouette, no visible name). */}
+                  <svg viewBox="0 0 40 40" width={40} height={40} aria-hidden="true" className="block text-foreground-icon-secondary">
+                    <path d={SHAPE_PATHS[s]} fill="currentColor" />
+                  </svg>
+                  <span className={cx("text-body-2-medium", selectedShape ? "text-text-primary" : "text-text-secondary")}>
+                    {cap}
+                  </span>
                 </button>
               );
             })}
@@ -1687,13 +2051,13 @@ function AgentEditor({
             <label className="flex flex-col items-start gap-2 py-3">
               <span className="text-body-medium text-text-primary">Description</span>
               <textarea
-                rows={2}
+                rows={4}
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 aria-label="Agent description"
                 placeholder="Details for the agent"
                 maxLength={500}
-                className="w-full resize-none rounded-2lg bg-background-tertiary-default p-2.5 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                className="min-h-[96px] w-full resize-none rounded-2lg bg-background-tertiary-default p-2.5 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
               />
             </label>
           </div>
@@ -1746,35 +2110,46 @@ function AgentEditor({
                 Voice
               </span>
               <span className="flex items-center gap-1.5">
-                {/* Preview voice — present but disabled in the original
-                    (it enables once a voice is picked). */}
                 <button
                   type="button"
-                  aria-label="Preview voice"
-                  disabled
-                  className="flex size-7 cursor-pointer items-center justify-center rounded-2lg border border-border-button-default bg-background-primary-default text-text-secondary shadow-xs outline-none transition-colors hover:bg-background-primary-hover disabled:cursor-not-allowed disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                  aria-label={previewing ? "Stop voice preview" : "Preview voice"}
+                  aria-pressed={previewing}
+                  title={previewing ? "Stop voice preview" : "Preview voice"}
+                  onClick={previewVoice}
+                  className={cx(
+                    "flex size-7 cursor-pointer items-center justify-center rounded-2lg border border-border-button-default shadow-xs outline-none transition-colors hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    previewing
+                      ? "bg-accent-500 text-text-white hover:bg-accent-600"
+                      : "bg-background-primary-default text-text-secondary",
+                  )}
                 >
-                  <RiPlayFill className="size-[18px] shrink-0" aria-hidden />
+                  {previewing ? (
+                    <RiStopFill className="size-[18px] shrink-0" aria-hidden />
+                  ) : (
+                    <RiPlayFill className="size-[18px] shrink-0" aria-hidden />
+                  )}
                 </button>
-                {/* Agent voice — disabled in the original, options only Off /
-                    System voice (currently System voice). The old "Voice 1"
-                    option was invented and is gone. */}
                 <span className="relative flex items-center">
                   <select
                     aria-label="Agent voice"
-                    disabled
                     value={voice}
-                    onChange={() => {}}
-                    className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                    onChange={(e) => setVoice(e.target.value)}
+                    className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                   >
                     <option value="">{" "}</option>
                     <option value="off">Off</option>
                     <option value="system">System voice</option>
+                    <option value="mika">Mika</option>
                   </select>
                   <RiArrowDownSLine className="pointer-events-none absolute end-1.5 size-3.5 shrink-0 text-text-secondary" aria-hidden />
                 </span>
               </span>
             </div>
+            {voiceToast && (
+              <p role="status" className="py-2 text-body-2-regular text-text-secondary">
+                {voiceToast}
+              </p>
+            )}
             <div className="flex items-center justify-between gap-3 py-3">
               <span className="text-body-medium text-text-primary">Playback speed</span>
               <div role="radiogroup" aria-label="Playback speed" className="relative inline-flex items-start gap-0.5 rounded-2lg">
@@ -1999,7 +2374,7 @@ export default function MultiAgentChatTemplatePage() {
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-background-full p-3 text-text-primary">
-      <style>{`@keyframes bui-blink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}}.bui-blink-l{animation:bui-blink 4.4s infinite;transform-box:fill-box;transform-origin:center}.bui-blink-r{animation:bui-blink 5.3s infinite;transform-box:fill-box;transform-origin:center}@keyframes bui-wander-l{0%,100%{transform:translate(0,0)}25%{transform:translate(2px,1px)}50%{transform:translate(-2px,0)}75%{transform:translate(1px,-1px)}}@keyframes bui-wander-r{0%,100%{transform:translate(0,0)}30%{transform:translate(-2px,1px)}55%{transform:translate(1.5px,-1px)}80%{transform:translate(-1px,1px)}}.bui-wander-l{animation:bui-wander-l 7s ease-in-out infinite}.bui-wander-r{animation:bui-wander-r 8.5s ease-in-out infinite;animation-delay:-2.3s}@keyframes bui-morph{from{transform:scale(.93);opacity:.55}to{transform:scale(1);opacity:1}}.bui-morph{animation:bui-morph .32s ease-out;transform-box:fill-box;transform-origin:center}@media (prefers-reduced-motion:reduce){.bui-blink-l,.bui-blink-r,.bui-wander-l,.bui-wander-r,.bui-morph{animation:none!important}}`}</style>
+      <style>{`@keyframes bui-blink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}}.bui-blink-l{animation:bui-blink 4.4s infinite;transform-box:fill-box;transform-origin:center}.bui-blink-r{animation:bui-blink 5.3s infinite;transform-box:fill-box;transform-origin:center}@keyframes bui-wander-l{0%,100%{transform:translate(0,0)}25%{transform:translate(2px,1px)}50%{transform:translate(-2px,0)}75%{transform:translate(1px,-1px)}}@keyframes bui-wander-r{0%,100%{transform:translate(0,0)}30%{transform:translate(-2px,1px)}55%{transform:translate(1.5px,-1px)}80%{transform:translate(-1px,1px)}}.bui-wander-l{animation:bui-wander-l 7s ease-in-out infinite}.bui-wander-r{animation:bui-wander-r 8.5s ease-in-out infinite;animation-delay:-2.3s}@keyframes bui-morph{from{transform:scale(.93);opacity:.55}to{transform:scale(1);opacity:1}}.bui-morph{animation:bui-morph .32s ease-out;transform-box:fill-box;transform-origin:center}@keyframes bui-add-menu{from{opacity:0;transform:scale(.97) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}.bui-add-menu{animation:bui-add-menu .15s ease-out;transform-origin:bottom left}@media (prefers-reduced-motion:reduce){.bui-blink-l,.bui-blink-r,.bui-wander-l,.bui-wander-r,.bui-morph,.bui-add-menu{animation:none!important}}`}</style>
       <Sidebar
         selectedId={selectedId}
         onSelect={(id) => {

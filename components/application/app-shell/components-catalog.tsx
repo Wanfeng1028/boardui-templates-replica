@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
 
 import { RiArrowRightLine } from "@remixicon/react";
@@ -19,8 +21,6 @@ import {
 import { PREVIEW_IMAGE_SLUGS } from "@/components/application/docs/preview-images";
 import { ShowcaseCard } from "@/components/application/docs/showcase-card";
 import { cx } from "@/utils/cx";
-
-const SITE = "https://www.boardui.com";
 
 export type CatalogTier = "all" | "free" | "pro";
 
@@ -50,11 +50,11 @@ export function CatalogTierFilter({
 }
 
 /**
- * The boardui.com components index, as the starter shows it: the same
- * sections, names and descriptions, every card opening its docs page on the
- * site in a new tab. Free components render their live previews, Pro
- * templates frame the site's embed routes, and the other Pro components show
- * pictures captured from the site's index (scripts/capture-previews.mjs):
+ * The components index, as the starter shows it: the same sections, names
+ * and descriptions, every card opening its detail page on this site. Free
+ * components render their live previews, Pro templates frame the site's own
+ * template pages, and the other Pro components show pictures captured from
+ * the site's index (public/previews/, downloaded from boardui.com):
  * nothing of Pro may enter this repository, so the pictures travel instead
  * of the code. `tier` narrows every section to Free or Pro.
  */
@@ -72,8 +72,8 @@ export function ComponentsCatalog({ tier = "all" }: { tier?: CatalogTier }) {
     <div className="flex w-full flex-col gap-10">
       <p className="max-w-2xl text-body-regular text-text-secondary">
         Every component, block, chart and template in BoardUI, {shipped.length} in all. The{" "}
-        {free} free ones are already in this project as source; each card opens its docs on
-        boardui.com, with the install command and the props.
+        {free} free ones are already in this project as source; each card opens its detail page
+        on this site, with the install command and the props.
       </p>
       {sections.map((section) => (
         <section key={section.title} id={section.title.toLowerCase()} className="flex flex-col gap-4">
@@ -110,29 +110,29 @@ const hasImage = (entry: Entry) =>
 
 const livePreview = (entry: Entry) => FREE_COMPONENT_PREVIEWS[entry.href as PreviewHref];
 
-/** Pro templates have embed routes on the site; a card frames the real thing, scaled down. */
+/** Pro templates have full pages on this site; a card frames the real thing, scaled down. */
 const TEMPLATE_EMBEDS: Record<string, string> = {
-  "ai-chat": "chat",
-  "ai-image-generation": "image",
-  "ai-profile": "profile",
-  "home-dashboard": "analytics",
-  "medical-profile": "healthcare",
-  "marketing-dashboard": "marketing",
-  "finance-dashboard": "finance",
-  "hr-management": "hr",
+  "ai-chat": "/templates/ai-chat",
+  "ai-image-generation": "/templates/ai-image-generation",
+  "ai-profile": "/templates/ai-profile",
+  "home-dashboard": "/templates/dashboard",
+  "medical-profile": "/templates/medical-profile",
+  "marketing-dashboard": "/templates/marketing",
+  "finance-dashboard": "/templates/finance",
+  "hr-management": "/templates/hr-management",
 };
 
 /**
- * The template's embed route in the site's own template frame: the frame is
+ * The template's page on this site in the template frame: the frame is
  * the 1280x855 desktop canvas (a 390x844 phone below `sm`) scaled to the
- * card, so the embedded page lays out exactly as the live one on the site.
+ * card, so the embedded page lays out exactly as the live one.
  */
-function TemplateEmbed({ id, title }: { id: string; title: string }) {
+function TemplateEmbed({ src, title }: { src: string; title: string }) {
   const localize = useTemplateCopy();
   return localize((
     <TemplateFrame>
       <iframe
-        src={`${SITE}/embed/templates/${id}`}
+        src={src}
         title={`${title} preview`}
         loading="lazy"
         tabIndex={-1}
@@ -145,8 +145,8 @@ function TemplateEmbed({ id, title }: { id: string; title: string }) {
 
 /**
  * The index's showcase card. Free components render live, exactly as on the
- * site; Pro templates frame the site's embed route scaled down; other Pro
- * components show the captured picture. No Pro code ever comes here.
+ * site; Pro templates frame the site's own template page scaled down; other
+ * Pro components show the captured picture. No Pro code ever comes here.
  */
 function PreviewCard({ entry }: { entry: Entry }) {
   const localize = useTemplateCopy();
@@ -155,8 +155,7 @@ function PreviewCard({ entry }: { entry: Entry }) {
   const embed = TEMPLATE_EMBEDS[slug];
   return localize((
     <ShowcaseCard
-      external
-      href={`${SITE}${entry.href}`}
+      href={entry.href}
       title={entry.name}
       description={entry.description}
       {...(Preview ? (FREE_PREVIEW_OPTIONS[entry.href] ?? {}) : {})}
@@ -165,15 +164,16 @@ function PreviewCard({ entry }: { entry: Entry }) {
       {Preview ? (
         <Preview />
       ) : embed ? (
-        <TemplateEmbed id={embed} title={entry.name} />
+        <TemplateEmbed src={embed} title={entry.name} />
       ) : (
         <>
-          {/* Plain img on purpose: small fixed-size WebPs served by boardui.com;
-              next/image would make every clone configure a remote pattern. */}
+          {/* Plain img on purpose: small fixed-size WebPs served locally from
+              public/previews/ (downloaded from boardui.com); next/image
+              would make every clone configure a remote pattern. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${SITE}/previews/${slug}.webp`} alt="" loading="lazy" className="size-full object-cover object-top dark:hidden" />
+          <img src={`/previews/${slug}.webp`} alt="" loading="lazy" className="size-full object-cover object-top dark:hidden" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${SITE}/previews/${slug}-dark.webp`} alt="" loading="lazy" className="hidden size-full object-cover object-top dark:block" />
+          <img src={`/previews/${slug}-dark.webp`} alt="" loading="lazy" className="hidden size-full object-cover object-top dark:block" />
         </>
       )}
     </ShowcaseCard>
@@ -194,10 +194,9 @@ function CatalogCard({ entry }: { entry: Entry }) {
     ));
   }
   return localize((
-    <a
-      href={`${SITE}${entry.href}`}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      href={entry.href}
+      prefetch={false}
       className={cx(
         "group relative flex flex-col gap-1 rounded-2lg border border-border-button-default bg-background-primary-default p-4",
         "transition-[background-color,box-shadow] duration-150 ease",
@@ -222,7 +221,7 @@ function CatalogCard({ entry }: { entry: Entry }) {
           "group-hover:translate-x-0 group-hover:opacity-100",
         )}
       />
-    </a>
+    </Link>
   ));
 }
 

@@ -2,7 +2,7 @@
 
 > **这不是官方原版。** BoardUI Pro 是付费内容（Pro 一次性买断，1 年 €149 / 终身 €199 / 5 人团队 €349），源码不在免费仓库、不在公开 registry，无法免费获取。本项目是**用免费的 BoardUI 组件（MIT，已存档）+ mock 数据复刻**出来的全部 Pro 内容，布局与官网演示尽量接近，供参考学习用。
 
-## 内容总览（2026-11-06 晚全部完成；2026-11-07 残留项收尾：暗色模式验收、图表逐项转录、头像行为对齐、AI Image 占位图卡、HR 数字修正、导航补齐、Multi-Agent Chat 功能补齐；2026-11-07 交互全量对齐：10 套模板逐项盘点可点击/其他交互/静态内容并全部修掉，见"交互对齐"一节）
+## 内容总览（2026-11-06 晚全部完成；2026-11-07 残留项收尾：暗色模式验收、图表逐项转录、头像行为对齐、AI Image 占位图卡、HR 数字修正、导航补齐、Multi-Agent Chat 功能补齐；2026-11-07 交互全量对齐：10 套模板逐项盘点可点击/其他交互/静态内容并全部修掉，见"交互对齐"一节；同日 78 个组件详情页全部建成并内链化，见"组件详情页"一节；MAC "+" 菜单按浏览器实测重做 + 父 agent 实测 26 项修复，见"交互对齐"一节补充）
 
 Pro 注册表确认正好 **40 项：30 个 Pro 组件 + 10 套 Pro 模板**，本仓库全部复刻，外加 Calendar 演示页：
 
@@ -89,6 +89,16 @@ npm run build    # 生产构建（静态导出到 out/）
 - **修掉的（摘要）**：死按钮全部补上真实反应（Multi-Agent Chat 9 处、Medical Add profile photo、AI Chat Add attachment 等）；缺失入口补齐（Project Board 工具栏 4 入口、Marketing 周期切换/搜索框/checkbox/行内删除编辑、Medical 患者搜索框/行内 View chart 与 Edit patient、Calendar 与 Finance 的 Change period 等）；标错/多做的改回原版（Marketing 10 行渠道改图标+title、Calendar 日期格改回不可点 div、Finance 热力图图例 5 块原版数值、AI Profile 默认 Weekly 且不切片热力图、AI Chat 侧栏恢复 agent 侧栏与 11 条线程）；拖拽改指针拖拽（Project Board，去掉 HTML5 draggable）；模板切换入口做到一眼能找到（每模板页顶栏"全部模板"文字按钮、侧栏首行入口、首页横条、总览页标题"全部模板 · 11 套"，三档宽度 48 项自查通过，见 `audit/template-switching.md`）。
 - **仍修不了 / 待实测确认**：原版弹窗/菜单/抽屉的真实内容与客户端渲染图表（Sankey/donut/气泡/Steps/睡眠环）的数值与 hover 行为在 SSR 里不存在，复刻按"去掉自加行为、留最小可信实现"处理，各清单末尾的"待实测确认"逐项列出，需真机浏览器打开原版线上页核对后才能定稿；字体 JetBrains Mono 本机无文件，仍为系统等宽栈；分页省略号存在清单冲突（Dashboard 原版含 "…"，Finance/Medical 原版无），本轮按共享 Pagination 去掉 "…"，Dashboard 因此偏离其原版一处，如需恢复应给 Dashboard 单独加变体。
 - **验证**：`npm run build` 通过（21/21 页静态生成）、`npx tsc --noEmit` 干净；模板切换入口三档宽度 48 项自查通过。逐元素点击实测需真机浏览器完成，本轮未做——清单里标"待实测确认"的项即为未实测项，不要把本轮理解为"每个按钮都已在真机上点过"。线上验证见下节。
+- **补充（2026-11-07）：MAC "+" 附件菜单按浏览器实测重做。** 此前猜的 3 项菜单（Upload image/document/file、190px）全错；原版实测为 359px 宽、标题 "Add to chat"、7 项分 Add/Plugins 两组（Files and folders、Goal、Plan mode、Documents、Spreadsheets、Presentations、Code blocks），每项图标+加粗标题+灰色说明同行，点开后 "+" 变黑 "×"。已按实测原样重做，7 项均有反应（文件选择器/目标输入/Plan 横条/各插件预填提示）。
+- **补充（2026-11-07）：父 agent 浏览器实测 MAC 26 项。** 以 `tpl-pages/multi-agent-chat.html` 为准逐项核查后修了 13 项（顶栏三按钮加 title 提示、群聊标题词边界两行、头像单行重叠、描述两行断词、删侧栏底部中文"全部模板"、选项图标改横向 …、顶栏"全部模板"改回原版风格网格图标按钮、胶囊加 chevron 可编辑提示、首载 Thinking 改条件挂载、占位与 aria-label 统一、Permission 显示全称、Description 加高到 4 行、Voice 全部启用并用 speechSynthesis 真试听、… 菜单宽度与遮挡修复、Emotion 16 张 SVG 表情脸+名称、形状 3×3 大号剪影+名称）。**10 项经 HTML 核实为"原版即如此、副本已一致"，未改动**：命名大小写混用、选中底色 #ebebeb、Copy 纯图标、气泡无边框/阴影、消息区无居中限宽列、Helpful 等悬停才现、署名在气泡下方、发送键亮蓝、输入框原版阴影、分区底色同色——若浏览器复测仍觉这些地方"有问题"，那是要偏离 1:1 原版的改动，需另行下令。3 项与 HTML 冲突但按任务明令改了（描述两行、Permission 全称、描述框 4 行），代码注释已注明原版实情。表情脸/形状剪影/语音试听/菜单滚动条等交互效果需浏览器复测确认，本轮只做了构建验证。
+
+## 组件详情页（2026-11-07，用户要求：/components 点进去不再跳到别人网站，78 个一个都不能少）
+
+- **78/78 全部建成**：`app/components/{slug}/page.tsx`，每个详情页按原版 https://www.boardui.com/components/{slug} 的样子做：标题+描述、Installation（CLI `npx boardui@latest add {slug}` + Manual 双 tab）、各小节正文+现场演示+代码示例、部分有 Props。模板类 slug（home-dashboard、finance-dashboard、marketing-dashboard、medical-profile、ai-chat、ai-image-generation、ai-profile、multi-agent-chat、project-board）的演示区链接到本站 /templates/* 对应模板页。
+- **逐字校对**：16 页（textarea、tooltip、tree-view、typography、web-search、close-button、color、combo-chart-card、composer-attachments、home-dashboard、multi-agent-chat、notification、notification-center、pagination、project-board、date-picker）曾因 browser.open 限流未抓到原版原文，2026-11-07 用 curl + 20 秒间隔逐页重抓原版 SSR HTML（16/16 全部 200）并逐字校对，页末有 `// 已按原版逐字校对` 标注；date-picker 尾部内嵌原版 shared.tsx 全文 279 行（原版 file viewer 转储，与仓库 `components/base/date-picker/shared.tsx` 不是同一版本，已注明）。其余 62 页建页时已按原版抓取。
+- **内链化**：/components 目录页的 78 个外链全部改成内链（/components/{slug}）；8 个模板 iframe 改指本站 /templates/*；MAC 页两处 window.open(boardui.com) 改成 mailto:hi@boardui.com；pricing 链接改 /pro-components；web-search 的 boardui.com mock 结果改 /components。**全站已无任何 href 指向 boardui.com**（2026-11-07 grep 核查：剩余 boardui.com 字样仅为源码注释里的来源标注、CLI 包名 `npx boardui@latest`、演示数据里的邮箱/文案、MAC 页原版联系邮箱 mailto，均不跳转）。13 处详情页顶部的来源标注已改成 ui.gemmae.dev/components/{slug}。144 张预览图下载到 `public/previews/`（72 slug × 明暗两档）。保留的 4 个第三方 mock 结果链接（ai-sdk.dev、platform.openai.com、perplexity.ai、developer.mozilla.org）是别家文档站、无法在站内复现，已注明原因。
+- **已知不一致（演示区未动）**：notification 的 States 演示仍含原版没有的 neutral 项与自编标题；pagination 演示初始页是 3 而代码示例是 `useState(1)`；textarea 演示 `maxRows={4}` 而代码示例是 `maxRows={8}`。原版个别文案照原文保留，包括疑似原文笔误 "Get BoardUI Pro now and install it end away."。
+- **验证**：`npm run build` 通过（99/99 静态页）、`npx tsc --noEmit` 干净；上线后 78 页逐个 curl 验 200（见本轮交付报告）。
 
 ## 免费组件来源
 
@@ -98,6 +108,8 @@ npm run build    # 生产构建（静态导出到 out/）
 ## 目录
 
 - `app/templates/` — 11 条模板路由 + 总览页
+- `app/components/{slug}/` — 78 个组件详情页（2026-11-07 新增，见"组件详情页"一节）
+- `public/previews/` — 144 张组件预览图（72 slug × 明暗两档）
 - `app/pro-components/` — 30 个 Pro 组件展示页（`/pro-components` 13 个非图表 + `/pro-components/charts` 17 张图表卡）
 - `components/application/charts/` — 17 张图表卡组件；`components/application/pro/` — 13 个非图表 Pro 组件
 - `components/application/template-shell/` — 模板外壳（Pro 导航 + 面包屑 + 标题 + 操作区）
