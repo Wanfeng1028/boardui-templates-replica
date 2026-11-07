@@ -1,0 +1,588 @@
+{
+  "name": "boardui-pro",
+  "homepage": "https://www.boardui.com/pricing",
+  "items": [
+    {
+      "name": "web-search",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Web Search",
+      "description": "Streaming research trail: the queries an agent ran and the sources it opened, with real site marks.",
+      "docsUrl": "https://www.boardui.com/components/web-search",
+      "example": "\"use client\";\n\nimport { RiGlobalLine } from \"@remixicon/react\";\nimport { WebSearch } from \"@/components/application/web-search/web-search\";\n\nconst steps = [\n  { label: \"Ran 3 searches\", icon: RiGlobalLine },\n  {\n    label: \"Searched X for\",\n    query: \"react component library pricing\",\n    brand: \"x\",\n    meta: \"7 posts\",\n  },\n  {\n    label: \"Component library pricing\",\n    icon: RiGlobalLine,\n    meta: \"5 results\",\n    sources: [\n      {\n        title: \"Tailwind UI vs building your own\",\n        domain: \"www.reddit.com\",\n        brand: \"reddit\",\n        href: \"https://www.reddit.com\",\n      },\n    ],\n  },\n];\n\nexport function Example() {\n  return <WebSearch steps={steps} />;\n}",
+      "snippets": [
+        {
+          "label": "sources",
+          "code": "{\n  label: \"Component library pricing\",\n  meta: \"5 results\",\n  sources: [\n    { title: \"Tailwind UI vs building your own\", domain: \"www.reddit.com\", brand: \"reddit\", href: \"…\" },\n    { title: \"We shipped our design system in 6 weeks\", domain: \"www.linkedin.com\", brand: \"linkedin\" },\n    { title: \"shadcn/ui — the registry model\", domain: \"github.com\", brand: \"github\" },\n  ],\n}"
+        },
+        {
+          "label": "brands",
+          "code": "// Any of the 24 marks the design system already draws.\n{ label: \"Searched Reddit for\", query: \"component library\", brand: \"reddit\" }\n{ label: \"Searched X for\", query: \"design tokens\", brand: \"x\" }\n{ label: \"Checked the repo\", brand: \"github\" }\n\n// Anything else takes a plain icon instead.\n{ label: \"Ran 3 searches\", icon: RiSearchLine }"
+        },
+        {
+          "label": "pacing",
+          "code": "const steps = [\n  { label: \"Ran 3 searches\", icon: RiSearchLine, heading: true, dwell: 2200 },\n  { label: \"Searching for what teams pay for\", meta: \"5 results\", dwell: 2400, sources },\n  { label: \"Searched X for\", query: \"design system pricing\", brand: \"x\", dwell: 1900 },\n];"
+        },
+        {
+          "label": "controlled",
+          "code": "// One unit per row, so a step that found sources is two: the step,\n// then its Sources row a beat later. Advance it as each query resolves\n// and the internal timer stays out of the way.\n<WebSearch steps={steps} revealed={rowsSeen} />"
+        }
+      ]
+    },
+    {
+      "name": "task-list",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Task List",
+      "description": "Streaming agent task log: tasks reveal step by step with soft height, blur, and a shimmering running title.",
+      "docsUrl": "https://www.boardui.com/components/task-list",
+      "example": "\"use client\";\n\nimport { RiSearchLine } from \"@remixicon/react\";\nimport { TaskList } from \"@/components/application/task-list/task-list\";\n\nconst tasks = [\n  {\n    title: \"Found project files\",\n    runningTitle: \"Searching project files\",\n    icon: RiSearchLine,\n    steps: [\n      { label: 'Searching \"app/page.tsx, components structure\"' },\n      { label: \"Read\", chips: [{ label: \"page.tsx\" }] },\n      { label: \"Scanning 52 files\" },\n      { label: \"Reading files\", chips: [{ label: \"layout.tsx\" }] },\n    ],\n  },\n];\n\nexport function Example() {\n  return <TaskList tasks={tasks} />;\n}",
+      "snippets": [
+        {
+          "label": "chips",
+          "code": "import { RiReactjsLine } from \"@remixicon/react\";\n\nconst steps = [\n  {\n    label: \"Read\",\n    chips: [\n      { label: \"page.tsx\", icon: <RiReactjsLine className=\"size-3.5 text-[#61dafb]\" /> },\n      { label: \"layout.tsx\", icon: <RiReactjsLine className=\"size-3.5 text-[#61dafb]\" /> },\n    ],\n  },\n];"
+        },
+        {
+          "label": "trigger",
+          "code": "const [phase, setPhase] = useState(\"idle\");\n\n// The log is keyed on the turn, so each send starts a fresh run.\n{phase !== \"idle\" && (\n  <TaskList\n    key={turnId}\n    tasks={tasks}\n    onComplete={() => setPhase(\"answered\")}\n  />\n)}"
+        },
+        {
+          "label": "controlled",
+          "code": "// Each task contributes one unit for its header plus one per step, so\n// `revealed` counts units rather than steps. Drive it from real events\n// and the internal timer stays out of the way.\n<TaskList tasks={tasks} revealed={unitsSeen} />"
+        },
+        {
+          "label": "timing",
+          "code": "// Each task folds away as soon as its own steps land.\n<TaskList\n  tasks={tasks}\n  startDelay={320}\n  stepInterval={850}\n  collapseOnComplete\n/>\n\n// Every task stays open until the whole run lands, then they close together.\n<TaskList tasks={tasks} collapseOnComplete=\"all\" />"
+        }
+      ]
+    },
+    {
+      "name": "composer",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Composer",
+      "description": "The AI chat composer, whole package: attachment and model menus, voice and send controls, the status bar, and the liquid-glass loading treatment for its controls.",
+      "docsUrl": "https://www.boardui.com/components/composer",
+      "example": "\"use client\";\n\nimport { AiChatComposerPreview } from \"@/components/application/ai-chat/ai-chat-composer\";\n\nexport function Example() {\n  return <AiChatComposerPreview />;\n}",
+      "snippets": [
+        {
+          "label": "working",
+          "code": "const [working, setWorking] = useState(false);\n\n{working && <AgentThinking variant=\"infinity\" />}\n<ComposerLoader active={working}>\n  {/* the controls morph to liquid glass while the agent works */}\n  <GlassComposer glass={working} />\n</ComposerLoader>\n<StatusBar />"
+        },
+        {
+          "label": "parts",
+          "code": "{/* The pill alone - attachment menu, input, model picker, mic, send */}\n<Composer />\n\n{/* Status row - branch, project folder menu, agent mode, context meter */}\n<StatusBar />\n\n{/* Both assembled, as in the AI chat template */}\n<AiChatComposerPreview />"
+        }
+      ]
+    },
+    {
+      "name": "composer-panel",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Composer Panel",
+      "description": "The two-row AI chat composer: prompt on top, add, permission, model, mic and send controls below, and a status tab with branch, project folder and context meter hanging off the card.",
+      "docsUrl": "https://www.boardui.com/components/composer-panel",
+      "example": "\"use client\";\n\nimport { ComposerPanel } from \"@/components/application/composer-panel/composer-panel\";\n\nexport function Example() {\n  return <ComposerPanel />;\n}",
+      "snippets": [
+        {
+          "label": "permissions",
+          "code": "{/* Auto is the default; start on another mode */}\n<ComposerPanel defaultPermission=\"plan\" />\n\n{/* Or own the mode yourself */}\nconst [permission, setPermission] = useState<ComposerPermission>(\"auto\");\n<ComposerPanel permission={permission} onPermissionChange={setPermission} />\n\n{/* The picker on its own; \"Learn more\" is a Link Button, a link with href or a button with onLearnMore */}\n<PermissionMenu value={permission} onChange={setPermission} learnMoreHref=\"/docs/permissions\" />"
+        },
+        {
+          "label": "models",
+          "code": "{/* Start on a model and effort stop; MODEL_PROVIDERS ships eighteen realistic lineups */}\n<ComposerPanel defaultModel=\"anthropic/fable-5.1\" defaultEffort={3} />\n\n{/* Or own both */}\nconst [model, setModel] = useState(\"openai/gpt-5.6-mini\");\nconst [effort, setEffort] = useState(1);   // 0 Low … 5 Max, see EFFORT_LEVELS\n<ComposerPanel model={model} onModelChange={setModel} effort={effort} onEffortChange={setEffort} />\n\n{/* Your own catalogue, and the picker on its own */}\n<ModelPicker\n  providers={[{ id: \"acme\", name: \"Acme\", logo: \"/logos/acme.svg\", models: [{ id: \"acme/acme-1\", name: \"Acme 1\" }] }]}\n  value={model}\n  onChange={setModel}\n/>"
+        },
+        {
+          "label": "status",
+          "code": "{/* Branch, project folder and context meter */}\n<ComposerPanel\n  status={<ComposerStatusTab branch=\"release/2.0\" project=\"boardui\" context={82} />}\n/>\n\n{/* No tab at all */}\n<ComposerPanel status={null} />"
+        },
+        {
+          "label": "wiring",
+          "code": "const [draft, setDraft] = useState(\"\");\nconst inputRef = useRef<HTMLTextAreaElement>(null);\n\n<ComposerPanel\n  value={draft}\n  onValueChange={setDraft}\n  onSubmit={(message) => send(message)}   // Enter sends, Shift+Enter breaks the line\n  disabled={waiting}\n  placeholder=\"Hi, what do you need today?\"\n  inputRef={inputRef}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "composer-attachments",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Composer Attachments",
+      "description": "The Composer Panel carrying attachments: image and document tiles above the prompt, landing one after another with the upload ring drawing around each.",
+      "docsUrl": "https://www.boardui.com/components/composer-attachments",
+      "example": "\"use client\";\n\nimport { ComposerWithAttachments } from \"@/components/application/composer-panel/composer-attachments\";\nimport type { ComposerAttachment } from \"@/components/application/composer-panel/composer-panel\";\n\n// progress: 0 queues a file; they land one after another\nconst files: ComposerAttachment[] = [\n  { id: \"cat\", name: \"cat.jpg\", kind: \"image\", src: \"/uploads/cat.jpg\", progress: 0 },\n  { id: \"payroll\", name: \"payroll.docx\", kind: \"document\", progress: 0 },\n  { id: \"timetable\", name: \"timetable.xlsx\", kind: \"spreadsheet\", progress: 0 },\n];\n\nexport function Example() {\n  return <ComposerWithAttachments attachments={files} />;\n}",
+      "snippets": [
+        {
+          "label": "queue",
+          "code": "const [files, setFiles] = useState<ComposerAttachment[]>([]);\n\nfunction attach(picked: File[]) {\n  setFiles((prev) => [\n    ...prev,\n    ...picked.map((file) => ({\n      id: crypto.randomUUID(),\n      name: file.name,\n      kind: kindOf(file),\n      progress: 0,           // queued: lands after the ones before it\n    })),\n  ]);\n}\n\n<ComposerWithAttachments\n  attachments={files}\n  onAttachmentsChange={setFiles}   // dismissals come back through here\n  uploadDuration={1100}            // one simulated upload, ms\n  uploadGap={240}                  // pause before the next ring starts, ms\n  onUploadComplete={(file) => console.log(\"landed\", file.name)}\n  onAllUploaded={() => console.log(\"all landed\")}\n/>"
+        },
+        {
+          "label": "kinds",
+          "code": "{/* Six tile kinds: images show the thumbnail, the rest carry the plugin document icons */}\n<ComposerAttachmentStrip\n  attachments={[\n    { id: \"1\", name: \"cat.jpg\", kind: \"image\", src: \"/uploads/cat.jpg\" },\n    { id: \"2\", name: \"payroll.docx\", kind: \"document\" },\n    { id: \"3\", name: \"timetable.xlsx\", kind: \"spreadsheet\" },\n    { id: \"4\", name: \"launch.key\", kind: \"presentation\" },\n    { id: \"5\", name: \"types.tsx\", kind: \"code\" },\n    { id: \"6\", name: \"birthday.mp4\", kind: \"video\" },\n  ]}\n  onRemove={(id) => remove(id)}\n/>\n\n{/* Or one tile at a time */}\n<ComposerAttachmentTile attachment={file} onRemove={() => remove(file.id)} />"
+        },
+        {
+          "label": "own uploader",
+          "code": "{/* Real uploads: feed the ring from your own progress events on the core panel */}\n<ComposerPanel\n  attachments={files.map((file) => ({\n    ...file,\n    progress: uploads[file.id],   // 0–100 draws the ring, undefined means landed\n  }))}\n  onRemoveAttachment={(id) => cancel(id)}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "agent-progress",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Agent Progress",
+      "description": "Collapsible multi-step AI task progress with animated active, pending, and completed states.",
+      "docsUrl": "https://www.boardui.com/components/agent-progress",
+      "example": "\"use client\";\n\nimport { AgentProgress } from \"@/components/application/agent-progress/agent-progress\";\n\nconst steps = [\n  \"Read project files\",\n  \"Update light mode tokens\",\n  \"Implement dark mode tokens\",\n  \"Register the theme toggle\",\n  \"Run lint and production build\",\n];\n\nexport function Example() {\n  return <AgentProgress steps={steps} />;\n}",
+      "snippets": [
+        {
+          "label": "steps",
+          "code": "<AgentProgress\n  steps={[\n    \"Analyze the request\",\n    \"Generate the component\",\n    \"Run accessibility checks\",\n    \"Prepare the response\",\n  ]}\n/>"
+        },
+        {
+          "label": "timing",
+          "code": "<AgentProgress\n  steps={steps}\n  stepDuration={2400}\n  completionDelay={1000}\n  onFinished={() => {\n    sendAgentResponse();\n  }}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "agent-limits-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Agent Limits Card",
+      "description": "Context window usage bar with an expandable token breakdown, collapsible groups, and plan usage limits with reset times.",
+      "docsUrl": "https://www.boardui.com/components/agent-limits-card",
+      "example": "import { AgentLimitsCard } from \"@/components/application/agent-limits/agent-limits-card\";\n\nexport function Example() {\n  // Click \"Context window\" to expand the breakdown - the card grows with it.\n  return <AgentLimitsCard planHref=\"/settings/plan\" />;\n}",
+      "snippets": [
+        {
+          "label": "data",
+          "code": "<AgentLimitsCard\n  context={{\n    max: 1_000_000,\n    segments: [\n      { label: \"Messages\", tokens: 520_000 },                 // palette colours from blue…\n      { label: \"System tools\", tokens: 96_000 },\n      { label: \"MCP tools\", tokens: 68_000 },\n      { label: \"Skills\", tokens: 54_000, color: \"var(--color-chart-8)\" }, // …or your own\n      { label: \"MCP tools (deferred)\", tokens: 69_900, deferred: true }, // listed, not counted\n    ],\n    groups: [                                                 // collapsible member lists\n      { label: \"MCP tools\", tokens: 137_900, items: [{ label: \"browser\", tokens: 54_200 }, /* … */] },\n    ],\n  }}\n  plan=\"Max (5x)\"\n  planHref=\"/settings/plan\"\n  limits={[\n    { label: \"5-hour limit\", used: 0.38, resets: \"Resets in 2 hr 46 min\" },\n    { label: \"Weekly · all models\", used: 0.03, resets: \"Resets Tue 3:00 PM\" },\n    { label: \"Weekly · Pro\", used: 0.05, resets: \"Resets Tue 3:00 PM\" },\n  ]}\n  defaultExpanded\n  onExpandedChange={(open) => track(\"context_breakdown\", { open })}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "questionnaire",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Questionnaire",
+      "description": "Plan-mode questions as a chat card: one question per step with checkbox or numbered rows, a free-text Other row, step pills and Previous / Next, sliding between questions as the card animates to each one's height.",
+      "docsUrl": "https://www.boardui.com/components/questionnaire",
+      "example": "\"use client\";\n\nimport { Questionnaire } from \"@/components/application/questionnaire/questionnaire\";\n\nconst questions = [\n  {\n    id: \"controls\",\n    question: \"Which harness controls should stay in the top bar?\",\n    select: \"multiple\",\n    options: [\n      { value: \"upsell\", label: \"Show up sell toggle\", description: \"Forces the upsell card up without spending the 4-turn allowance first.\" },\n      { value: \"wallpaper\", label: \"Wallpaper picker\", description: \"The chat wallpaper choices.\" },\n      { value: \"level-up\", label: \"Play level-up\", description: \"Replays the free and premium animations\" },\n    ],\n    other: true,\n  },\n  {\n    id: \"permission\",\n    question: \"How should the permission pill behave while an agent is running?\",\n    select: \"single\",\n    options: [\n      { value: \"lock\", label: \"Lock it\", description: \"Changes wait until the run finishes.\" },\n      { value: \"queue\", label: \"Queue the change\", description: \"Applies from the next turn.\" },\n      { value: \"apply\", label: \"Apply immediately\", description: \"Interrupts the current tool call.\" },\n    ],\n    other: true,\n  },\n] as const;\n\nexport function Example() {\n  return (\n    <Questionnaire\n      questions={questions}\n      onComplete={(answers) => sendToAgent(answers)}\n      onDismiss={() => closeQuestions()}\n    />\n  );\n}",
+      "snippets": [
+        {
+          "label": "multiple",
+          "code": "{/* The default: every row is a checkbox and Next moves on */}\n<Questionnaire\n  select=\"multiple\"\n  questions={[\n    {\n      id: \"controls\",\n      question: \"Which harness controls should stay in the top bar?\",\n      options: [\n        { value: \"upsell\", label: \"Show up sell toggle\", description: \"Forces the upsell card up.\" },\n        { value: \"wallpaper\", label: \"Wallpaper picker\", description: \"The chat wallpaper choices.\" },\n      ],\n      other: true,                 // adds the free-text row; typing ticks it\n      stepLabel: \"Top bar\",        // pill label, \"Step 1\" otherwise\n    },\n  ]}\n  onComplete={(answers) => {\n    // answers.controls → { values: [\"upsell\", \"wallpaper\"], other: \"Model picker\" }\n  }}\n/>"
+        },
+        {
+          "label": "single",
+          "code": "{/* Single select numbers the rows; a pick moves on after 180ms */}\n<Questionnaire\n  select=\"single\"\n  advanceDelay={180}\n  questions={[\n    {\n      id: \"permission\",\n      question: \"How should the permission pill behave while an agent is running?\",\n      options: [\n        { value: \"lock\", label: \"Lock it\", description: \"Changes wait until the run finishes.\" },\n        { value: \"queue\", label: \"Queue the change\", description: \"Applies from the next turn.\" },\n        { value: \"apply\", label: \"Apply immediately\", description: \"Interrupts the current tool call.\" },\n      ],\n      other: { placeholder: \"Describe the behaviour\" },\n    },\n  ]}\n  onComplete={(answers) => {\n    // answers.permission → { values: [\"queue\"] } or { values: [], other: \"...\" }\n  }}\n/>\n\n{/* Mix modes per question: the card-level select is only the default */}\n<Questionnaire questions={[{ id: \"a\", select: \"multiple\", /* … */ }, { id: \"b\", select: \"single\", /* … */ }]} />"
+        },
+        {
+          "label": "controlled",
+          "code": "const [step, setStep] = useState(0);\nconst [answers, setAnswers] = useState<QuestionnaireAnswers>({});\n\n<Questionnaire\n  questions={questions}\n  step={step}\n  onStepChange={setStep}\n  answers={answers}\n  onAnswersChange={setAnswers}\n  onComplete={(final) => submitPlan(final)}\n  onDismiss={() => setOpen(false)}\n  labels={{ previous: \"Back\", next: \"Continue\", complete: \"Send answers\" }}\n/>\n\n{/* Or start somewhere and let the card own it */}\n<Questionnaire questions={questions} defaultStep={1} defaultAnswers={{ controls: { values: [\"upsell\"] } }} />"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Calendar",
+      "description": "Month-view calendar with event chips, details popover, month switcher, and inbox feed.",
+      "docsUrl": "https://www.boardui.com/components/calendar",
+      "example": "import { useMemo, useState } from \"react\";\nimport { getLocalTimeZone, startOfMonth } from \"@internationalized/date\";\nimport { CalendarHeader } from \"@/components/application/calendar/calendar-header\";\nimport { CalendarMonthGrid } from \"@/components/application/calendar/calendar-month-grid\";\n\nexport function Example() {\n  const [month, setMonth] = useState(/* CalendarDate */);\n  const [highlightedDate, setHighlightedDate] = useState(null);\n\n  const monthLabel = useMemo(\n    () =>\n      new Intl.DateTimeFormat(undefined, { month: \"long\", year: \"numeric\" }).format(\n        month.toDate(getLocalTimeZone()),\n      ),\n    [month],\n  );\n\n  return (\n    <div className=\"flex w-full flex-col gap-2.5\">\n      <CalendarHeader\n        month={month}\n        monthLabel={monthLabel}\n        headingLevel={3}\n        onPrevMonth={() => setMonth((m) => m.subtract({ months: 1 }))}\n        onNextMonth={() => setMonth((m) => m.add({ months: 1 }))}\n        onSelectDate={(date) => {\n          setMonth(startOfMonth(date));\n          setHighlightedDate(date);\n        }}\n      />\n      <div className=\"w-full overflow-hidden rounded-b-3xl bg-background-secondary-default p-0 sm:overflow-visible sm:rounded-3xl sm:p-3\">\n        <CalendarMonthGrid\n          month={month}\n          highlightedDate={highlightedDate}\n          onHighlightEnd={() => setHighlightedDate(null)}\n        />\n      </div>\n    </div>\n  );\n}"
+    },
+    {
+      "name": "earnings-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Earnings Chart Card",
+      "description": "Bar chart card with period switcher, count-up headline, and hover outline.",
+      "docsUrl": "https://www.boardui.com/components/earnings-chart-card",
+      "example": "import { EarningsChartCard } from \"@/components/application/dashboard/earnings-chart-card\";\n\nexport function Example() {\n  return <EarningsChartCard />;\n}"
+    },
+    {
+      "name": "line-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Line Chart Card",
+      "description": "Line/area chart card with gradient fill, curved or sharp interpolation, and animated active dot.",
+      "docsUrl": "https://www.boardui.com/components/line-chart-card",
+      "example": "import { LineChartCard } from \"@/components/application/dashboard/line-chart-card\";\n\nexport function Example() {\n  return <LineChartCard />;\n}",
+      "snippets": [
+        {
+          "label": "sharp",
+          "code": "{/* Straight segments between points instead of the monotone curve */}\n<LineChartCard shape=\"sharp\" />"
+        }
+      ]
+    },
+    {
+      "name": "contributions-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Contributions Card",
+      "description": "GitHub-style contributions heat grid with swappable accent family.",
+      "docsUrl": "https://www.boardui.com/components/contributions-card",
+      "example": "import { ContributionsCard } from \"@/components/application/dashboard/contributions-card\";\n\nexport function Example() {\n  // accent: \"emerald\" | \"green\" | \"teal\" | \"cyan\" | \"blue\" |\n  //         \"indigo\" | \"violet\" | \"rose\" | \"amber\"\n  return <ContributionsCard accent=\"violet\" />;\n}"
+    },
+    {
+      "name": "radar-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Radar Chart Card",
+      "description": "Radar chart card with filled, dotted, lines-only, and centre-score variants, hover-linked headline, and multi-series legend.",
+      "docsUrl": "https://www.boardui.com/components/radar-chart-card",
+      "example": "import { RadarChartCard } from \"@/components/application/charts/radar-chart-card\";\n\nexport function Example() {\n  // Demo periods in the top-right dropdown; tiles adds a stat tile per axis below.\n  return <RadarChartCard tiles />;\n}",
+      "snippets": [
+        {
+          "label": "variants",
+          "code": "{/* Dots on every vertex */}\n<RadarChartCard variant=\"dots\" />\n\n{/* Outline only - two series and a legend */}\n<RadarChartCard\n  variant=\"lines\"\n  series={[\n    { key: \"desktop\", label: \"Desktop\" },\n    { key: \"mobile\", label: \"Mobile\" },\n  ]}\n/>\n\n{/* Centre score: each axis label carries its value, low ones turn rose */}\n<RadarChartCard variant=\"score\" alertBelow={30} />"
+        },
+        {
+          "label": "data",
+          "code": "const data = [\n  { label: \"January\",  desktop: 186, mobile: 80 },\n  { label: \"February\", desktop: 305, mobile: 200 },\n  { label: \"March\",    desktop: 237, mobile: 120 },\n  { label: \"April\",    desktop: 273, mobile: 190 },\n  { label: \"May\",      desktop: 209, mobile: 130 },\n  { label: \"June\",     desktop: 214, mobile: 140 },\n];\n\n<RadarChartCard\n  title=\"Visitors\"\n  data={data}\n  series={[\n    { key: \"desktop\", label: \"Desktop\" },                       // palette colour\n    { key: \"mobile\",  label: \"Mobile\", color: \"var(--color-chart-6)\" }, // or your own\n  ]}\n  max={320}          // optional radius ceiling (defaults to the largest value)\n  headline={1424}    // optional resting headline (defaults to the primary total)\n  delta={0.052}      // \"+5.2%\" chip\n  range=\"Jan – Jun 2024\"   // static pill…\n/>\n\n// …or a working period dropdown: each range overrides data / delta / headline.\n<RadarChartCard\n  title=\"Visitors\"\n  series={[{ key: \"desktop\", label: \"Desktop\" }]}\n  ranges={[\n    { id: \"h1\", label: \"H1 2024\", data: h1Data, delta: 0.052 },\n    { id: \"h2\", label: \"H2 2024\", data: h2Data, delta: 0.081 },\n    { id: \"year\", label: \"2024\", data: yearData, delta: 0.067 },\n  ]}\n  defaultRange=\"h1\"\n  onRangeChange={(id) => track(\"radar_range\", { id })}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "radial-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Radial Chart Card",
+      "description": "Radial bar chart card: concentric rings (plain, labelled, or over a grid), single-value gauges, and a stacked half gauge.",
+      "docsUrl": "https://www.boardui.com/components/radial-chart-card",
+      "example": "import { RadialChartCard } from \"@/components/application/charts/radial-chart-card\";\n\nexport function Example() {\n  // Demo periods in the top-right dropdown; tiles adds the stat tiles below.\n  return <RadialChartCard tiles />;\n}",
+      "snippets": [
+        {
+          "label": "variants",
+          "code": "{/* Ring names set along each arc */}\n<RadialChartCard variant=\"labels\" />\n\n{/* No tracks - rings over a circular grid */}\n<RadialChartCard variant=\"grid\" />\n\n{/* Single value against a goal, percent in the centre */}\n<RadialChartCard variant=\"gauge\" data={[{ label: \"Visitors\", value: 1260 }]} max={2000} delta={0.052} range=\"Last 7 days\" />\n\n{/* Thicker ring on a raised disc */}\n<RadialChartCard variant=\"solid\" data={[{ label: \"Visitors\", value: 1260 }]} max={2000} delta={0.052} range=\"Last 7 days\" />\n\n{/* Half gauge of stacked segments with a legend */}\n<RadialChartCard\n  variant=\"stacked\"\n  data={[\n    { label: \"Desktop\", value: 1260 },\n    { label: \"Mobile\", value: 570 },\n  ]}\n  delta={0.052}\n  range=\"Last 7 days\"\n/>"
+        },
+        {
+          "label": "tiles",
+          "code": "{/* Stat tiles under the rings: three per row, the last row full width (5 → 3 + 2) */}\n<RadialChartCard tiles />"
+        },
+        {
+          "label": "data",
+          "code": "// One item per ring / segment. First item = innermost ring.\nconst data = [\n  { label: \"Other\",   value: 90 },\n  { label: \"Edge\",    value: 173 },\n  { label: \"Firefox\", value: 187 },\n  { label: \"Safari\",  value: 200 },\n  { label: \"Chrome\",  value: 275, color: \"var(--color-chart-6)\" }, // override any colour\n];\n\n<RadialChartCard\n  title=\"Visitors\"\n  data={data}\n  max={300}          // full-circle value; defaults to 110% of the largest ring\n  headline={925}     // optional resting headline (defaults to the total)\n  delta={0.052}\n  range=\"Jan – Jun 2024\"   // static pill…\n/>\n\n// …or a working period dropdown: each range overrides data / max / delta / headline.\n<RadialChartCard\n  variant=\"gauge\"\n  ranges={[\n    { id: \"7d\", label: \"Last 7 days\", data: [{ label: \"Visitors\", value: 1260 }], max: 2000, delta: 0.052 },\n    { id: \"30d\", label: \"Last 30 days\", data: [{ label: \"Visitors\", value: 4820 }], max: 6000, delta: 0.081 },\n    { id: \"90d\", label: \"Last 90 days\", data: [{ label: \"Visitors\", value: 12400 }], max: 15000, delta: -0.024 },\n  ]}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "funnel-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Funnel Chart Card",
+      "description": "Horizontal flow funnel with curved or sharp tapers, centred conversion pills, mono option, and a value/name footer under every column.",
+      "docsUrl": "https://www.boardui.com/components/funnel-chart-card",
+      "example": "import { FunnelChartCard } from \"@/components/application/charts/funnel-chart-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <FunnelChartCard />;\n}",
+      "snippets": [
+        {
+          "label": "shapes",
+          "code": "{/* Straight-edged trapezoids, no edge layers */}\n<FunnelChartCard shape=\"sharp\" title=\"Hiring\" ranges={HIRING_RANGES} />\n\n{/* Single ink: mid grey on light, near-white on dark */}\n<FunnelChartCard mono title=\"Checkout\" ranges={CHECKOUT_RANGES} />\n\n{/* Both */}\n<FunnelChartCard mono shape=\"sharp\" title=\"Hiring\" ranges={HIRING_RANGES} />"
+        },
+        {
+          "label": "data",
+          "code": "// One entry per stage, top of the funnel first.\nconst stages = [\n  { label: \"Link opened\", value: 197 },\n  { label: \"Started\",     value: 110 },\n  { label: \"Completed\",   value: 77 },\n  { label: \"Converted\",   value: 38, color: \"var(--color-chart-3)\" }, // override any colour\n];\n\n<FunnelChartCard\n  title=\"Sign-up funnel\"\n  stages={stages}\n  headline={197}     // optional resting headline (defaults to the first stage)\n  delta={0.052}      // \"+5.2%\" chip\n  range=\"Last 30 days\"   // static pill…\n/>\n\n// …or a working period dropdown: each range overrides stages / delta / headline.\n<FunnelChartCard\n  title=\"Checkout funnel\"\n  ranges={[\n    { id: \"7d\", label: \"Last 7 days\", stages: week, delta: -0.018 },\n    { id: \"30d\", label: \"Last 30 days\", stages: month, delta: 0.042 },\n    { id: \"90d\", label: \"Last 90 days\", stages: quarter, delta: 0.097 },\n  ]}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "sankey-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Sankey Chart Card",
+      "description": "Sankey flow card with pill nodes, target-tinted links, source and share labels, and hover isolation.",
+      "docsUrl": "https://www.boardui.com/components/sankey-chart-card",
+      "example": "import { SankeyChartCard } from \"@/components/application/charts/sankey-chart-card\";\n\nexport function Example() {\n  // No data props: three built-in demo periods in the top-right dropdown.\n  return <SankeyChartCard axisLabels={[\"Tracked time\", \"Share of tracked time\"]} />;\n}",
+      "snippets": [
+        {
+          "label": "data",
+          "code": "// Sources carry the colour - every ribbon leaving a node takes that node's\n// colour (linkColor=\"source\", the default) - and sinks stay \"neutral\" so the\n// ribbons paint them. Nodes without a colour cycle the palette by index.\nconst nodes = [\n  { name: \"Focus\", color: \"var(--color-chart-7)\" },\n  { name: \"Meetings\", color: \"var(--color-chart-5)\" },\n  { name: \"Browsing\", color: \"neutral\" },\n  { name: \"Writing\", color: \"neutral\" },\n  { name: \"Email\", color: \"neutral\" },\n];\n\n// Links reference nodes by name (or index). Add a node + link and the\n// layout rebalances; the right-hand percentages are shares of all sinks.\nconst links = [\n  { source: \"Focus\", target: \"Browsing\", value: 16.2 },\n  { source: \"Focus\", target: \"Writing\", value: 11.6 },\n  { source: \"Focus\", target: \"Email\", value: 3.4 },\n  { source: \"Meetings\", target: \"Email\", value: 1.2 },\n];\n\n<SankeyChartCard\n  title=\"Tracked time\"\n  nodes={nodes}\n  links={links}\n  format={(n) => `${n}h`}   // headline + source labels\n  range=\"This week\"        // static pill…\n  axisLabels={[\"Tracked time\", \"Share of tracked time\"]}\n/>\n\n// …or a working period dropdown: each range overrides links (and nodes / delta / headline).\n<SankeyChartCard\n  nodes={nodes}\n  ranges={[\n    { id: \"this-week\", label: \"This week\", links: thisWeek },\n    { id: \"last-week\", label: \"Last week\", links: lastWeek },\n    { id: \"this-month\", label: \"This month\", links: thisMonth },\n  ]}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "stage-bars-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Stage Bars Card",
+      "description": "Funnel stages as rounded horizontal pills with name, value, and share per stage, animated widths, and a mono option.",
+      "docsUrl": "https://www.boardui.com/components/stage-bars-card",
+      "example": "import { StageBarsCard } from \"@/components/application/charts/stage-bars-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <StageBarsCard />;\n}",
+      "snippets": [
+        {
+          "label": "mono",
+          "code": "{/* Single ink: every pill in one grey (mid grey on light, near-white on dark) */}\n<StageBarsCard mono />"
+        },
+        {
+          "label": "data",
+          "code": "import { RiEyeLine, RiUserAddLine } from \"@remixicon/react\";\n\n// One entry per stage, top of the funnel first - the same shape FunnelChartCard\n// takes, plus an optional 14px icon drawn at the left end inside the bar.\nconst stages = [\n  { label: \"Visits\",     value: 4820, icon: <RiEyeLine className=\"size-3.5 text-neutral-950\" /> },\n  { label: \"Sign-up\",    value: 3260, icon: <RiUserAddLine className=\"size-3.5 text-neutral-950\" /> },\n  { label: \"Active\",     value: 2010 },\n  { label: \"Pro\",        value: 1160 },\n  { label: \"Team\",       value: 540 },\n  { label: \"Enterprise\", value: 180, color: \"var(--color-chart-1)\" }, // override any colour\n];\n\n<StageBarsCard\n  title=\"Pipeline\"\n  stages={stages}\n  headline={4820}    // optional resting headline (defaults to the first stage)\n  delta={0.024}      // \"+2.4%\" chip\n  range=\"Last 30 days\"   // static pill…\n  showIcons          // default; false hides the icons without removing them from the data\n/>\n\n// …or a working period dropdown: each range overrides stages / delta / headline.\n<StageBarsCard\n  title=\"Pipeline\"\n  ranges={[\n    { id: \"7d\", label: \"Last 7 days\", stages: week, delta: 0.024 },\n    { id: \"30d\", label: \"Last 30 days\", stages: month, delta: 0.061 },\n    { id: \"90d\", label: \"Last 90 days\", stages: quarter, delta: -0.012 },\n  ]}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "bar-list-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Bar List Card",
+      "description": "Analytics breakdown list: ranked rows with share bars behind the labels, tabbed lists, metric caption, and a show-more pill.",
+      "docsUrl": "https://www.boardui.com/components/bar-list-card",
+      "example": "import { BarListCard } from \"@/components/application/charts/bar-list-card\";\n\nexport function Example() {\n  // No props: Devices / Browsers / Operating systems / Screen sizes demo tabs.\n  return <BarListCard />;\n}",
+      "snippets": [
+        {
+          "label": "tabs",
+          "code": "import * as Flags from \"country-flag-icons/react/3x2\";\n\n<BarListCard\n  metricLabel=\"Visitors\"\n  tabs={[\n    {\n      id: \"countries\",\n      label: \"Countries\",\n      items: [\n        { label: \"United States of America\", value: 3120, icon: <Flags.US className=\"h-3 w-[18px] rounded-[2px]\" /> },\n        { label: \"India\", value: 2160, icon: <Flags.IN className=\"h-3 w-[18px] rounded-[2px]\" /> },\n        // …\n      ],\n    },\n    { id: \"sources\", label: \"Sources\", items: [{ label: \"Direct\", value: 5240 }, /* … */] },\n  ]}\n  defaultTab=\"countries\"\n  onTabChange={(id) => track(\"breakdown_tab\", { id })}\n/>"
+        },
+        {
+          "label": "single",
+          "code": "{/* One list, no tabs - a heading takes the tab strip's place */}\n<BarListCard title=\"Pages\" metricLabel=\"Views\" metric=\"value\" items={pages} limit={4} />\n\n{/* Single ink, mono grey bars */}\n<BarListCard mono />"
+        }
+      ]
+    },
+    {
+      "name": "area-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Area Chart Card",
+      "description": "Multi-series area chart with stacked, overlapping and 100% variants, gradient fills, period dropdown and stat tiles.",
+      "docsUrl": "https://www.boardui.com/components/area-chart-card",
+      "example": "import { AreaChartCard } from \"@/components/application/charts/area-chart-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <AreaChartCard tiles />;\n}",
+      "snippets": [
+        {
+          "label": "variants",
+          "code": "{/* Overlapping translucent areas - comparison rather than composition */}\n<AreaChartCard variant=\"overlap\" />\n\n{/* 100% stacked: every category fills the height, so it reads as share */}\n<AreaChartCard variant=\"percent\" />\n\n{/* Straight segments instead of the monotone spline */}\n<AreaChartCard shape=\"sharp\" />"
+        },
+        {
+          "label": "data",
+          "code": "// One row per category, one numeric field per series.\nconst data = [\n  { label: \"Jan\", organic: 2400, referral: 1200, paid: 800 },\n  { label: \"Feb\", organic: 2800, referral: 1400, paid: 700 },\n  // …\n];\n\n<AreaChartCard\n  title=\"Visitors\"\n  data={data}\n  series={[\n    { key: \"organic\", label: \"Organic\" },                          // palette colour\n    { key: \"referral\", label: \"Referral\" },\n    { key: \"paid\", label: \"Paid\", color: \"var(--color-chart-3)\" }, // or your own\n  ]}\n  headline={64820}   // optional resting headline (defaults to the grand total)\n  delta={0.082}      // \"+8.2%\" chip\n  range=\"This year\"  // static pill…\n  tiles              // stat tile per series under the chart\n/>\n\n// …or a working period dropdown: each range overrides data / delta / headline.\n<AreaChartCard\n  ranges={[\n    { id: \"year\", label: \"This year\", data: thisYear, delta: 0.082 },\n    { id: \"prev\", label: \"Last year\", data: lastYear, delta: -0.036 },\n  ]}\n/>"
+        }
+      ]
+    },
+    {
+      "name": "combo-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Combo Chart Card",
+      "description": "Bar-plus-line combo chart with independent left and right axes, hover dimming, and a pulsing active dot.",
+      "docsUrl": "https://www.boardui.com/components/combo-chart-card",
+      "example": "import { ComboChartCard } from \"@/components/application/charts/combo-chart-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <ComboChartCard tiles />;\n}",
+      "snippets": [
+        {
+          "label": "data",
+          "code": "// One row per category, carrying both series' fields.\nconst data = [\n  { label: \"Jan\", sessions: 4200, rate: 2.4 },\n  { label: \"Feb\", sessions: 4800, rate: 2.6 },\n  // …\n];\n\n<ComboChartCard\n  title=\"Sessions\"\n  data={data}\n  bar={{ key: \"sessions\", label: \"Sessions\", format: (n) => n.toLocaleString() }}\n  line={{\n    key: \"rate\",\n    label: \"Conversion\",\n    color: \"var(--color-chart-6)\",\n    format: (n) => `${n}%`,     // the right axis keeps its own formatting\n  }}\n  delta={0.094}\n  ranges={[                      // period dropdown\n    { id: \"year\", label: \"This year\", data: thisYear, delta: 0.094 },\n    { id: \"prev\", label: \"Last year\", data: lastYear, delta: -0.028 },\n  ]}\n  tiles                          // bar total + line average below the chart\n/>"
+        }
+      ]
+    },
+    {
+      "name": "scatter-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Scatter Chart Card",
+      "description": "Scatter and bubble chart with grouped series, an optional size measure, hover isolation and stat tiles.",
+      "docsUrl": "https://www.boardui.com/components/scatter-chart-card",
+      "example": "import { ScatterChartCard } from \"@/components/application/charts/scatter-chart-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <ScatterChartCard axisLabels={[\"Sessions\", \"Revenue\"]} tiles />;\n}",
+      "snippets": [
+        {
+          "label": "data",
+          "code": "// Points are grouped into series - each gets a colour, a legend row and a tile.\n// Any point carrying `z` turns the card into a bubble chart.\n<ScatterChartCard\n  title=\"Revenue per account\"\n  series={[\n    {\n      label: \"Starter\",\n      points: [\n        { x: 12, y: 180, z: 40, label: \"Acme\" },\n        { x: 18, y: 240, z: 60, label: \"Bolt\" },\n      ],\n    },\n    { label: \"Growth\", points: growthPoints, color: \"var(--color-chart-6)\" },\n  ]}\n  axisLabels={[\"Sessions\", \"Revenue\"]}   // captions under the plot\n  format={(n) => `$${n.toLocaleString()}`}  // y measure\n  formatX={(n) => `${n}k`}                  // x measure\n  bubble={false}    // force plain dots even when the data carries z\n  tiles             // average y per series below the chart\n/>"
+        }
+      ]
+    },
+    {
+      "name": "heatmap-chart-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Heatmap Chart Card",
+      "description": "Matrix heatmap card (rows × columns) with a theme-following ramp, hover-linked headline, and Less → More legend.",
+      "docsUrl": "https://www.boardui.com/components/heatmap-chart-card",
+      "example": "import { HeatmapChartCard } from \"@/components/application/charts/heatmap-chart-card\";\n\nexport function Example() {\n  // No props: three built-in demo periods in the top-right dropdown.\n  return <HeatmapChartCard />;\n}",
+      "snippets": [
+        {
+          "label": "data",
+          "code": "// One entry per row; values line up with `columns`.\nconst columns = [\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"];\nconst rows = [\n  { label: \"EMEA\",  values: [42, 48, 55, 61, 70, 74] },\n  { label: \"AMER\",  values: [38, 40, 47, 52, 58, 66] },\n  { label: \"APAC\",  values: [21, 25, 29, 36, 41, 49] },\n  { label: \"LATAM\", values: [12, 14, 15, 19, 24, 27] },\n];\n\n<HeatmapChartCard\n  title=\"Revenue by region\"\n  columns={columns}\n  color=\"var(--color-chart-7)\"   // ramp accent; defaults to chart-6 blue\n  max={80}                       // fully saturated cell; defaults to the largest value\n  ranges={[                      // period dropdown - each range overrides rows / columns / max / delta\n    { id: \"h1\", label: \"H1 2024\", rows: h1Rows, delta: 0.118 },\n    { id: \"h2\", label: \"H2 2024\", rows: h2Rows, delta: 0.064 },\n  ]}\n/>\n\n// Or a static pill: rows={rows} range=\"H1 2024\""
+        }
+      ]
+    },
+    {
+      "name": "steps-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Steps Card",
+      "description": "Weekly steps bar chart with week switcher, count-up headline, and hover outline.",
+      "docsUrl": "https://www.boardui.com/components/steps-card",
+      "example": "import { StepsCard } from \"@/components/application/medical/steps-card\";\n\nexport function Example() {\n  return <StepsCard />;\n}"
+    },
+    {
+      "name": "sleep-score-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Sleep Score Card",
+      "description": "Segmented score ring with hover-focused sub-scores and metric rows.",
+      "docsUrl": "https://www.boardui.com/components/sleep-score-card",
+      "example": "import { SleepScoreCard } from \"@/components/application/medical/sleep-score-card\";\n\nexport function Example() {\n  return <SleepScoreCard />;\n}"
+    },
+    {
+      "name": "activity-rings-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Activity Rings Card",
+      "description": "Apple Watch-style concentric goal rings with stat tiles.",
+      "docsUrl": "https://www.boardui.com/components/activity-rings-card",
+      "example": "import { ActivityRingsCard } from \"@/components/application/medical/activity-rings-card\";\n\nexport function Example() {\n  // Pass a selectedDay (from MostActiveDaysCard) to show that day's rings.\n  return <ActivityRingsCard />;\n}"
+    },
+    {
+      "name": "most-active-days-card",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Most Active Days Card",
+      "description": "Continuous vertical month calendar with per-day mini activity rings.",
+      "docsUrl": "https://www.boardui.com/components/most-active-days-card",
+      "example": "import { useState } from \"react\";\nimport { ActivityRingsCard } from \"@/components/application/medical/activity-rings-card\";\nimport type { SelectedDay } from \"@/components/application/medical/medical-data\";\nimport { MostActiveDaysCard } from \"@/components/application/medical/most-active-days-card\";\n\nexport function Example() {\n  // Clicking a day in the calendar drives the Activity card's rings.\n  const [selectedDay, setSelectedDay] = useState<SelectedDay | null>({ month: 6, day: 10 });\n\n  return (\n    <div className=\"grid grid-cols-1 gap-4 md:grid-cols-2\">\n      <MostActiveDaysCard selectedDay={selectedDay} onSelectDay={setSelectedDay} />\n      <ActivityRingsCard selectedDay={selectedDay} />\n    </div>\n  );\n}"
+    },
+    {
+      "name": "project-board",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Project Board",
+      "description": "Sortable kanban board with ticket detail side panels, editable properties, comments, purple token charts, and smooth cross-column drag and drop.",
+      "docsUrl": "https://www.boardui.com/components/project-board",
+      "example": "import { ProjectBoardShell } from \"@/components/application/project-board/project-board-shell\";\n\nexport default function ProjectBoardPage() {\n  // Complete kanban workspace with ticket creation, detail panels,\n  // comments, token charts, and responsive project navigation.\n  return <ProjectBoardShell />;\n}"
+    },
+    {
+      "name": "agent-avatar",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Agent Avatar",
+      "description": "Animated paper avatars with wandering eyes, expressive faces, nine silhouettes, and dimensional turn animations.",
+      "docsUrl": "https://www.boardui.com/components/multi-agent-chat",
+      "example": "import { AgentAvatar } from \"@/components/application/agent-avatar/agent-avatar\";\nimport { FOLD_CONFIG } from \"@/components/application/agent-avatar/model\";\n\n<AgentAvatar config={{ ...FOLD_CONFIG, foldShape: \"slender\", foldDepth: 15, lookAt: \"wander\" }} size={162} />"
+    },
+    {
+      "name": "agent-creator",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Agent Creator",
+      "description": "A controlled agent creator sidebar with animated avatars, emotion and shape pickers, custom colors, profile fields, and voice preferences.",
+      "docsUrl": "https://www.boardui.com/components/agent-creator",
+      "example": "\"use client\";\nimport { useState } from \"react\";\nimport { AgentCreator } from \"@/components/application/multi-agent-chat/agent-editor\";\nimport { INITIAL_AGENTS } from \"@/components/application/multi-agent-chat/data\";\n\nexport function AgentSidebar() {\n  const [agent, setAgent] = useState(INITIAL_AGENTS[0]);\n  return (\n    <div className=\"h-[760px] w-[356px] max-w-full\">\n      <AgentCreator agent={agent} onChange={setAgent} />\n    </div>\n  );\n}"
+    },
+    {
+      "name": "multi-agent-chat",
+      "kind": "component",
+      "boarduiType": "application",
+      "title": "Multi-agent Chat",
+      "description": "An agent workspace with individual and group conversations, a live avatar editor, and the BoardUI composer.",
+      "docsUrl": "https://www.boardui.com/components/multi-agent-chat",
+      "example": "import { MultiAgentChat } from \"@/components/application/multi-agent-chat/multi-agent-chat\";\n\nexport default function ChatPage() {\n  return <MultiAgentChat />;\n}",
+      "snippets": [
+        {
+          "label": "avatar",
+          "code": "import { AgentAvatar } from \"@/components/application/agent-avatar/agent-avatar\";\nimport { FOLD_CONFIG } from \"@/components/application/agent-avatar/model\";\n\n<AgentAvatar config={{ ...FOLD_CONFIG, foldShape: \"slender\", foldDepth: 15, lookAt: \"wander\" }} size={162} />"
+        },
+        {
+          "label": "responses",
+          "code": "\"use client\";\nimport { MultiAgentChat } from \"@/components/application/multi-agent-chat/multi-agent-chat\";\n\nexport function Chat() {\n  return <MultiAgentChat onRespond={async (agent, messages, signal) => {\n    const response = await fetch(\"/api/agents/respond\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ agent, messages }),\n      signal,\n    });\n    if (!response.ok) throw new Error(\"Agent response failed\");\n    const data = await response.json();\n    return data.text;\n  }} />;\n}"
+        }
+      ]
+    },
+    {
+      "name": "template-multi-agent-chat",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Multi-agent Chat Template",
+      "description": "Individual and group agent conversations with ten animated paper agents, a live agent creator, and a customizable composer.",
+      "docsUrl": "https://www.boardui.com/components/multi-agent-chat",
+      "example": "import { MultiAgentChat } from \"@/components/application/multi-agent-chat/multi-agent-chat\";\n\nexport default function ChatPage() {\n  return <MultiAgentChat />;\n}",
+      "snippets": [
+        {
+          "label": "avatar",
+          "code": "import { AgentAvatar } from \"@/components/application/agent-avatar/agent-avatar\";\nimport { FOLD_CONFIG } from \"@/components/application/agent-avatar/model\";\n\n<AgentAvatar config={{ ...FOLD_CONFIG, foldShape: \"slender\", foldDepth: 15, lookAt: \"wander\" }} size={162} />"
+        },
+        {
+          "label": "responses",
+          "code": "\"use client\";\nimport { MultiAgentChat } from \"@/components/application/multi-agent-chat/multi-agent-chat\";\n\nexport function Chat() {\n  return <MultiAgentChat onRespond={async (agent, messages, signal) => {\n    const response = await fetch(\"/api/agents/respond\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ agent, messages }),\n      signal,\n    });\n    if (!response.ok) throw new Error(\"Agent response failed\");\n    const data = await response.json();\n    return data.text;\n  }} />;\n}"
+        }
+      ]
+    },
+    {
+      "name": "template-home-dashboard",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Home Dashboard Template",
+      "description": "KPI stat cards, revenue trend, earnings chart, contributions heatmap, and a customers table in a responsive app shell.",
+      "docsUrl": "https://www.boardui.com/components/home-dashboard",
+      "example": "import { DashboardShell } from \"@/components/application/dashboard/dashboard-shell\";\n\nexport default function DashboardPage() {\n  // Full screen: floating sidebar, header, KPI cards,\n  // earnings bar chart, and the customers data table.\n  return <DashboardShell />;\n}"
+    },
+    {
+      "name": "template-project-board",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Project Board Template",
+      "description": "A responsive kanban workspace with sortable tickets, animated ticket creation and detail panels, editable properties, comments, and token usage charts.",
+      "docsUrl": "https://www.boardui.com/components/project-board",
+      "example": "import { ProjectBoardShell } from \"@/components/application/project-board/project-board-shell\";\n\nexport default function ProjectBoardPage() {\n  // Complete kanban workspace with ticket creation, detail panels,\n  // comments, token charts, and responsive project navigation.\n  return <ProjectBoardShell />;\n}"
+    },
+    {
+      "name": "template-marketing",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Marketing Dashboard Template",
+      "description": "Campaign KPIs, acquisition funnel, spend by channel, traffic sources, ad spend vs. ROAS, visitors by channel, and a campaigns data table.",
+      "docsUrl": "https://www.boardui.com/components/marketing-dashboard",
+      "example": "import { MarketingShell } from \"@/components/application/marketing/marketing-shell\";\n\nexport default function MarketingPage() {\n  // Full screen: campaign KPIs, acquisition funnel, spend by\n  // channel gauge, traffic sources, ad spend vs. ROAS combo,\n  // visitors area chart, and the campaigns data table.\n  return <MarketingShell />;\n}"
+    },
+    {
+      "name": "template-finance",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Finance Dashboard Template",
+      "description": "Balance KPIs, a cash-flow sankey, spending rings, portfolio bubbles, a daily spending heatmap, and a transactions data table.",
+      "docsUrl": "https://www.boardui.com/components/finance-dashboard",
+      "example": "import { FinanceShell } from \"@/components/application/finance/finance-shell\";\n\nexport default function FinancePage() {\n  // Full screen: balance KPIs, the cash-flow sankey, spending\n  // rings, portfolio risk vs. return bubbles, a daily spending\n  // heatmap, and the transactions data table.\n  return <FinanceShell />;\n}"
+    },
+    {
+      "name": "template-hr",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "HR Management Template",
+      "description": "Headcount KPIs, recent hires, hiring pipeline, engagement radar, hires vs. attrition, team breakdowns, and an employees data table.",
+      "docsUrl": "https://www.boardui.com/components/hr-management",
+      "example": "import { HrShell } from \"@/components/application/hr/hr-shell\";\n\nexport default function HrPage() {\n  // Full screen: headcount KPIs, recent hires, the hiring\n  // pipeline, the engagement score radar, hires vs. attrition,\n  // team breakdowns, and the employees data table.\n  return <HrShell />;\n}"
+    },
+    {
+      "name": "template-medical-profile",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "Medical Report Template",
+      "description": "Patient overview with steps, sleep score, activity rings, and most-active-days charts.",
+      "docsUrl": "https://www.boardui.com/components/medical-profile",
+      "example": "import { MedicalShell } from \"@/components/application/medical/medical-shell\";\n\nexport default function MedicalProfilePage() {\n  // Full screen: patient info, steps and sleep score charts,\n  // most active days calendar paired with activity rings,\n  // alerts feed, and the patients data table.\n  return <MedicalShell />;\n}"
+    },
+    {
+      "name": "template-ai-chat",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "AI Chat Template",
+      "description": "Full AI chat app: sidebar, resizable code panel, composer with model/effort controls.",
+      "docsUrl": "https://www.boardui.com/components/ai-chat",
+      "example": "import { AiChatShell } from \"@/components/application/ai-chat/ai-chat-shell\";\n\nexport default function AiChatPage() {\n  // Full screen: agent sidebar with repositories,\n  // chat thread with composer and status bar,\n  // and the fixed-width changes/code panel.\n  return <AiChatShell />;\n}"
+    },
+    {
+      "name": "template-ai-profile",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "AI Profile Template",
+      "description": "AI contributions profile: cover card with activity heatmap, 30-day agents bar chart, and tokens trend chart.",
+      "docsUrl": "https://www.boardui.com/components/ai-profile",
+      "example": "import { AiProfileShell } from \"@/components/application/ai-profile/ai-profile-shell\";\n\nexport default function AiProfilePage() {\n  // Full screen: profile card with cover photo, contribution\n  // stats and activity heatmap, the 30-day agents bar chart with\n  // month switcher, and the tokens trend chart.\n  return <AiProfileShell />;\n}"
+    },
+    {
+      "name": "template-ai-image-generation",
+      "kind": "template",
+      "boarduiType": "application",
+      "title": "AI Image Generation Template",
+      "description": "Prompt thread with a live generation frame and feedback actions, plus a gallery panel of past generations.",
+      "docsUrl": "https://www.boardui.com/components/ai-image-generation",
+      "example": "import { AiChatShell } from \"@/components/application/ai-chat/ai-chat-shell\";\n\nexport default function AiImageGenerationPage() {\n  // Same shell as AI Chat, opened on the image-generation\n  // thread: the right panel becomes the generations gallery.\n  return <AiChatShell defaultScenario=\"image-generation\" />;\n}"
+    }
+  ]
+}

@@ -158,7 +158,7 @@ export default function ComposerPage() {
         <Section title="The parts">
           <p className="text-body-regular text-text-secondary">
             The pill ships as one export — attachment and model menus, input, mic and send — with the status row
-            (model, sent count, and the live status line) built in. The attachment and model menus are fully
+            (branch, project, agent mode, and the 57% progress ring) built in. The attachment and model menus are fully
             working popovers. The taller two-row layout with the permission picker and the status tab lives on
             Composer Panel, and the file-tile strip lives on Composer Attachments.
           </p>

@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   RiArrowLeftLine,
   RiCheckLine,
+  RiCloudFill,
   RiFileCopyLine,
 } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
-import { Notification } from "@/components/base/notification/notification";
+import {
+  Notification,
+  NotificationViewport,
+  type NotificationPosition,
+  type NotificationProps,
+} from "@/components/base/notification/notification";
+import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { cx } from "@/utils/cx";
 
@@ -61,6 +68,27 @@ function Demo({ children }: { children: React.ReactNode }) {
 }
 
 const INSTALL_CMD = "npx boardui@latest add notification";
+
+const PREVIEW_CODE = `import { Notification } from "@/components/base/notification/notification";
+
+export function Example() {
+  return (
+    <Notification
+      avatar={{
+        src: "/avatars/katherine-moss.webp",
+        alt: "Katherine Moss",
+        presence: "online",
+      }}
+      title="Katherine Moss"
+      timestamp="2 mins ago"
+      description="I've finished adding my notes. Happy for us to review whenever you're ready!"
+      actions={[
+        { label: "Dismiss", variant: "secondary" },
+        { label: "View changelog", variant: "primary" },
+      ]}
+    />
+  );
+}`;
 
 const STATUS_CODE = `<Notification
   status="information"
@@ -158,6 +186,145 @@ function showNotification(variant) {
     />
   ))}
 </NotificationViewport>`;
+
+// Timed-dismissal variants, verbatim from the original page's demo
+// (boardui.com/components/notification, client chunk 05k1j5yp3g-ik.js).
+type TimedVariant = "success" | "information" | "error" | "avatar" | "actions";
+
+const TIMED_VARIANTS: Record<TimedVariant, Partial<NotificationProps> & { title: React.ReactNode }> = {
+  success: {
+    status: "success",
+    title: "You're in!",
+    description: "You're on the list. We'll be in touch.",
+  },
+  information: {
+    status: "information",
+    title: "New version available",
+    description: "Refresh to start using the latest dashboard updates.",
+  },
+  error: {
+    status: "error",
+    title: "Upload failed",
+    description: "The file could not be uploaded. Check its size and try again.",
+  },
+  avatar: {
+    avatar: { src: "/avatars/livia-saris.webp", alt: "Livia Saris", presence: "online" },
+    title: "Livia Saris",
+    timestamp: "just now",
+    description: "Mentioned you in the launch checklist.",
+  },
+  actions: {
+    status: "information",
+    icon: RiCloudFill,
+    title: "Backup ready",
+    description: "Your latest workspace backup is ready to download.",
+    actions: [
+      { label: "Not now", variant: "secondary" },
+      { label: "Download", variant: "primary" },
+    ],
+  },
+};
+
+const TIMED_BUTTONS: { label: string; variant: TimedVariant }[] = [
+  { label: "Replay notification", variant: "success" },
+  { label: "Information", variant: "information" },
+  { label: "Error", variant: "error" },
+  { label: "With avatar", variant: "avatar" },
+  { label: "With buttons", variant: "actions" },
+];
+
+const POSITIONS: { label: string; value: NotificationPosition }[] = [
+  { label: "Top left", value: "top-left" },
+  { label: "Top center", value: "top-center" },
+  { label: "Top right", value: "top-right" },
+  { label: "Bottom left", value: "bottom-left" },
+  { label: "Bottom center", value: "bottom-center" },
+  { label: "Bottom right", value: "bottom-right" },
+];
+
+function TimedDemo({ compact = false }: { compact?: boolean }) {
+  const [items, setItems] = useState<{ id: number; variant: TimedVariant }[]>([]);
+  const nextId = useRef(1);
+  return (
+    <>
+      <div
+        className={cx(
+          "flex w-full flex-wrap items-center justify-center gap-2",
+          !compact && "min-h-28",
+        )}
+      >
+        {TIMED_BUTTONS.map((button) => (
+          <Button
+            key={button.variant}
+            variant="secondary"
+            size="small"
+            onClick={() => {
+              const id = nextId.current++;
+              setItems((current) => [...current, { id, variant: button.variant }]);
+            }}
+          >
+            {button.label}
+          </Button>
+        ))}
+      </div>
+      <NotificationViewport>
+        {items.map((item) => (
+          <Notification
+            {...TIMED_VARIANTS[item.variant]}
+            key={item.id}
+            autoDismissDuration={2500}
+            introDelay={0}
+            onDismiss={() => setItems((current) => current.filter((entry) => entry.id !== item.id))}
+          />
+        ))}
+      </NotificationViewport>
+    </>
+  );
+}
+
+function PositionDemo() {
+  const [items, setItems] = useState<{ id: number; position: NotificationPosition }[]>([]);
+  const nextId = useRef(1);
+  return (
+    <>
+      <div className="flex min-h-32 w-full flex-wrap items-center justify-center gap-2">
+        {POSITIONS.map(({ label, value }) => (
+          <Button
+            key={value}
+            variant="secondary"
+            size="small"
+            onClick={() => {
+              const id = nextId.current++;
+              setItems((current) => [...current, { id, position: value }]);
+            }}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+      {POSITIONS.map(({ label, value }) => (
+        <NotificationViewport key={value} position={value} aria-label={`${label} notifications`}>
+          {items
+            .filter((item) => item.position === value)
+            .map((item) => (
+              <Notification
+                key={item.id}
+                status="information"
+                title={`${label} notification`}
+                description="This stack is anchored to the selected viewport position."
+                autoDismissDuration={2500}
+                introDelay={0}
+                onDismiss={() =>
+                  setItems((current) => current.filter((entry) => entry.id !== item.id))
+                }
+              />
+            ))}
+        </NotificationViewport>
+      ))}
+    </>
+  );
+}
+
 export default function NotificationPage() {
   return (
     <AppShell title="Notification" actions={null} columnClassName="max-w-[964px]">
@@ -177,6 +344,27 @@ export default function NotificationPage() {
             one component.
           </p>
         </div>
+
+        <Section title="Preview">
+          <Demo>
+            <div className="flex w-full flex-col items-center gap-5">
+              <div className="w-full max-w-[520px]">
+                <Notification
+                  avatar={{ src: "/avatars/maria-lubin.webp", alt: "Katherine Moss", presence: "online" }}
+                  title="Katherine Moss"
+                  timestamp="2 mins ago"
+                  description="I've finished adding my notes. Happy for us to review whenever you're ready!"
+                  actions={[
+                    { label: "Dismiss", variant: "secondary" },
+                    { label: "View changelog", variant: "primary" },
+                  ]}
+                />
+              </div>
+              <TimedDemo compact />
+            </div>
+          </Demo>
+          <CodeBlock code={PREVIEW_CODE} />
+        </Section>
 
         <Section title="Installation">
           <p className="text-body-regular text-text-secondary">
@@ -262,6 +450,9 @@ export default function NotificationPage() {
             Use the <code>position</code> prop on <code>NotificationViewport</code> to anchor the stack to any
             corner or horizontal center of the browser viewport.
           </p>
+          <Demo>
+            <PositionDemo />
+          </Demo>
           <CodeBlock code={POSITION_CODE} />
         </Section>
 
@@ -271,6 +462,9 @@ export default function NotificationPage() {
             dismiss the notification when it reaches zero. Use <code>NotificationViewport</code> to portal
             repeated notifications to a smoothly animated stack at the edge of the browser viewport.
           </p>
+          <Demo>
+            <TimedDemo />
+          </Demo>
           <CodeBlock code={COUNTDOWN_CODE} />
         </Section>
 
@@ -284,4 +478,4 @@ export default function NotificationPage() {
   );
 }
 
-// 已按原版逐字校对：boardui.com/components/notification（2026-11-07，curl 抓取原版 SSR HTML + flight 数据核对）
+// 已按原版逐字校对：boardui.com/components/notification（2026-11-07，curl 抓取原版 SSR HTML + flight 数据核对；2026-11-08 补 hero 预览/Position/Timed dismissal 演示，演示文案与变体取自原站客户端 chunk 05k1j5yp3g-ik.js）

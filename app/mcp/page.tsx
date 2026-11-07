@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowRightSLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import { PkgCommand } from "@/components/application/docs/code-tabs";
+import { PrevNext } from "@/components/application/docs/prev-next";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { cx } from "@/utils/cx";
@@ -64,10 +65,56 @@ function FileBlock({ file, code }: { file: string; code: string }) {
 }
 
 function Command({ cmd }: { cmd: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    const done = () => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(cmd).then(done).catch(done);
+    } else {
+      done();
+    }
+  };
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-      <code className="font-mono text-caption-1-medium text-text-primary">{cmd}</code>
-      <CopyButton text={cmd} />
+    <div className="flex flex-col gap-2">
+      <div className="flex w-full flex-col gap-0 rounded-2xl bg-background-secondary-default p-1">
+        <div className="flex items-center justify-between">
+          <span className="rounded-md px-2.5 py-1 text-body-medium text-text-primary">terminal</span>
+          <div className="pe-1">
+            <button
+              type="button"
+              aria-label="Copy"
+              onClick={copy}
+              className="flex size-7 cursor-pointer items-center justify-center rounded-2lg transition-colors outline-none hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
+                {copied ? (
+                  <RiCheckLine className="size-5 text-foreground-icon-secondary" aria-hidden />
+                ) : (
+                  <RiFileCopyLine className="size-5 text-foreground-icon-secondary" aria-hidden />
+                )}
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="p-1">
+          <div className="overflow-auto rounded-xl bg-docs-code-background px-5 py-3 shadow-[0px_2px_0px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.05),0px_6px_10px_0px_rgba(0,0,0,0.02)]">
+            <code className="block font-mono text-[14px] leading-5 whitespace-pre text-text-secondary">{cmd}</code>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button
+          type="button"
+          onClick={copy}
+          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border-button-default bg-background-primary-default px-3.5 py-1.5 text-body-medium text-text-primary transition-colors outline-none hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          {copied ? <RiCheckLine className="size-4" aria-hidden /> : <RiFileCopyLine className="size-4" aria-hidden />}
+          {copied ? "Copied" : "Copy command"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -366,7 +413,7 @@ export default function McpPage() {
             The BoardUI server above remains the richer path, with usage examples, project setup, and Pro
             licensing.
           </p>
-          <CodeBlock code={SHADCN_MCP_CODE} />
+          <FileBlock file="components.json" code={SHADCN_MCP_CODE} />
         </Section>
 
         <Section title="Under the hood">
@@ -375,18 +422,15 @@ export default function McpPage() {
             starts the same engine the CLI uses, speaking MCP over stdio. It fetches the public registry from
             boardui.com, resolves component dependencies transitively, and writes files using the default
             layout or your <code className="font-mono text-caption-1-medium text-text-primary">boardui.json</code>{" "}
-            mappings. You can also run it manually to check the setup:{" "}
-            <code className="font-mono text-caption-1-medium text-text-primary">npx boardui@latest mcp</code>
+            mappings. You can also run it manually to check the setup:
           </p>
+          <PkgCommand npm="npx boardui@latest mcp" pnpm="pnpm dlx boardui@latest mcp" yarn="yarn dlx boardui@latest mcp" />
         </Section>
 
-        <Link
-          href="/docs/cli"
-          className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
-        >
-          <RiArrowLeftLine className="size-4" aria-hidden />
-          Back to CLI docs
-        </Link>
+        <PrevNext
+          prev={{ href: "/installation", label: "Installation", sub: "Framework setup guides" }}
+          next={{ href: "/skill", label: "Agent Skills", sub: "Knowledge for your agent" }}
+        />
       </div>
     </AppShell>
   );

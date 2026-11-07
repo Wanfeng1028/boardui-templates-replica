@@ -1,36 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiGithubFill } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import { AgentChat } from "@/components/application/agent-chat/agent-chat";
+import { CodeTabs, PkgCommand } from "@/components/application/docs/code-tabs";
+import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { Chip } from "@/components/base/badges/chip";
 import { ButtonLink } from "@/components/base/buttons/button";
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const done = () => {
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        };
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(done);
-        } else {
-          done();
-        }
-      }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-semibold text-text-secondary transition-colors hover:text-text-primary"
-    >
-      {copied ? <RiCheckLine className="size-3.5" aria-hidden /> : <RiFileCopyLine className="size-3.5" aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -41,19 +19,40 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function CodeBlock({ code }: { code: string }) {
+const PREVIEW_CODE = `import { AgentChat } from "@/components/application/agent-chat/agent-chat";
+
+export default function Page() {
+  // Full screen: app sidebar, chat with composer and
+  // thinking indicator, history rail kept in the browser.
+  // Answers through /api/chat on your own provider key.
+  return <AgentChat />;
+}`;
+
+const RUN_LOCAL_TABS = [
+  {
+    value: "npm",
+    code: `npm install
+cp .env.example .env.local   # put your key in AI_API_KEY
+npm run dev`,
+  },
+  {
+    value: "pnpm",
+    code: `pnpm install
+cp .env.example .env.local   # put your key in AI_API_KEY
+pnpm dev`,
+  },
+];
+
+const VERCEL_DEPLOY_URL =
+  "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FBoardUI%2Fboardui&env=AI_API_KEY&envDescription=Your+model+provider+key%3A+OpenAI%2C+Anthropic%2C+Google%2C+OpenRouter%2C+or+Vercel+AI+Gateway.+The+provider+is+read+from+the+key+itself.&envLink=https%3A%2F%2Fwww.boardui.com%2Fcomponents%2Fchat-starter&project-name=boardui-chat-starter&repository-name=boardui-chat-starter";
+
+function VercelMark({ className }: { className?: string }) {
   return (
-    <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
-      {code}
-    </pre>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M23 21.6479H1L12 2.35205L23 21.6479Z" />
+    </svg>
   );
 }
-
-const INSTALL_CMD = "npx boardui@latest add agent-chat";
-
-const RUN_LOCAL_CODE = `npm install
-cp .env.example .env.local   # put your key in AI_API_KEY
-npm run dev`;
 
 const KEY_ROWS: { prefix: string; provider: string }[] = [
   { prefix: "sk-ant-...", provider: "Anthropic" },
@@ -85,39 +84,49 @@ export default function ChatStarterPage() {
           </p>
         </div>
 
-        <div className="rounded-3xl border border-border-button-default bg-background-primary-default p-6">
-          <div className="flex flex-col items-start gap-3">
-            <h2 className="text-title-2-medium text-text-primary">Live on this site</h2>
-            <p className="text-body-regular text-text-secondary">
-              This site is the chat starter itself — the home page is the working chat, with the sidebar, composer,
-              thinking indicator, and history rail described above.
-            </p>
-            <ButtonLink href="/" trailingIcon={RiArrowRightLine}>
-              Open the chat
-            </ButtonLink>
-          </div>
-        </div>
+        <section id="preview" className="flex scroll-mt-14 flex-col gap-2 pt-4">
+          <TemplatePreview title="Chat starter" slug="chat-starter" previewCode={PREVIEW_CODE}>
+            <AgentChat contained />
+          </TemplatePreview>
+        </section>
 
         <Section title="Deploy to Vercel">
-          <p className="text-body-regular text-text-secondary">
-            Click Deploy, paste one API key when Vercel asks for it, and the first deploy already answers. Vercel
-            copies the starter into your own GitHub account and builds it there. The key goes straight into your
-            project’s environment and never touches BoardUI.
-          </p>
-          <p className="text-body-regular text-text-secondary">
-            Requests bill to whoever owns the key, and anyone with the URL can send them. Create the key with a
-            spending limit, and put a rate limit in front of /api/chat before pointing the public at it.
-          </p>
+          <div className="flex flex-col gap-5 rounded-2xl border border-separator-border bg-background-secondary-default p-6">
+            <p className="text-headline-medium text-text-secondary">
+              Click Deploy, paste one API key when Vercel asks for it, and the first deploy already answers. Vercel
+              copies the starter into your own GitHub account and builds it there. The key goes straight into your
+              project’s environment and never touches BoardUI.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <ButtonLink href={VERCEL_DEPLOY_URL} target="_blank" rel="noreferrer" leadingIcon={VercelMark}>
+                Deploy to Vercel
+              </ButtonLink>
+              <ButtonLink
+                href="https://github.com/BoardUI/boardui"
+                target="_blank"
+                rel="noreferrer"
+                variant="secondary"
+                leadingIcon={RiGithubFill}
+              >
+                View on GitHub
+              </ButtonLink>
+            </div>
+            <p className="text-body-regular text-text-tertiary">
+              Requests bill to whoever owns the key, and anyone with the URL can send them. Create the key with a
+              spending limit, and put a rate limit in front of /api/chat before pointing the public at it.
+            </p>
+          </div>
         </Section>
 
         <Section title="Installation">
           <p className="text-body-regular text-text-secondary">
             Already have a Next.js project? The same screen installs with the CLI, runtime included.
           </p>
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-            <code className="font-mono text-caption-1-medium text-text-primary">{INSTALL_CMD}</code>
-            <CopyButton text={INSTALL_CMD} />
-          </div>
+          <PkgCommand
+            npm="npx boardui@latest add agent-chat"
+            pnpm="pnpm dlx boardui@latest add agent-chat"
+            yarn="yarn dlx boardui@latest add agent-chat"
+          />
           <p className="text-body-regular text-text-secondary">
             Dark mode ready — this component follows BoardUI semantic tokens automatically.
           </p>
@@ -156,7 +165,7 @@ export default function ChatStarterPage() {
           <p className="text-body-regular text-text-secondary">
             Clone your deployed repo, or the starter itself, and give it a key:
           </p>
-          <CodeBlock code={RUN_LOCAL_CODE} />
+          <CodeTabs tabs={RUN_LOCAL_TABS} />
         </Section>
 
         <Section title="What’s included">

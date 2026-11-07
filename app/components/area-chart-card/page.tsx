@@ -1,34 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine, RiLayoutGridLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiLayoutGridLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
 import { AreaChartCard } from "@/components/application/charts/area-chart-card";
-import { Button } from "@/components/base/buttons/button";
+import { PrevNext } from "@/components/application/docs/prev-next";
+import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { LinkButton } from "@/components/base/buttons/link-button";
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <Button
-      variant="secondary"
-      size="medium"
-      leadingIcon={copied ? RiCheckLine : RiFileCopyLine}
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 2000);
-        } catch {
-          // Clipboard access can be refused; leave the icon unchanged.
-        }
-      }}
-    >
-      {copied ? "Copied" : "Copy"}
-    </Button>
-  );
-}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -55,6 +33,13 @@ function Code({ code }: { code: string }) {
   );
 }
 
+const PREVIEW_CODE = `import { AreaChartCard } from "@/components/application/charts/area-chart-card";
+
+export function Example() {
+  // No props: three built-in demo periods in the top-right dropdown.
+  return <AreaChartCard tiles />;
+}`;
+
 const VARIANTS_CODE = `{/* Overlapping translucent areas - comparison rather than composition */}
 <AreaChartCard variant="overlap" />
 
@@ -75,14 +60,14 @@ const data = [
   title="Visitors"
   data={data}
   series={[
-    { key: "organic", label: "Organic" }, // palette colour
+    { key: "organic", label: "Organic" },                          // palette colour
     { key: "referral", label: "Referral" },
     { key: "paid", label: "Paid", color: "var(--color-chart-3)" }, // or your own
   ]}
-  headline={64820} // optional resting headline (defaults to the grand total)
-  delta={0.082} // "+8.2%" chip
-  range="This year" // static pill…
-  tiles // stat tile per series under the chart
+  headline={64820}   // optional resting headline (defaults to the grand total)
+  delta={0.082}      // "+8.2%" chip
+  range="This year"  // static pill…
+  tiles              // stat tile per series under the chart
 />
 
 // …or a working period dropdown: each range overrides data / delta / headline.
@@ -95,7 +80,6 @@ const data = [
 
 /** Area Chart Card — boardui.com/components/area-chart-card (Pro). */
 export default function AreaChartCardPage() {
-  const command = "npx boardui@latest add area-chart-card";
   return (
     <AppShell title="Area Chart Card" icon={RiLayoutGridLine} actions={null} columnClassName="max-w-[964px]">
       <p className="text-body-regular text-text-secondary">
@@ -104,15 +88,17 @@ export default function AreaChartCardPage() {
         overlapping and 100% views; another swaps the monotone spline for straight segments.
       </p>
 
+      <Section title="Preview">
+        <Demo>
+          <div className="w-full">
+            <AreaChartCard tiles />
+          </div>
+        </Demo>
+        <Code code={PREVIEW_CODE} />
+      </Section>
+
       <Section title="Installation">
-        <p className="text-body-regular text-text-secondary">
-          Area Chart Card is part of BoardUI Pro. Dark mode ready — this component follows BoardUI semantic tokens
-          automatically.
-        </p>
-        <div className="flex items-center justify-between gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-          <code className="text-body-2-regular overflow-x-auto text-text-primary">{command}</code>
-          <CopyButton text={command} />
-        </div>
+        <ProLicenseCard name="Area Chart Card" kind="component" installSlug="area-chart-card" />
       </Section>
 
       <Section title="Variants">
@@ -124,8 +110,9 @@ export default function AreaChartCardPage() {
           <code className="text-body-2-regular text-text-primary">shape</code> picks the curve.
         </p>
         <Demo>
-          <div className="w-full">
-            <AreaChartCard />
+          <div className="grid w-full gap-4 lg:grid-cols-2">
+            <AreaChartCard variant="overlap" />
+            <AreaChartCard variant="percent" />
           </div>
         </Demo>
         <Code code={VARIANTS_CODE} />
@@ -148,6 +135,11 @@ export default function AreaChartCardPage() {
           Back to components
         </LinkButton>
       </div>
+
+      <PrevNext
+        prev={{ href: "/components/activity-rings-card", label: "Activity Rings", sub: "Concentric goal rings" }}
+        next={{ href: "/components/bar-list-card", label: "Bar List", sub: "Ranked horizontal bars" }}
+      />
     </AppShell>
   );
 }

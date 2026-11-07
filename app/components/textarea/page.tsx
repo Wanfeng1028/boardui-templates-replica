@@ -74,7 +74,7 @@ import { Textarea } from "@/components/base/textarea/textarea";
 
 export default function TextareaPage() {
   const [note, setNote] = useState("Ship the release notes before Friday.");
-  const [feedback, setFeedback] = useState("");
+  const [bio, setBio] = useState("Design engineer. I build dashboards for a living.");
   return (
     <AppShell title="Textarea" icon={RiTextSnippet} actions={null} columnClassName="max-w-[964px]">
       <div className="flex flex-col gap-10 pb-10">
@@ -82,6 +82,37 @@ export default function TextareaPage() {
           A multiline field built on React Aria - the same shell, label, hint and states as Input, plus auto-grow
           and character counting for notes, messages and settings pages.
         </p>
+
+        <Section title="Preview">
+          <Demo>
+            <div className="w-full max-w-[400px]">
+              <Textarea
+                label="Release notes"
+                isRequired
+                tooltip
+                placeholder="What changed in this version?"
+                hint="Markdown is supported."
+                rows={4}
+              />
+            </div>
+          </Demo>
+          <CodeBlock
+            code={`import { Textarea } from "@/components/base/textarea/textarea";
+
+export function Example() {
+  return (
+    <Textarea
+      label="Release notes"
+      isRequired
+      tooltip
+      placeholder="What changed in this version?"
+      hint="Markdown is supported."
+      rows={4}
+    />
+  );
+}`}
+          />
+        </Section>
 
         <Section title="Installation">
           <p className="text-body-regular text-text-secondary">
@@ -107,13 +138,17 @@ export default function TextareaPage() {
             components stack in a form without a seam. <code>rows</code> sets the resting height.
           </p>
           <Demo>
-            <div className="w-full max-w-[400px]">
+            <div className="flex w-full max-w-[400px] flex-col gap-4">
               <Textarea
-                aria-label="Feedback"
-                placeholder="Leave feedback"
-                value={feedback}
-                onChange={setFeedback}
-                rows={3}
+                label="Description"
+                hint="Medium is the default, 14px type in a 8px shell."
+                placeholder="Tell us about this workspace"
+              />
+              <Textarea
+                size="small"
+                label="Description"
+                hint="Small tightens the horizontal inset to match a small input."
+                placeholder="Tell us about this workspace"
               />
             </div>
           </Demo>
@@ -165,13 +200,12 @@ export default function TextareaPage() {
           <Demo>
             <div className="w-full max-w-[400px]">
               <Textarea
-                aria-label="Note with counter"
-                placeholder="Leave a note"
-                value={note}
-                onChange={setNote}
-                autoResize
-                rows={2}
-                maxRows={4}
+                label="Bio"
+                value={bio}
+                onChange={setBio}
+                placeholder=""
+                hint="Appears on your public profile."
+                rows={3}
                 maxLength={160}
                 showCount
               />
@@ -199,6 +233,22 @@ const [bio, setBio] = useState("");
             and repaint the field, hint and label. <code>resize=&quot;none&quot;</code> removes the native grab
             handle when a fixed height matters more than the reader&apos;s comfort.
           </p>
+          <Demo>
+            <div className="flex w-full max-w-[400px] flex-col gap-4">
+              <Textarea label="Cover letter" placeholder="Why are you a good fit?" />
+              <Textarea
+                label="Cover letter"
+                defaultValue="I have shipped design systems for six years."
+              />
+              <Textarea label="Cover letter" placeholder="Why are you a good fit?" isDisabled />
+              <Textarea
+                label="Cover letter"
+                defaultValue="Too short."
+                isInvalid
+                hint="Please write at least 200 characters."
+              />
+            </div>
+          </Demo>
           <CodeBlock
             code={`// Hover / focus cross-fade the ring automatically. isDisabled and
 // isInvalid override them and repaint the field, hint and label.

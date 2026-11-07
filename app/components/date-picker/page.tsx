@@ -6,7 +6,17 @@ import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
 import { Chip } from "@/components/base/badges/chip";
+import { PkgCommand } from "@/components/application/docs/code-tabs";
+import { FileCodeBlock, InstallStep, InstallTabs } from "@/components/application/docs/install-tabs";
+import { PrevNext } from "@/components/application/docs/prev-next";
 import { FREE_COMPONENT_PREVIEWS } from "@/components/application/docs/component-previews-free";
+import { DateRangePicker } from "@/components/base/date-picker/date-range-picker";
+
+const PREVIEW_CODE = `import { DateRangePicker} from "@/components/base/date-picker/date-range-picker";
+
+export function Example() {
+  return <DateRangePicker aria-label="Trip dates" />;
+}`;
 
 /** Detail page for date-picker - content mirrors boardui.com/components/date-picker. */
 
@@ -328,26 +338,77 @@ export default function DatePickerPage() {
         </div>
         <p className="text-body-regular text-text-secondary">A dual-month date range picker built on React Aria's RangeCalendar. A quick-select sidebar (Today, Last week, This month, etc.), two adjacent months, and a footer with an editable date range and Cancel/Apply - the calendar only commits a new range once Apply is pressed. A single-date variant (below) shares the same month panel, day-cell rendering, and editable chip.</p>
         <section className="flex flex-col gap-3">
+          <h2 className="text-title-2-medium text-text-primary">Preview</h2>
+          <div className="overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4">
+            <DateRangePicker aria-label="Trip dates" />
+          </div>
+          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
+            {PREVIEW_CODE}
+          </pre>
+        </section>
+        <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Installation</h2>
           <p className="text-body-regular text-text-secondary">You can add these date pickers using our CLI or manually. Both DateRangePicker and DatePicker import their shared chrome (chevrons, day cell, month panel, editable date chip, trigger/popover surfaces) from shared.tsx, so add that file first.</p>
-          <p className="text-body-regular text-text-secondary">Dark mode ready - this component follows BoardUI semantic tokens automatically. Set up theme switching.</p>
-          <p className="text-body-regular text-text-secondary">The CLI copies the component source (with its internal dependencies) into your project and installs any required npm packages.</p>
-          <p className="text-body-regular text-text-secondary">Using a shared UI package or custom import aliases? Configure your installation paths before running the CLI. Copy-paste examples use the default imports.</p>
-          <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-3">
-            <code className="flex-1 whitespace-nowrap text-body-2-regular text-text-primary">npx boardui@latest add date-range-picker</code>
-            <CopyButton text={"npx boardui@latest add date-range-picker"} />
-          </div>
+          <p className="text-body-regular text-text-secondary">
+            Dark mode ready - this component follows BoardUI semantic tokens automatically.{" "}
+            <a className="text-accent-500 hover:underline" href="/installation#dark-mode">
+              Set up theme switching
+            </a>
+            .
+          </p>
+          <InstallTabs
+            cli={
+              <>
+                <p className="text-headline-medium text-text-secondary">The CLI copies the component source (with its internal dependencies) into your project and installs any required npm packages.</p>
+                <PkgCommand
+                  npm="npx boardui@latest add date-range-picker"
+                  pnpm="pnpm dlx boardui@latest add date-range-picker"
+                  yarn="yarn dlx boardui@latest add date-range-picker"
+                />
+                <p className="text-body-regular text-text-secondary">
+                  Using a shared UI package or custom import aliases?{" "}
+                  <a className="text-accent-500 hover:underline" href="/installation#monorepos">
+                    Configure your installation paths
+                  </a>{" "}
+                  before running the CLI. Copy-paste examples use the default imports.
+                </p>
+              </>
+            }
+            manual={
+              <>
+                <InstallStep index={1} title="Install the following dependencies">
+                  <PkgCommand
+                    npm="npm install react-aria-components @internationalized/date"
+                    pnpm="pnpm add react-aria-components @internationalized/date"
+                    yarn="yarn add react-aria-components @internationalized/date"
+                  />
+                </InstallStep>
+                <InstallStep index={2} title={<>Create a <code className="font-mono text-[13px] text-text-primary">shared.tsx</code> file and paste the following into it.</>}>
+                  <FileCodeBlock file="shared.tsx" code={SHARED_TSX_CODE} />
+                </InstallStep>
+                <InstallStep index={3} title="Update the import paths to match your project setup.">
+                  <p className="text-body-regular text-text-secondary">
+                    Using a shared UI package or custom import aliases?{" "}
+                    <a className="text-accent-500 hover:underline" href="/installation#monorepos">
+                      Configure your installation paths
+                    </a>{" "}
+                    before running the CLI. Copy-paste examples use the default imports.
+                  </p>
+                </InstallStep>
+              </>
+            }
+          />
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Meeting scheduler</h2>
-          <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover - a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
+          <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover — a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
           <div className="overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4">
               {(() => { const Preview = FREE_COMPONENT_PREVIEWS["/components/date-picker"]; return Preview ? <Preview /> : null; })()}
             </div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Quick select</h2>
-          <p className="text-body-regular text-text-secondary">The sidebar presets are computed from @internationalized/date each time the popover opens (so "Today" stays today). Selecting one updates the pending range and highlights the two months to match - it still requires Apply to commit, same as dragging a range directly on the calendar.</p>
+          <p className="text-body-regular text-text-secondary">The sidebar presets are computed from @internationalized/date each time the popover opens (so "Today" stays today). Selecting one updates the pending range and highlights the two months to match — it still requires Apply to commit, same as dragging a range directly on the calendar.</p>
           <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_1_CODE}</code></pre>
         </section>
         <section className="flex flex-col gap-3">
@@ -373,6 +434,10 @@ export default function DatePickerPage() {
           <p className="text-body-regular text-text-secondary">Both DateRangePicker and DatePicker import their shared chrome (chevrons, day cell, month panel, editable date chip, trigger/popover surfaces) from shared.tsx — source as published on the original page (components/base/date-picker/shared.tsx). Note: this embedded copy is the version the original page published when captured; the file installed in this repo (<code>components/base/date-picker/shared.tsx</code>) is the newer free-repo version, which adds <code>useLocale</code> and week helpers (<code>startOfWeek</code> / <code>endOfWeek</code> / <code>isSameDay</code>). The demos on this page run on the installed file.</p>
           <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-regular leading-6 text-text-primary"><code>{SHARED_TSX_CODE}</code></pre>
         </section>
+        <PrevNext
+          prev={{ href: "/components/date-calendar", label: "Date Calendar" }}
+          next={{ href: "/components/divider", label: "Divider", sub: "Section separators" }}
+        />
         <div className="flex items-center gap-2 border-t border-separator-border pt-5">
           <RiArrowLeftLine className="size-4 text-foreground-icon-secondary" aria-hidden />
           <Link href="/components" className="text-body-medium text-text-secondary hover:text-text-primary">Back to Components</Link>

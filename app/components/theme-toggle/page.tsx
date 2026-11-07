@@ -1,36 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { RiCheckLine, RiFileCopyLine, RiArrowLeftLine } from "@remixicon/react";
+import { RiArrowLeftLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
 import { Chip } from "@/components/base/badges/chip";
+import { CodeTabs, PkgCommand } from "@/components/application/docs/code-tabs";
+import { FileCodeBlock, InstallStep, InstallTabs } from "@/components/application/docs/install-tabs";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { LinkButton } from "@/components/base/buttons/link-button";
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const done = () => {
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        };
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(text).then(done).catch(done);
-        } else {
-          done();
-        }
-      }}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default px-2.5 py-1 text-caption-1-semibold text-text-secondary transition-colors hover:text-text-primary"
-    >
-      {copied ? <RiCheckLine className="size-3.5" aria-hidden /> : <RiFileCopyLine className="size-3.5" aria-hidden />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
-}
+import { THEME_TOGGLE_TSX_CODE } from "./theme-toggle-source";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -57,13 +35,18 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-const INSTALL_CMD = "npx boardui@latest add theme-toggle";
+const PREVIEW_CODE = `import { ThemeToggle} from "@/components/application/theme/theme-toggle";
+
+export function SidebarFooter() {
+  return <ThemeToggle />;
+}`;
 
 const SETUP_CODE = `// app/layout.tsx
 import Script from "next/script";
 import "@/styles/globals.css";
 
-const themeScript = '(function(){try{var dark=localStorage.getItem("boardui:theme")==="dark";document.documentElement.classList.toggle("dark",dark)}catch(e){document.documentElement.classList.remove("dark")}})();';
+const themeScript =
+  '(function(){try{var dark=localStorage.getItem("boardui:theme")==="dark";document.documentElement.classList.toggle("dark",dark)}catch(e){document.documentElement.classList.remove("dark")}})();';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -99,46 +82,65 @@ export default function ThemeTogglePage() {
         </div>
 
         <Section title="Preview">
-          <p className="text-body-regular text-text-secondary">
-            These are live controls — press one and the whole page switches theme. The sidebar treatment is the
-            one in the app sidebar; the segmented treatment is the compact form used inside menus and dropdown
-            rows.
-          </p>
           <Demo>
-            <div className="flex flex-wrap items-center gap-6">
-              <span className="flex flex-col items-center gap-2">
-                <ThemeToggle />
-                <span className="text-caption-1-regular text-text-tertiary">Sidebar</span>
-              </span>
-              <span className="flex flex-col items-center gap-2">
-                <ThemeToggle appearance="sidebar-segmented" />
-                <span className="text-caption-1-regular text-text-tertiary">Sidebar segmented</span>
-              </span>
-              <span className="flex flex-col items-center gap-2">
-                <ThemeToggle appearance="segmented" size="small" />
-                <span className="text-caption-1-regular text-text-tertiary">Segmented, small</span>
-              </span>
-              <span className="flex flex-col items-center gap-2">
-                <ThemeToggle collapsed />
-                <span className="text-caption-1-regular text-text-tertiary">Collapsed</span>
-              </span>
-            </div>
+            <ThemeToggle />
           </Demo>
+          <CodeBlock code={PREVIEW_CODE} />
         </Section>
 
         <Section title="Installation">
           <p className="text-body-regular text-text-secondary">
-            Add the reusable theme toggle and its semantic theme dependencies using the CLI or manually. The CLI
-            copies the component source (with its internal dependencies) into your project and installs any
-            required npm packages.
+            Add the reusable theme toggle and its semantic theme dependencies using the CLI or manually:
           </p>
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-border-button-default bg-background-secondary-default px-4 py-3">
-            <code className="font-mono text-caption-1-medium text-text-primary">{INSTALL_CMD}</code>
-            <CopyButton text={INSTALL_CMD} />
-          </div>
           <p className="text-body-regular text-text-secondary">
-            Dark mode ready — this component follows BoardUI semantic tokens automatically.
+            Dark mode ready - this component follows BoardUI semantic tokens automatically.{" "}
+            <a className="text-accent-500 hover:underline" href="/installation#dark-mode">
+              Set up theme switching
+            </a>
+            .
           </p>
+          <InstallTabs
+            cli={
+              <>
+                <p className="text-headline-medium text-text-secondary">The CLI copies the component source (with its internal dependencies) into your project and installs any required npm packages.</p>
+                <PkgCommand
+                  npm="npx boardui@latest add theme-toggle"
+                  pnpm="pnpm dlx boardui@latest add theme-toggle"
+                  yarn="yarn dlx boardui@latest add theme-toggle"
+                />
+                <p className="text-body-regular text-text-secondary">
+                  Using a shared UI package or custom import aliases?{" "}
+                  <a className="text-accent-500 hover:underline" href="/installation#monorepos">
+                    Configure your installation paths
+                  </a>{" "}
+                  before running the CLI. Copy-paste examples use the default imports.
+                </p>
+              </>
+            }
+            manual={
+              <>
+                <InstallStep index={1} title="Install the following dependencies">
+                  <PkgCommand
+                    npm="npm install @remixicon/react react-aria-components"
+                    pnpm="pnpm add @remixicon/react react-aria-components"
+                    yarn="yarn add @remixicon/react react-aria-components"
+                  />
+                </InstallStep>
+                <InstallStep index={2} title={<>Create a <code className="font-mono text-[13px] text-text-primary">theme-toggle.tsx</code> file and paste the following into it.</>}>
+                  <FileCodeBlock file="theme-toggle.tsx" code={THEME_TOGGLE_TSX_CODE} />
+                </InstallStep>
+                <InstallStep index={3} title="Update the import paths to match your project setup.">
+                  <p className="text-body-regular text-text-secondary">
+                    Using a shared UI package or custom import aliases?{" "}
+                    <a className="text-accent-500 hover:underline" href="/installation#monorepos">
+                      Configure your installation paths
+                    </a>{" "}
+                    before running the CLI. Copy-paste examples use the default imports.
+                  </p>
+                </InstallStep>
+              </>
+            }
+          />
         </Section>
 
         <Section title="Project setup">
@@ -149,7 +151,7 @@ export default function ThemeTogglePage() {
             <code className="font-mono text-caption-1-medium text-text-primary">suppressHydrationWarning</code>{" "}
             because the root class is set in the browser before React hydrates.
           </p>
-          <CodeBlock code={SETUP_CODE} />
+          <CodeTabs tabs={[{ value: "Next.js", code: SETUP_CODE }]} />
           <p className="text-body-regular text-text-secondary">
             The toggle is manual-only: it does not read the operating-system theme. Its reduced-motion and
             unsupported-browser fallbacks switch immediately without the circular reveal.
@@ -161,7 +163,7 @@ export default function ThemeTogglePage() {
             Set <code className="font-mono text-caption-1-medium text-text-primary">collapsed</code> for a 36px
             icon-only control that fits a compact sidebar rail while keeping the same accessible pressed state.
           </p>
-          <CodeBlock code={COLLAPSED_CODE} />
+          <CodeTabs tabs={[{ value: "usage", code: COLLAPSED_CODE }]} />
         </Section>
 
         <div>
