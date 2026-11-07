@@ -10,6 +10,8 @@ import {
 } from "@remixicon/react";
 
 import { ButtonLink } from "@/components/base/buttons/button";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
+
 import { Input } from "@/components/base/input/input";
 
 /**
@@ -192,6 +194,7 @@ function SectionHeading({ title, blurb }: { title: string; blurb?: string }) {
 export default function PricingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background-full">
+      <DocumentTitle />
       <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-separator-border bg-background-primary-default px-4">
         <Link href="/" className="flex items-center gap-2 text-body-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
           <RiLayoutGridLine className="size-5 text-foreground-icon-primary" aria-hidden />

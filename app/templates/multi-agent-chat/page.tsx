@@ -47,6 +47,7 @@ import { useDismissOnOutsidePress } from "@/utils/use-dismiss-on-outside-press";
 import { SettingsModal, type SettingsPage } from "@/components/application/settings/settings-modal";
 
 import { Switch } from "@/components/base/switch/switch";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { cx } from "@/utils/cx";
 
 /**
@@ -2845,6 +2846,7 @@ export default function MultiAgentChatTemplatePage() {
 
   return (
     <div className="flex h-dvh min-h-0 overflow-hidden bg-background-full p-3 text-text-primary">
+      <DocumentTitle />
       <style>{`@keyframes bui-blink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}}.bui-blink-l{animation:bui-blink 4.4s infinite;transform-box:fill-box;transform-origin:center}.bui-blink-r{animation:bui-blink 5.3s infinite;transform-box:fill-box;transform-origin:center}@keyframes bui-wander-l{0%,100%{transform:translate(0,0)}25%{transform:translate(2px,1px)}50%{transform:translate(-2px,0)}75%{transform:translate(1px,-1px)}}@keyframes bui-wander-r{0%,100%{transform:translate(0,0)}30%{transform:translate(-2px,1px)}55%{transform:translate(1.5px,-1px)}80%{transform:translate(-1px,1px)}}.bui-wander-l{animation:bui-wander-l 7s ease-in-out infinite}.bui-wander-r{animation:bui-wander-r 8.5s ease-in-out infinite;animation-delay:-2.3s}@keyframes bui-morph{from{transform:scale(.93);opacity:.55}to{transform:scale(1);opacity:1}}.bui-morph{animation:bui-morph .32s ease-out;transform-box:fill-box;transform-origin:center}@keyframes bui-add-menu{from{opacity:0;transform:scale(.97) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}.bui-add-menu{animation:bui-add-menu .15s ease-out;transform-origin:bottom left}@media (prefers-reduced-motion:reduce){.bui-blink-l,.bui-blink-r,.bui-wander-l,.bui-wander-r,.bui-morph,.bui-add-menu{animation:none!important}}`}</style>
       <Sidebar
         selectedId={selectedId}

@@ -13,14 +13,14 @@ import { cx } from "@/utils/cx";
  */
 
 type Option = { label: string; hint?: string };
-type Question = {
+export type QuestionnaireQuestion = {
   title: string;
   kind: "multi" | "single";
   options: Option[];
   other?: boolean;
 };
 
-const QUESTIONS: Question[] = [
+const QUESTIONS: QuestionnaireQuestion[] = [
   {
     title: "What should the agent build first?",
     kind: "single",
@@ -52,13 +52,21 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-export function Questionnaire({ className }: { className?: string }) {
+export function Questionnaire({
+  className,
+  questions: questionsProp,
+}: {
+  className?: string;
+  /** Override the demo questions — the blog article shows a single harness question. */
+  questions?: QuestionnaireQuestion[];
+}) {
+  const questions = questionsProp ?? QUESTIONS;
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<Record<number, string[]>>({});
   const [otherText, setOtherText] = useState<Record<number, string>>({});
   const [showOther, setShowOther] = useState<Record<number, boolean>>({});
-  const q = QUESTIONS[step];
-  const last = step === QUESTIONS.length - 1;
+  const q = questions[step];
+  const last = step === questions.length - 1;
 
   const toggle = (label: string) => {
     setPicked((m) => {
@@ -72,8 +80,8 @@ export function Questionnaire({ className }: { className?: string }) {
 
   return (
     <div className={cx("flex w-full flex-col gap-4 rounded-3xl border border-border-button-default bg-background-secondary-default p-4", className)}>
-      <div className="flex w-full flex-wrap items-center gap-1.5" aria-label={`Step ${step + 1} of ${QUESTIONS.length}`}>
-        {QUESTIONS.map((item, i) => (
+      <div className="flex w-full flex-wrap items-center gap-1.5" aria-label={`Step ${step + 1} of ${questions.length}`}>
+        {questions.map((item, i) => (
           <button
             key={item.title}
             type="button"
@@ -92,7 +100,7 @@ export function Questionnaire({ className }: { className?: string }) {
           </button>
         ))}
         <span className="ms-auto text-caption-1-regular text-text-tertiary">
-          Question {step + 1} of {QUESTIONS.length}
+          Question {step + 1} of {questions.length}
         </span>
       </div>
 
@@ -176,7 +184,7 @@ export function Questionnaire({ className }: { className?: string }) {
           <button
             type="button"
             disabled={!answered}
-            onClick={() => setStep((s) => Math.min(QUESTIONS.length - 1, s + 1))}
+            onClick={() => setStep((s) => Math.min(questions.length - 1, s + 1))}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-accent-500 px-4 py-2 text-body-2-medium text-white outline-none hover:bg-accent-600 focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next <RiArrowRightLine className="size-4" />

@@ -15,7 +15,7 @@ export default function ComponentsPage() {
   const [tier, setTier] = useState<CatalogTier>("all");
   return (
     <AppShell
-      title="Components and Blocks"
+      title="Components"
       icon={RiLayoutGridLine}
       actions={<CatalogTierFilter tier={tier} onChange={setTier} />}
       columnClassName="max-w-[964px]"

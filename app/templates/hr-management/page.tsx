@@ -23,6 +23,7 @@ import {
   DashboardSidebar,
 } from "@/components/application/dashboard/dashboard-sidebar";
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Breadcrumb, BreadcrumbItem } from "@/components/base/breadcrumb/breadcrumb";
@@ -58,6 +59,7 @@ function HrShell({
   const [navOpen, setNavOpen] = useState(false);
   return (
     <div className="relative flex h-dvh w-full gap-4 overflow-hidden bg-background-full p-3">
+      <DocumentTitle />
       <DashboardSidebar items={DASHBOARD_NAV} selected="hr-management" className="hidden lg:flex" />
       {navOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">

@@ -11,6 +11,8 @@ import {
 } from "@remixicon/react";
 
 import { AgentAvatar } from "@/components/application/pro/agent-avatar";
+import { DocumentTitle } from "@/components/application/app-shell/document-title";
+
 import { AgentCreator } from "@/components/application/pro/agent-creator";
 import { AgentLimitsCard } from "@/components/application/pro/agent-limits-card";
 import { AgentProgress } from "@/components/application/pro/agent-progress";
@@ -104,6 +106,7 @@ const NAV = [
 export default function ProComponentsPage() {
   return (
     <main className="min-h-screen bg-background-full px-4 py-8 sm:px-6 lg:px-10">
+      <DocumentTitle />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
         <header className="flex flex-col gap-3">
           <p className="text-caption-1-semibold text-accent-600">BoardUI Pro · Replica</p>

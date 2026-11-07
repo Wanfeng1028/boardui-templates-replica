@@ -4,6 +4,16 @@ import Link from "next/link";
 import { RiArrowLeftLine, RiArticleLine } from "@remixicon/react";
 
 import { AppShell } from "@/components/application/app-shell/app-shell";
+import {
+  ArticleFigure,
+  TemplateFigure,
+} from "@/components/application/blog/blog-article-footer";
+import { ComposerAttachments } from "@/components/application/pro/composer-attachments";
+import {
+  ArticleCta,
+  MoreFromBlog,
+  SiteFooter,
+} from "@/components/application/blog/blog-article-footer";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -39,8 +49,12 @@ type SystemInfo = {
   imgAlt: string;
   meta: [string, string][];
   intro: React.ReactNode[];
+  /** Figure after the intro paragraphs (BoardUI only: Composer Attachments). */
+  afterIntro?: React.ReactNode;
   featuresTitle: string;
   features: React.ReactNode[];
+  /** Block after the feature bullets (BoardUI only: "Pro adds..." + Marketing Dashboard). */
+  afterFeatures?: React.ReactNode;
   pros: string[];
   cons: string[];
   noticed: string;
@@ -94,13 +108,12 @@ const SYSTEMS: SystemInfo[] = [
         walks through each one. Composer Attachments, part of Pro, shows the composer carrying files: image and
         document tiles land above the prompt one after another, with an upload ring drawing around each.
       </>,
-      <>
-        <Link href="/components/composer-attachments" className="text-accent-600 underline">
-          Composer Attachments
-        </Link>{" "}
-        — part of Pro.
-      </>,
     ],
+    afterIntro: (
+      <ArticleFigure name="Composer Attachments" slug="composer-attachments" pro>
+        <ComposerAttachments />
+      </ArticleFigure>
+    ),
     featuresTitle: "BoardUI key features",
     features: [
       <>
@@ -135,6 +148,17 @@ const SYSTEMS: SystemInfo[] = [
         €199 for lifetime updates, or €349 for up to five developers.
       </>,
     ],
+    afterFeatures: (
+      <>
+        <P>
+          Pro adds full dashboards and templates, such as this marketing dashboard:{" "}
+          <Link href="/templates/marketing" className="text-accent-600 underline">
+            Marketing Dashboard
+          </Link>
+        </P>
+        <TemplateFigure name="Marketing Dashboard" slug="marketing-dashboard" src="/templates/marketing" />
+      </>
+    ),
     pros: [
       "Finished agent screens and templates, including multi-agent chat",
       "The CLI or your coding agent puts editable source in your repo",
@@ -724,8 +748,10 @@ function SystemSection({ system }: { system: SystemInfo }) {
       {system.intro.map((para, i) => (
         <P key={i}>{para}</P>
       ))}
+      {system.afterIntro}
       <h3 className="text-title-3-semibold text-text-primary">{system.featuresTitle}</h3>
       <Bullets items={system.features} />
+      {system.afterFeatures}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2 rounded-2xl border border-border-button-default bg-background-secondary-default p-4">
           <h4 className="text-body-medium text-text-primary">Pros</h4>
@@ -771,14 +797,14 @@ function Faq({ q, children }: { q: string; children: React.ReactNode }) {
  */
 export default function BestReactDesignSystemsPostPage() {
   return (
-    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]">
+    <AppShell title="Blog" heading="Blog" icon={RiArticleLine} actions={null} columnClassName="max-w-[964px]" hideHeading>
       <article className="flex flex-col gap-8 pb-8">
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-border-button-default bg-background-secondary-default px-2.5 py-0.5 text-caption-1-semibold text-text-secondary">
               Comparisons
             </span>
-            <span className="text-caption-1-regular text-text-tertiary">Nov 1, 2026 · 9 min read</span>
+            <span className="text-caption-1-regular text-text-tertiary">Nov 1, 2026 · 19 min read</span>
           </div>
           <h1 className="text-title-1-medium text-text-primary">
             The 10 best React design systems and component libraries in 2026
@@ -791,6 +817,10 @@ export default function BestReactDesignSystemsPostPage() {
               className="aspect-[16/9] w-full object-cover"
             />
           </span>
+          <P>
+            Compare the 10 best React design systems in 2026: what each one is best for, key features, pros and
+            cons, and pricing. BoardUI is our product and our pick.
+          </P>
           <P>
             We built the same settings dialog with 10 React design systems, our own BoardUI among them. axe, an
             automated accessibility checker, flagged at least one issue in eight of the ten builds, ours included,
@@ -991,22 +1021,18 @@ export default function BestReactDesignSystemsPostPage() {
           </Faq>
         </Section>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-body-regular text-text-secondary">
-            Pro adds full dashboards and templates, such as this marketing dashboard:{" "}
-            <Link href="/templates/marketing" className="text-accent-600 underline">
-              Marketing Dashboard
-            </Link>
-          </p>
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            <RiArrowLeftLine className="size-4" aria-hidden />
-            Back to all articles
-          </Link>
-        </div>
+        <ArticleCta />
+
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-1.5 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
+        >
+          <RiArrowLeftLine className="size-4" aria-hidden />
+          Back to all articles
+        </Link>
       </article>
+      <MoreFromBlog currentSlug="best-react-design-systems" />
+      <SiteFooter />
     </AppShell>
   );
 }
