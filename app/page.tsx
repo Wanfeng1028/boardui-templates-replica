@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { RiLayoutGridLine } from "@remixicon/react";
+
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
-
-
-import { AgentChat } from "@/components/application/agent-chat/agent-chat";
-import { ButtonLink } from "@/components/base/buttons/button";
+import { SiteFooter } from "@/components/application/blog/blog-article-footer";
+import { MarketingNav } from "@/components/application/marketing/marketing-nav";
+import { HomeHero } from "@/components/application/landing/home-hero";
+import { HomeSections } from "@/components/application/landing/home-sections";
 
 /**
- * Home is the chat starter — it had no template entry at all, so a visitor
- * landing here could not discover the 11 templates. A slim banner above the
- * chat carries the one obvious entry: a primary "浏览全部模板" button to
- * /templates. The chat keeps the rest of the viewport
- * (h-[calc(100dvh-3.5rem)] overrides AgentChat's h-dvh via tailwind-merge),
- * and the sidebar gains the same destination as its first row (starterNav).
+ * Home is the marketing landing page, as on boardui.com: hero (ray field,
+ * "React Design System for Agentic Interfaces", template preview) then the
+ * component showcase, multi-agent template, composer loader, templates,
+ * charts, pricing, MCP, GitHub free tier, FAQ, newsletter and final CTA,
+ * closing with the site footer. Copy, order and links follow the original
+ * homepage (SSR HTML captured 2026-11-08, verify/orig-home.html).
+ *
+ * The AI Chat app shell is NOT deleted — it still lives at
+ * /templates/ai-chat; the home page simply stops being its shell. The
+ * "Browse all templates" entry to /templates is kept in the hero preview
+ * bar, the templates section and the final CTA.
  */
 export const metadata: Metadata = {
   title: { absolute: "BoardUI - React Design System for Dashboards" },
@@ -22,22 +27,14 @@ export default function Page() {
   return (
     <div className="flex min-h-dvh flex-col bg-background-full">
       <DocumentTitle />
-      <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-separator-border bg-background-primary-default px-4">
-        <p className="min-w-0 truncate text-body-medium text-text-secondary">
-          BoardUI 模板复刻 · 共{" "}
-          <span className="text-text-primary">11 套模板</span>
-        </p>
-        <ButtonLink
-          href="/templates"
-          variant="primary"
-          size="medium"
-          leadingIcon={RiLayoutGridLine}
-          className="shrink-0"
-        >
-          浏览全部模板
-        </ButtonLink>
+      <MarketingNav />
+      <main className="flex flex-1 flex-col">
+        <HomeHero />
+        <HomeSections />
+      </main>
+      <div className="mx-auto w-full max-w-[1276px] px-3 sm:px-6">
+        <SiteFooter />
       </div>
-      <AgentChat className="h-[calc(100dvh-3.5rem)]" />
     </div>
   );
 }
