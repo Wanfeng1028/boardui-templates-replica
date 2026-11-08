@@ -1046,7 +1046,7 @@ ai-profile 8 项（4 High / 2 Medium / 2 Low）、medical-profile 19 项（8 / 7
 - H-18 已修复：placeholder 改为 "Search"；搜索范围按原站 JS chunk 为姓名 + 角色（不含团队），已实现。
 - H-19 已修复：Hires 底部改回两张图例卡（grid-cols-2 sm:grid-cols-6、各 col-span-3、rounded-2lg bg-background-inner-default、12px 圆点 chart-2/chart-3、数值 text-body-medium）；截图已验。
 - H-20 已修复：表格容器改 rounded-2xl border border-border-table（去 secondary 底色），min-w [900px]，表头行加 border-y；截图已验。
-- H-21 已修复：漏斗条 h-5、条内图标 size-3.5、数值 text-body-medium + 百分比 text-caption-1-medium；迷你卡片 grid-cols-3 bg-background-inner-default、圆点 size-3、数值 text-body-medium；截图已验。剩余：条宽入场动画形态（SSR 宽 0 → 客户端动画展开）需 live 核验。OCR 复审追加修复（提交 efedb3a）：漏斗条宽去掉 12% 下限，改为精确百分比（Offers 5% / Hires 3% 实测 18px / 11px，图标仍在轨道左端可见，与原站一致）。
+- H-21 已修复：漏斗条 h-5、条内图标 size-3.5、数值 text-body-medium + 百分比 text-caption-1-medium；迷你卡片 grid-cols-3 bg-background-inner-default、圆点 size-3、数值 text-body-medium；截图已验。剩余：条宽入场动画形态（SSR 宽 0 → 客户端动画展开）需 live 核验。OCR 复审追加修复（提交 dbfa471）：漏斗条宽去掉 12% 下限，改为精确百分比（Offers 5% / Hires 3% 实测 18px / 11px，图标仍在轨道左端可见，与原站一致）。
 - H-22 已修复：行内 Status 下拉宽改 w-[130px]，当前值前加 StatusDot（Active 绿 / Contract 靛蓝 / On leave 黄，与 SSR 逐行一致）；截图已验。
 - H-23 已修复：状态筛选 aria-label 改为 "Filter by work status"；实测 3 个筛选器 label 各 1 个。
 
