@@ -70,11 +70,18 @@ type Probe = {
 export function AgentChat({
   className,
   contained = false,
+  /** The chat-starter template deploys as a static export with no
+      /api/chat route at all: a 404 (or an unreadable) probe means "no
+      key configured", so the setup notice must show. Other embeddings
+      (home, docs previews) keep the old lenient behaviour — a failed
+      probe there must not lock the composer. */
+  showSetupWhenUnreachable = false,
 }: {
   className?: string;
   /** Docs preview mode: fill the preview frame's height instead of the
    *  viewport, and keep the phone nav drawer inside the frame. */
   contained?: boolean;
+  showSetupWhenUnreachable?: boolean;
 }) {
   const localize = useTemplateCopy();
   const [probe, setProbe] = useState<Probe>({ status: "checking", provider: null, label: null, model: null });
@@ -166,15 +173,31 @@ export function AgentChat({
   useEffect(() => {
     let cancelled = false;
     fetch(ENDPOINT, { method: "GET" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { configured?: boolean; provider?: string; providerLabel?: string; model?: string } | null) => {
+      .then(async (res) => {
+        let data: { configured?: boolean; provider?: string; providerLabel?: string; model?: string } | null = null;
+        try {
+          // A static export has no /api/chat route: the probe answers 404
+          // (or an HTML fallback page that is not JSON). With no readable
+          // answer there is no backend key to find.
+          data = res.ok ? await res.json() : null;
+        } catch {
+          data = null;
+        }
         if (cancelled) return;
+        if (data && data.configured === false) {
+          setProbe({ status: "unconfigured", provider: null, label: null, model: null });
+          return;
+        }
+        if (data === null && showSetupWhenUnreachable) {
+          setProbe({ status: "unconfigured", provider: null, label: null, model: null });
+          return;
+        }
         // Only an explicit `configured: false` means "no key". A failed or
         // unreadable probe says nothing about the key, and treating it as
         // missing would hide the composer behind setup steps for a fault that
         // has nothing to do with configuration.
         setProbe({
-          status: data && data.configured === false ? "unconfigured" : "ready",
+          status: "ready",
           provider: data?.provider ?? null,
           label: data?.providerLabel ?? null,
           model: data?.model ?? null,
@@ -188,7 +211,7 @@ export function AgentChat({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showSetupWhenUnreachable]);
 
   // Restore history, then open on a fresh thread rather than reviving the last
   // one — landing mid-conversation after a reload is more surprising than
