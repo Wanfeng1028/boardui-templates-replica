@@ -297,6 +297,17 @@ const BREAKDOWN_TABS = [
 
 type BreakdownTab = (typeof BREAKDOWN_TABS)[number]["id"];
 
+/* Department → chip colour, shared by the generator and the
+ * Add-employee dialog (a new hire's department chip). */
+const DEPT_COLORS: Record<string, ChipColor> = {
+  Engineering: "blue",
+  Design: "purple",
+  Sales: "lime",
+  Marketing: "yellow",
+  Support: "cyan",
+  Operations: "rose",
+};
+
 /* The Add-employee dialog's Team options are NOT in the original SSR
  * or JS (the original button has no dialog in its shipped code), so
  * these 5 teams are the pre-existing replica choice, kept and marked
@@ -816,21 +827,13 @@ export default function HrManagementTemplatePage() {
     const name = hireName.trim();
     const role = hireRole.trim() || "New hire";
     if (!name) return;
-    const deptColor: Record<string, ChipColor> = {
-      Engineering: "blue",
-      Design: "purple",
-      Sales: "lime",
-      Marketing: "yellow",
-      Support: "cyan",
-      Operations: "rose",
-    };
     setExtraHires((prev) => [
       {
         id: `hire-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`,
         name,
         role,
         team: hireTeam,
-        deptColor: deptColor[hireTeam] ?? "blue",
+        deptColor: DEPT_COLORS[hireTeam] ?? "blue",
         start: "Nov 6, 2026",
         status: "active",
         salary: null,
@@ -945,7 +948,7 @@ export default function HrManagementTemplatePage() {
                 <div key={stage.stage} className="contents">
                   <span className="text-end text-body-regular whitespace-nowrap text-text-secondary">{stage.stage}</span>
                   <div className="relative h-5 min-w-0 overflow-hidden rounded-full bg-chart-track">
-                    <div className="absolute inset-y-0 start-0 rounded-full transition-[width,background-color] duration-500 ease-out" style={{ width: `${Math.max(pct, 12)}%`, backgroundColor: stage.color }} />
+                    <div className="absolute inset-y-0 start-0 rounded-full transition-[width,background-color] duration-500 ease-out" style={{ width: `${pct}%`, backgroundColor: stage.color }} />
                     <span className="pointer-events-none absolute inset-y-0 start-1 flex items-center">
                       <stage.icon className="size-3.5 shrink-0" style={{ color: "var(--color-neutral-950)" }} aria-hidden />
                     </span>
