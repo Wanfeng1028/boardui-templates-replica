@@ -9,6 +9,30 @@
  * (verify/faq-answers.json, 2026-11-08).
  */
 
+import type { RemixiconComponentType } from "@remixicon/react";
+import {
+  RiArrowDownCircleLine,
+  RiArrowRightDownBoxFill,
+  RiBox3Line,
+  RiCalendar2Line,
+  RiContrastLine,
+  RiDiscordLine,
+  RiGroupLine,
+  RiInfinityLine,
+  RiLayoutGridLine,
+  RiPaletteLine,
+  RiPlugLine,
+  RiPoliceBadgeLine,
+  RiRefreshLine,
+  RiRocketLine,
+  RiSeedlingLine,
+  RiShapesLine,
+  RiShieldUserLine,
+  RiStackLine,
+  RiTerminalBoxLine,
+  RiTodoLine,
+} from "@remixicon/react";
+
 export const TECH_BADGES = [
   "React v19.2",
   "Tailwind CSS v4",
@@ -96,93 +120,236 @@ export type Tier = {
   name: string;
   badge?: string;
   blurb: string;
+  /** Title glyph above the tier name, as on the original. */
+  titleIcon: RemixiconComponentType;
+  /** Current price ("Free", "€149"). */
+  price: string;
+  /** Struck-through launch price, when the original shows one. */
+  priceWas?: string;
+  /** Price qualifier lines, as on the original ("all in Pro" / "paid once"). */
+  priceNote: string;
+  priceSubnote: string;
   cta: string;
+  /** Glyph on the CTA, as on the original. */
+  ctaIcon: RemixiconComponentType;
   href: string;
   featured?: boolean;
   features: string[];
 };
 
-const SHARED_FEATURES = [
-  "Use it in unlimited projects",
-  "Keep the code forever",
-  "Installation via CLI",
-  "MCP support for AI agents",
-  "Design tokens based on Tailwind CSS",
-  "Dark mode variables",
-  "Discord access",
-  "3,000+ icon library",
-];
+/**
+ * One icon per pricing feature, as on the original homepage (verified
+ * 2026-11-08 from the original's JS chunk: RiStackLine for unlimited
+ * projects, RiInfinityLine for keeping the code, RiTerminalBoxLine for
+ * the CLI, RiPlugLine for MCP, RiPaletteLine/RiContrastLine for tokens
+ * and dark mode, RiDiscordLine for Discord, RiShapesLine for icons,
+ * RiRefreshLine for updates). "pro-mark" renders the vector Pro mark
+ * for the two "Every Pro ..." rows.
+ */
+export const FEATURE_ICONS: Record<string, RemixiconComponentType | "pro-mark"> = {
+  "Free user license": RiTodoLine,
+  "Single-user license": RiShieldUserLine,
+  "5-user license": RiGroupLine,
+  "Use it in unlimited projects": RiStackLine,
+  "Keep the code forever": RiInfinityLine,
+  "Free component updates": RiRefreshLine,
+  "Pro updates for 1 year": RiRefreshLine,
+  "Pro updates forever": RiRefreshLine,
+  "Installation via CLI": RiTerminalBoxLine,
+  "MCP support for AI agents": RiPlugLine,
+  "Fundamental components": RiBox3Line,
+  "Basic blocks and templates": RiLayoutGridLine,
+  "Every Pro component": "pro-mark",
+  "Every Pro block & template": "pro-mark",
+  "Design tokens based on Tailwind CSS": RiPaletteLine,
+  "Dark mode variables": RiContrastLine,
+  "Discord access": RiDiscordLine,
+  "3,000+ icon library": RiShapesLine,
+};
 
 /**
- * Pricing tiers, same copy as /pricing. Two in-site adaptations, both
+ * Pricing tiers, same copy as /pricing. Prices are the original's own
+ * (homepage SSR HTML, 2026-11-08): Starter Free, 1 Year €179 struck
+ * through to €149, Lifetime €249 to €199 with the "€49
+ * launch discount" badge, Unlimited €349. One in-site adaptation,
  * reported: the original's Pro CTAs go to /api/checkout/* (no checkout
  * exists in this replica), so they point at /pro-components like the
  * /pricing page does; Starter's "Install now" keeps the original's
- * /installation target. No prices are shown — the original shows no
- * prices next to the tiers either, only the "€49 launch discount" badge.
+ * /installation target. Feature order follows the original.
  */
 export const TIERS: Tier[] = [
   {
     name: "Starter",
     blurb: "The fundamentals of BoardUI, free. Perfect for indie developers.",
+    titleIcon: RiSeedlingLine,
+    price: "Free",
+    priceNote: "all the basics",
+    priceSubnote: "no card required",
     cta: "Install now",
+    ctaIcon: RiArrowDownCircleLine,
     href: "/installation",
     features: [
       "Free user license",
-      ...SHARED_FEATURES.slice(0, 3),
+      "Use it in unlimited projects",
+      "Keep the code forever",
       "Free component updates",
-      ...SHARED_FEATURES.slice(3, 6),
+      "Installation via CLI",
+      "MCP support for AI agents",
       "Fundamental components",
       "Basic blocks and templates",
-      ...SHARED_FEATURES.slice(6),
+      "Design tokens based on Tailwind CSS",
+      "Dark mode variables",
+      "Discord access",
+      "3,000+ icon library",
     ],
   },
   {
     name: "1 Year of Updates",
     blurb: "Every BoardUI Pro component, block, token and template.",
-    cta: "Get Pro",
+    titleIcon: RiCalendar2Line,
+    price: "€149",
+    priceWas: "€179",
+    priceNote: "all in Pro",
+    priceSubnote: "paid once",
+    cta: "Buy and install now",
+    ctaIcon: RiArrowRightDownBoxFill,
     href: "/pro-components",
     features: [
       "Single-user license",
-      ...SHARED_FEATURES.slice(0, 3),
+      "Use it in unlimited projects",
+      "Keep the code forever",
       "Pro updates for 1 year",
-      ...SHARED_FEATURES.slice(3, 6),
+      "Installation via CLI",
+      "MCP support for AI agents",
       "Every Pro component",
       "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
+      "Design tokens based on Tailwind CSS",
+      "Dark mode variables",
+      "Discord access",
+      "3,000+ icon library",
     ],
   },
   {
     name: "Lifetime Access",
     badge: "€49 launch discount",
     blurb: "Every BoardUI Pro component, block, token and template.",
-    cta: "Get Pro",
+    titleIcon: RiPoliceBadgeLine,
+    price: "€199",
+    priceWas: "€249",
+    priceNote: "all in Pro",
+    priceSubnote: "yours forever",
+    cta: "Buy and install now",
+    ctaIcon: RiArrowRightDownBoxFill,
     href: "/pro-components",
     featured: true,
     features: [
       "Single-user license",
-      ...SHARED_FEATURES.slice(0, 3),
+      "Use it in unlimited projects",
+      "Keep the code forever",
       "Pro updates forever",
-      ...SHARED_FEATURES.slice(3, 6),
+      "Installation via CLI",
+      "MCP support for AI agents",
       "Every Pro component",
       "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
+      "Design tokens based on Tailwind CSS",
+      "Dark mode variables",
+      "Discord access",
+      "3,000+ icon library",
     ],
   },
   {
     name: "Unlimited for Startups",
     blurb: "Everything in Pro, licensed for up to 5 developers.",
-    cta: "Get Pro",
+    titleIcon: RiRocketLine,
+    price: "€349",
+    priceNote: "all in Pro",
+    priceSubnote: "yours forever",
+    cta: "Buy and install now",
+    ctaIcon: RiArrowRightDownBoxFill,
     href: "/pro-components",
     features: [
       "5-user license",
-      ...SHARED_FEATURES.slice(0, 3),
+      "Use it in unlimited projects",
+      "Keep the code forever",
       "Pro updates forever",
-      ...SHARED_FEATURES.slice(3, 6),
+      "Installation via CLI",
+      "MCP support for AI agents",
       "Every Pro component",
       "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
+      "Design tokens based on Tailwind CSS",
+      "Dark mode variables",
+      "Discord access",
+      "3,000+ icon library",
     ],
+  },
+];
+
+export type Testimonial = {
+  name: string;
+  handle: string;
+  /** "linkedin" renders "LinkedIn"; anything else renders "@handle" on X. */
+  platform: "linkedin" | "x";
+  avatar: string;
+  quote: string;
+  sourceUrl: string;
+  role: string;
+  company: { label: string; href: string };
+};
+
+export const TESTIMONIALS: Testimonial[] = [
+  {
+    name: "Pedro Olivares",
+    handle: "pedrolivares",
+    platform: "linkedin",
+    avatar: "/avatars/pedro-olivares.png",
+    quote:
+      "BoardUI makes building agentic UIs incredibly simple. Between the high-quality templates, the seamless component consistency, and how easily our coding agents can interact with the library, it perfectly adapts to our workflow at Timbal AI. Using BoardUI has directly helped us reduce project creation costs and accelerate project delivery",
+    sourceUrl: "https://www.linkedin.com/in/pedrolivares/",
+    role: "Head of Product at",
+    company: { label: "Timbal AI", href: "https://www.timbal.ai/" },
+  },
+  {
+    name: "Samy Sam",
+    handle: "IamSamySam",
+    platform: "x",
+    avatar: "/avatars/samy-sam.png",
+    quote: "Super cool and beautiful components. I used them and can only recommend.",
+    sourceUrl: "https://x.com/IamSamySam/status/2090473686780219839",
+    role: "Co-Founder at",
+    company: { label: "getlucie.ai", href: "https://getlucie.ai" },
+  },
+  {
+    name: "Rowan Stanley",
+    handle: "rowan_stanley",
+    platform: "x",
+    avatar: "/avatars/rowan-stanley.jpg",
+    quote:
+      "BoardUI is so sweet! I\u2019ve used these components to refresh our internal reports \u2013 the team love how clean and snappy everything is. I can\u2019t wait to build more with this!",
+    sourceUrl: "https://x.com/rowan_stanley",
+    role: "Business Analyst at",
+    company: { label: "Wrkr", href: "https://www.wrkr.com.au/" },
+  },
+  {
+    name: "Abhishek Gahlot",
+    handle: "bhowconda",
+    platform: "x",
+    avatar: "/avatars/abhishek-gahlot.jpg",
+    quote:
+      "Most component libraries stop right where agent interfaces start. BoardUI is the first one where I didn't have to build the hard parts myself.",
+    sourceUrl: "https://x.com/bhowconda",
+    role: "Founding Engineer at",
+    company: { label: "UseAgent", href: "https://useagent.org" },
+  },
+  {
+    name: "Tarkan Eken",
+    handle: "tarkaneken1",
+    platform: "x",
+    avatar: "/avatars/tarkan-eken.jpg",
+    quote:
+      "I don't have a designer on the team, and with BoardUI nobody can tell. Shipped in a weekend what would have taken me a month.",
+    sourceUrl: "https://x.com/tarkaneken1",
+    role: "Founder at",
+    company: { label: "muttefik.ai", href: "https://muttefik.ai" },
   },
 ];
 

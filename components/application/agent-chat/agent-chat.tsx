@@ -86,6 +86,8 @@ export function AgentChat({
   const localize = useTemplateCopy();
   const [probe, setProbe] = useState<Probe>({ status: "checking", provider: null, label: null, model: null });
   const [input, setInput] = useState("");
+  /** Last message sent, so a failed send can be retried without retyping. */
+  const [lastSent, setLastSent] = useState("");
   const [navOpen, setNavOpen] = useState(false);
   // The sidebar links only to pages the starter has; see app-shell.
   const navItems = starterNav(useStarterBase());
@@ -304,6 +306,7 @@ export function AgentChat({
     if (!trimmed || busy) return;
     setActiveUpdatedAt(Date.now());
     sendMessage({ text: trimmed }, { body: { demo: demoActive } });
+    setLastSent(trimmed);
     setInput("");
   };
 
@@ -515,9 +518,19 @@ export function AgentChat({
                     )}
 
                     {error && (
-                      <p role="alert" className="px-1 text-body-regular text-text-tertiary">
-                        Something went wrong. Check the server logs, then try again.
-                      </p>
+                      <div className="flex flex-col items-start gap-2 px-1">
+                        <p role="alert" className="text-body-regular text-text-tertiary">
+                          Something went wrong. Check the server logs, then try again.
+                        </p>
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          disabled={!lastSent || busy}
+                          onClick={() => submit(lastSent)}
+                        >
+                          Try again
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -9,18 +9,21 @@ import {
 
 import { ButtonLink } from "@/components/base/buttons/button";
 import { DocsLayout } from "@/components/application/docs/docs-layout";
+import { DISCORD_URL, FEATURE_ICONS, TIERS } from "@/components/application/landing/home-data";
+import { ProLogoMark } from "@/components/application/landing/pro-logo-mark";
+import { TestimonialsSection } from "@/components/application/landing/testimonials";
 
 import { Input } from "@/components/base/input/input";
 
 /**
- * Pricing — replica of boardui.com/pricing (content captured 2026-11-06).
- * The original page shows no prices next to the tiers (only the
- * "€49 launch discount" badge on Lifetime Access), so no prices are
- * invented here: tiers are shown with their feature lists only.
- * BoardUI-internal links point at this site's routes; Discord / GitHub
- * references are plain text, not external links. The original FAQ
- * questions were not present in the captured page text, so the FAQ
- * section keeps only the captured intro copy instead of invented Q&As.
+ * Pricing — mirrors the homepage pricing section (boardui.com/pricing
+ * itself redirects to /#pricing on the original). Tiers, prices and
+ * testimonials are shared with the home page via home-data.ts; prices
+ * are the original's own (homepage SSR HTML, 2026-11-08). Pro CTA
+ * hrefs stay on /pro-components: the original's /api/checkout/* has no
+ * backend in this replica. The original FAQ questions were not present
+ * in the captured page text, so the FAQ section keeps only the captured
+ * intro copy instead of invented Q&As.
  */
 
 const TECH_BADGES = [
@@ -62,91 +65,7 @@ const CHARTS = [
   { name: "Combo chart", blurb: "Bars on one axis, a cased line on the other - volume and rate read together on one canvas." },
 ];
 
-type Tier = {
-  name: string;
-  badge?: string;
-  blurb: string;
-  cta: string;
-  href: string;
-  featured?: boolean;
-  features: string[];
-};
 
-const SHARED_FEATURES = [
-  "Use it in unlimited projects",
-  "Keep the code forever",
-  "Installation via CLI",
-  "MCP support for AI agents",
-  "Design tokens based on Tailwind CSS",
-  "Dark mode variables",
-  "Discord access",
-  "3,000+ icon library",
-];
-
-const TIERS: Tier[] = [
-  {
-    name: "Starter",
-    blurb: "The fundamentals of BoardUI, free. Perfect for indie developers.",
-    cta: "Get started",
-    href: "/components",
-    features: [
-      "Free user license",
-      ...SHARED_FEATURES.slice(0, 3),
-      "Free component updates",
-      ...SHARED_FEATURES.slice(3, 6),
-      "Fundamental components",
-      "Basic blocks and templates",
-      ...SHARED_FEATURES.slice(6),
-    ],
-  },
-  {
-    name: "1 Year of Updates",
-    blurb: "Every BoardUI Pro component, block, token and template.",
-    cta: "Get Pro",
-    href: "/pro-components",
-    features: [
-      "Single-user license",
-      ...SHARED_FEATURES.slice(0, 3),
-      "Pro updates for 1 year",
-      ...SHARED_FEATURES.slice(3, 6),
-      "Every Pro component",
-      "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
-    ],
-  },
-  {
-    name: "Lifetime Access",
-    badge: "€49 launch discount",
-    blurb: "Every BoardUI Pro component, block, token and template.",
-    cta: "Get Pro",
-    href: "/pro-components",
-    featured: true,
-    features: [
-      "Single-user license",
-      ...SHARED_FEATURES.slice(0, 3),
-      "Pro updates forever",
-      ...SHARED_FEATURES.slice(3, 6),
-      "Every Pro component",
-      "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
-    ],
-  },
-  {
-    name: "Unlimited for Startups",
-    blurb: "Everything in Pro, licensed for up to 5 developers.",
-    cta: "Get Pro",
-    href: "/pro-components",
-    features: [
-      "5-user license",
-      ...SHARED_FEATURES.slice(0, 3),
-      "Pro updates forever",
-      ...SHARED_FEATURES.slice(3, 6),
-      "Every Pro component",
-      "Every Pro block & template",
-      ...SHARED_FEATURES.slice(6),
-    ],
-  },
-];
 
 function SubscribeForm() {
   const [email, setEmail] = useState("");
@@ -292,37 +211,80 @@ export default function PricingPage() {
             blurb="Keep the code forever and use it in unlimited projects. Choose Pro updates for one year or forever. No subscription or auto-renewal."
           />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            {TIERS.map((tier) => (
-              <article
-                key={tier.name}
-                className={`flex flex-col gap-4 rounded-3xl border p-5 ${tier.featured ? "border-accent-500 bg-background-secondary-default" : "border-border-button-default bg-background-primary-default"}`}
-              >
-                <div className="flex flex-col gap-1.5">
-                  <h3 className="text-title-3-semibold text-text-primary">{tier.name}</h3>
-                  {tier.badge ? (
-                    <p className="w-fit rounded-full bg-accent-500 px-2.5 py-0.5 text-caption-1-semibold text-white">{tier.badge}</p>
-                  ) : null}
-                  <p className="text-body-regular text-text-secondary">{tier.blurb}</p>
-                </div>
-                <ul className="flex flex-1 flex-col gap-2">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-body-regular text-text-secondary">
-                      <RiCheckLine className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
-                      {feature === "Discord access" ? (
-                        <span>Discord access <span className="text-text-tertiary">(Join now)</span></span>
-                      ) : (
-                        <span>{feature}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                <ButtonLink href={tier.href} variant={tier.featured ? "primary" : "secondary"} size="medium">
-                  {tier.cta}
-                </ButtonLink>
-              </article>
-            ))}
+            {TIERS.map((tier) => {
+              const TitleIcon = tier.titleIcon;
+              return (
+                <article
+                  key={tier.name}
+                  className={`flex flex-col gap-4 rounded-3xl border p-5 ${tier.featured ? "border-accent-500 bg-background-secondary-default" : "border-border-button-default bg-background-primary-default"}`}
+                >
+                  <div className="flex flex-col gap-1.5">
+                    <TitleIcon className="mb-1.5 size-6 text-foreground-icon-primary" aria-hidden />
+                    <h3 className="text-title-3-semibold text-text-primary">{tier.name}</h3>
+                    {tier.badge ? (
+                      <p className="w-fit rounded-full bg-accent-500 px-2.5 py-0.5 text-caption-1-semibold text-white">{tier.badge}</p>
+                    ) : null}
+                    <p className="text-body-regular text-text-secondary">{tier.blurb}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      dir="ltr"
+                      className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap text-text-primary"
+                    >
+                      {tier.priceWas ? (
+                        <span className="text-[24px] font-medium opacity-30 line-through">{tier.priceWas}</span>
+                      ) : null}
+                      <span className="text-[36px] font-semibold">{tier.price}</span>
+                    </span>
+                    <span className="flex min-w-0 flex-col text-[14px] leading-[20px] font-medium text-text-primary">
+                      <span className="opacity-60">{tier.priceNote}</span>
+                      <span className="opacity-35">{tier.priceSubnote}</span>
+                    </span>
+                  </div>
+                  <ul className="flex flex-1 flex-col gap-2">
+                    {tier.features.map((feature) => {
+                      const FeatureIcon = FEATURE_ICONS[feature];
+                      return (
+                        <li key={feature} className="flex items-start gap-2 text-body-regular text-text-secondary">
+                          {FeatureIcon === "pro-mark" ? (
+                            <ProLogoMark scale={22 / 56} animated={false} className="mt-0.5" />
+                          ) : FeatureIcon ? (
+                            <FeatureIcon className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
+                          ) : (
+                            <RiCheckLine className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
+                          )}
+                          {feature === "Discord access" ? (
+                            <span>
+                              Discord access{" "}
+                              <a
+                                href={DISCORD_URL}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-text-tertiary underline"
+                              >
+                                Join now
+                              </a>
+                            </span>
+                          ) : (
+                            <span>{feature}</span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <ButtonLink
+                    href={tier.href}
+                    variant={tier.featured ? "primary" : "secondary"}
+                    size="medium"
+                    leadingIcon={tier.ctaIcon}
+                  >
+                    {tier.cta}
+                  </ButtonLink>
+                </article>
+              );
+            })}
           </div>
-          <p className="text-body-regular text-text-tertiary">Already used by startups and developers</p>
+          <TestimonialsSection />
         </section>
 
         {/* MCP */}

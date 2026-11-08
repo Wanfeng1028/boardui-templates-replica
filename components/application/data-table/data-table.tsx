@@ -25,6 +25,7 @@ import type { ColumnDef, PaginationState, SortingState } from "@tanstack/react-t
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Chip } from "@/components/base/badges/chip";
 import { StatusDot } from "@/components/base/badges/status-dot";
+import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
 import {
@@ -405,6 +406,15 @@ export function DataTableExample({
   });
 
   const resetPage = () => table.setPageIndex(0);
+
+  /** Empty-state action: drop every filter and search term, back to page 1. */
+  const clearFilters = () => {
+    setPriceFilter("all");
+    setProductFilter("all");
+    setRegionFilter("all");
+    setQuery("");
+    table.setPageIndex(0);
+  };
   const headers = table.getHeaderGroups()[0].headers;
   const rows = table.getRowModel().rows;
   const totalPages = table.getPageCount();
@@ -505,19 +515,46 @@ export function DataTableExample({
 
       {/* Table */}
       <div className="mt-2">
-        <Table aria-label="Customers" size={size} selectionMode="none" className="min-w-[1000px]">
+        <Table
+          aria-label="Customers"
+          size={size}
+          selectionMode="none"
+          className="min-w-[1000px]"
+          sortDescriptor={
+            sorting[0]
+              ? {
+                  column: sorting[0].id,
+                  direction: sorting[0].desc ? "descending" : "ascending",
+                }
+              : undefined
+          }
+          onSortChange={(descriptor) =>
+            setSorting(
+              descriptor?.column
+                ? [{ id: String(descriptor.column), desc: descriptor.direction === "descending" }]
+                : [],
+            )
+          }
+        >
           <TableHeader>
             {headers.map((header) => {
               const id = header.column.id;
               const canSort = header.column.getCanSort();
               const label = flexRender(header.column.columnDef.header, header.getContext());
               return (
-                <TableColumn key={header.id} id={header.id} isRowHeader={id === "name"} className={colWidths[id]}>
+                <TableColumn
+                  key={header.id}
+                  id={header.id}
+                  isRowHeader={id === "name"}
+                  allowsSorting={canSort}
+                  className={colWidths[id]}
+                >
                   {id === "name" ? (
                     <div className="flex items-center gap-2">
                       <Checkbox
                         slot={null}
                         aria-label="Select all customers on this page"
+                        onPointerDown={(e) => e.stopPropagation()}
                         isSelected={table.getIsAllPageRowsSelected()}
                         isIndeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
                         onChange={(v) => table.toggleAllPageRowsSelected(!!v)}
@@ -525,6 +562,7 @@ export function DataTableExample({
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="flex cursor-pointer items-center gap-0.5"
                       >
                         {label}
@@ -535,6 +573,7 @@ export function DataTableExample({
                     <button
                       type="button"
                       onClick={header.column.getToggleSortingHandler()}
+                      onPointerDown={(e) => e.stopPropagation()}
                       className="flex cursor-pointer items-center gap-0.5"
                     >
                       {label}
@@ -549,8 +588,11 @@ export function DataTableExample({
           </TableHeader>
           <TableBody
             renderEmptyState={() => (
-              <div className="flex h-40 items-center justify-center text-body-medium text-text-tertiary">
-                No customers match your filters.
+              <div className="flex h-40 flex-col items-center justify-center gap-3 text-body-medium text-text-tertiary">
+                <p>No customers match your filters.</p>
+                <Button variant="secondary" size="small" onClick={clearFilters}>
+                  Clear filters
+                </Button>
               </div>
             )}
           >
