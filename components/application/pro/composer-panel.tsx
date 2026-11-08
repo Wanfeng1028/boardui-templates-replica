@@ -12,6 +12,7 @@ import {
   RiSparklingLine,
 } from "@remixicon/react";
 import { cx } from "@/utils/cx";
+import { Select, SelectItem } from "@/components/base/select/select";
 
 /**
  * Composer Panel (Pro replica) — two-row AI chat composer.
@@ -73,34 +74,40 @@ export function ComposerPanel({ className }: { className?: string }) {
           >
             <RiAddLine className="size-4" />
           </button>
-          <label className="inline-flex items-center gap-1.5 rounded-full bg-background-tertiary-default px-2 py-1">
-            <RiShieldCheckLine className="size-3.5 text-foreground-icon-tertiary" />
-            <span className="sr-only">Permissions</span>
-            <select
-              value={permission}
-              onChange={(e) => setPermission(e.target.value)}
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-background-tertiary-default px-2 py-1">
+            <RiShieldCheckLine className="size-3.5 shrink-0 text-foreground-icon-tertiary" aria-hidden />
+            <Select
+              size="sm"
               aria-label="Permissions"
-              className="cursor-pointer bg-transparent text-caption-1-medium text-text-secondary outline-none"
+              selectedKey={permission}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") setPermission(key);
+              }}
+              className="w-auto"
+              triggerClassName="border-0 bg-transparent px-1 py-0 text-caption-1-medium text-text-secondary shadow-none hover:bg-transparent hover:border-transparent"
             >
               {PERMISSIONS.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <SelectItem key={p} id={p} textValue={p}>{p}</SelectItem>
               ))}
-            </select>
-          </label>
-          <label className="inline-flex items-center gap-1.5 rounded-full bg-background-tertiary-default px-2 py-1">
-            <RiSparklingLine className="size-3.5 text-foreground-icon-tertiary" />
-            <span className="sr-only">Model</span>
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
+            </Select>
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-background-tertiary-default px-2 py-1">
+            <RiSparklingLine className="size-3.5 shrink-0 text-foreground-icon-tertiary" aria-hidden />
+            <Select
+              size="sm"
               aria-label="Model"
-              className="max-w-36 cursor-pointer bg-transparent text-caption-1-medium text-text-secondary outline-none"
+              selectedKey={model}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") setModel(key);
+              }}
+              className="w-auto"
+              triggerClassName="border-0 bg-transparent px-1 py-0 text-caption-1-medium text-text-secondary shadow-none hover:bg-transparent hover:border-transparent"
             >
               {MODELS.map((m) => (
-                <option key={m} value={m}>{m}</option>
+                <SelectItem key={m} id={m} textValue={m}>{m}</SelectItem>
               ))}
-            </select>
-          </label>
+            </Select>
+          </span>
           <div className="ms-auto flex items-center gap-1.5">
             <button
               type="button"

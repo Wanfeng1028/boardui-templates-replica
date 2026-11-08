@@ -128,22 +128,18 @@ export default function SelectPage() {
             <code className="font-mono text-body-2-medium text-text-primary">aria-label</code> instead.
           </p>
           <Demo>
-            {/* The repo's Select renders no Label element itself, so the visible
-                label sits above the trigger; placeholder shows until picked. */}
-            <div className="flex w-[240px] flex-col gap-1.5">
-              <span className="text-body-2-medium text-text-secondary">Role</span>
-              <Select placeholder="Select a role" className="w-full">
-                <SelectItem id="admin" textValue="Admin">
-                  Admin
-                </SelectItem>
-                <SelectItem id="editor" textValue="Editor">
-                  Editor
-                </SelectItem>
-                <SelectItem id="viewer" textValue="Viewer">
-                  Viewer
-                </SelectItem>
-              </Select>
-            </div>
+            {/* Label renders above the trigger; placeholder shows until picked. */}
+            <Select label="Role" placeholder="Select a role" className="w-[240px]">
+              <SelectItem id="admin" textValue="Admin">
+                Admin
+              </SelectItem>
+              <SelectItem id="editor" textValue="Editor">
+                Editor
+              </SelectItem>
+              <SelectItem id="viewer" textValue="Viewer">
+                Viewer
+              </SelectItem>
+            </Select>
           </Demo>
           <Code code={LABEL_CODE} />
         </Section>

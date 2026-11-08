@@ -47,6 +47,7 @@ import { useDismissOnOutsidePress } from "@/utils/use-dismiss-on-outside-press";
 import { SettingsModal, type SettingsPage } from "@/components/application/settings/settings-modal";
 
 import { Switch } from "@/components/base/switch/switch";
+import { Select, SelectItem } from "@/components/base/select/select";
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { ProBanner } from "@/components/application/templates/pro-banner";
 import { cx } from "@/utils/cx";
@@ -2217,28 +2218,28 @@ function AgentEditor({
                 <RiEarthLine className="size-5 text-foreground-icon-secondary" aria-hidden />
                 Language
               </span>
-              {/* Native select, exactly like the original: an empty option
-                  plus Auto-detect, English, Turkish, Spanish, French,
-                  German, Japanese, Portuguese. */}
-              <span className="relative flex items-center">
-                <select
-                  aria-label="Agent language"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                >
-                  <option value="">{" "}</option>
-                  <option value="auto">Auto-detect</option>
-                  <option value="en">English</option>
-                  <option value="tr">Turkish</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="ja">Japanese</option>
-                  <option value="pt">Portuguese</option>
-                </select>
-                <RiArrowDownSLine className="pointer-events-none absolute end-1.5 size-3.5 shrink-0 text-text-secondary" aria-hidden />
-              </span>
+              {/* BoardUI Select: the origin settings panel is not SSR-visible,
+                  so this follows the repo rule (no raw <select>) rather than
+                  the old native control. */}
+              <Select
+                size="sm"
+                aria-label="Agent language"
+                selectedKey={language}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") setLanguage(key);
+                }}
+                className="w-[136px]"
+              >
+                <SelectItem id="" textValue=" ">{" "}</SelectItem>
+                <SelectItem id="auto" textValue="Auto-detect">Auto-detect</SelectItem>
+                <SelectItem id="en" textValue="English">English</SelectItem>
+                <SelectItem id="tr" textValue="Turkish">Turkish</SelectItem>
+                <SelectItem id="es" textValue="Spanish">Spanish</SelectItem>
+                <SelectItem id="fr" textValue="French">French</SelectItem>
+                <SelectItem id="de" textValue="German">German</SelectItem>
+                <SelectItem id="ja" textValue="Japanese">Japanese</SelectItem>
+                <SelectItem id="pt" textValue="Portuguese">Portuguese</SelectItem>
+              </Select>
             </div>
             <div className="flex items-center gap-3 py-3">
               <RiNotification3Line className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
@@ -2278,20 +2279,20 @@ function AgentEditor({
                     <RiPlayFill className="size-[18px] shrink-0" aria-hidden />
                   )}
                 </button>
-                <span className="relative flex items-center">
-                  <select
-                    aria-label="Agent voice"
-                    value={voice}
-                    onChange={(e) => setVoice(e.target.value)}
-                    className="cursor-pointer appearance-none rounded-2lg border border-border-button-default bg-background-primary-default py-1 pe-6 ps-[7px] text-body-2-medium text-text-primary shadow-xs outline-none transition-colors hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-                  >
-                    <option value="">{" "}</option>
-                    <option value="off">Off</option>
-                    <option value="system">System voice</option>
-                    <option value="mika">Mika</option>
-                  </select>
-                  <RiArrowDownSLine className="pointer-events-none absolute end-1.5 size-3.5 shrink-0 text-text-secondary" aria-hidden />
-                </span>
+                <Select
+                  size="sm"
+                  aria-label="Agent voice"
+                  selectedKey={voice}
+                  onSelectionChange={(key) => {
+                    if (typeof key === "string") setVoice(key);
+                  }}
+                  className="w-[132px]"
+                >
+                  <SelectItem id="" textValue=" ">{" "}</SelectItem>
+                  <SelectItem id="off" textValue="Off">Off</SelectItem>
+                  <SelectItem id="system" textValue="System voice">System voice</SelectItem>
+                  <SelectItem id="mika" textValue="Mika">Mika</SelectItem>
+                </Select>
               </span>
             </div>
             {voiceToast && (
