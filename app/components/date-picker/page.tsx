@@ -360,6 +360,13 @@ export default function DatePickerPage() {
           </div>
         </section>
         <section className="flex flex-col gap-3">
+          <h2 className="text-title-2-medium text-text-primary">Meeting scheduler</h2>
+          <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover — a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
+          <div className="flex justify-center rounded-3xl border border-border-button-default p-8">
+            <MeetingScheduler />
+          </div>
+        </section>
+        <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Installation</h2>
           <p className="text-body-regular text-text-secondary">You can add these date pickers using our CLI or manually. Both DateRangePicker and DatePicker import their shared chrome (chevrons, day cell, month panel, editable date chip, trigger/popover surfaces) from shared.tsx, so add that file first.</p>
           <p className="text-body-regular text-text-secondary">
@@ -413,13 +420,6 @@ export default function DatePickerPage() {
           />
         </section>
         <section className="flex flex-col gap-3">
-          <h2 className="text-title-2-medium text-text-primary">Meeting scheduler</h2>
-          <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover — a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
-          <div className="flex justify-center rounded-3xl border border-border-button-default p-8">
-            <MeetingScheduler />
-          </div>
-        </section>
-        <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Quick select</h2>
           <p className="text-body-regular text-text-secondary">The sidebar presets are computed from @internationalized/date each time the popover opens (so "Today" stays today). Selecting one updates the pending range and highlights the two months to match — it still requires Apply to commit, same as dragging a range directly on the calendar.</p>
           <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_1_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_1_CODE} /></div></div>
@@ -441,11 +441,6 @@ export default function DatePickerPage() {
           <p className="text-body-regular text-text-secondary">Same pending-vs-committed value pattern as the range picker, just with a single CalendarDate instead of a &#123; start, end &#125; pair.</p>
           <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_4_CODE} /></div></div>
           <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE2}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_4_CODE2} /></div></div>
-        </section>
-        <section className="flex flex-col gap-3">
-          <h2 className="text-title-2-medium text-text-primary">shared.tsx</h2>
-          <p className="text-body-regular text-text-secondary">Both DateRangePicker and DatePicker import their shared chrome (chevrons, day cell, month panel, editable date chip, trigger/popover surfaces) from shared.tsx — source as published on the original page (components/base/date-picker/shared.tsx). Note: this embedded copy is the version the original page published when captured; the file installed in this repo (<code>components/base/date-picker/shared.tsx</code>) is the newer free-repo version, which adds <code>useLocale</code> and week helpers (<code>startOfWeek</code> / <code>endOfWeek</code> / <code>isSameDay</code>). The demos on this page run on the installed file.</p>
-          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-regular leading-6 text-text-primary"><code>{SHARED_TSX_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={SHARED_TSX_CODE} /></div></div>
         </section>
         <PrevNext
           prev={{ href: "/components/date-calendar", label: "Date Calendar" }}
