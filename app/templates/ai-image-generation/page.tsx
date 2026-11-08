@@ -33,6 +33,7 @@ import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } fr
 
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
+import { ProOfferCard } from "@/components/application/app-shell/pro-offer-card";
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
@@ -124,7 +125,8 @@ const ALL_THREADS = REPOS.flatMap((r) => r.threads.map((t) => ({ ...t, repo: r.n
 // 21 gallery originals (prompt + file + original aspect-ratio, verbatim from
 // the original page; the first is the completed Messi generation — the
 // original /ai-chat/generated-footballer.jpg, not a gallery webp — then the
-// 20 gallery webps; left masonry column = first 7, right column = rest 14).
+// 20 gallery webps; three masonry columns, 8 / 7 / 6 top to bottom, as on
+// the original live page).
 const GALLERY_ITEMS = [
   { slug: "generated-footballer", prompt: "Vintage editorial Messi, Argentina kit", ratio: "449/600", src: "/ai-chat/generated-footballer.jpg" },
   { slug: "green-ape", prompt: "Green ape, screenprint halftone", ratio: "1/1" },
@@ -362,6 +364,11 @@ export default function AiImageGenerationTemplatePage() {
           />
         )}
       </div>
+      {/* Pro popup, as on the original template pages (its text is the
+          free-repo ProOfferCard, "Buy once. Build forever." — the live
+          original's template popup reads "This template is part of Pro",
+          but the card text itself is out of scope for this lane). */}
+      <ProOfferCard />
     </div>
   );
 }
@@ -1050,13 +1057,18 @@ function GalleryPanelInner({
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                {GALLERY_ITEMS.slice(0, 7).map((item, i) => (
+                {GALLERY_ITEMS.slice(0, 8).map((item, i) => (
                   <GalleryFigure key={item.slug} item={item} index={i} moreFor={moreFor} onMore={setMoreFor} />
                 ))}
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                {GALLERY_ITEMS.slice(7).map((item, i) => (
-                  <GalleryFigure key={item.slug} item={item} index={i + 7} moreFor={moreFor} onMore={setMoreFor} />
+                {GALLERY_ITEMS.slice(8, 15).map((item, i) => (
+                  <GalleryFigure key={item.slug} item={item} index={i + 8} moreFor={moreFor} onMore={setMoreFor} />
+                ))}
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                {GALLERY_ITEMS.slice(15).map((item, i) => (
+                  <GalleryFigure key={item.slug} item={item} index={i + 15} moreFor={moreFor} onMore={setMoreFor} />
                 ))}
               </div>
             </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { RiListUnordered, RiTwitterXFill } from "@remixicon/react";
+import { RiDiscordFill, RiGithubFill, RiListUnordered, RiTwitterXFill } from "@remixicon/react";
 
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { SiteFooter } from "@/components/application/blog/blog-article-footer";
@@ -362,6 +362,29 @@ function LibraryLayout({
                     className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
                   >
                     <RiTwitterXFill className="size-5 shrink-0" aria-hidden />
+                  </a>
+                  <a
+                    href="https://discord.gg/azcHkw8T6F"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Join the BoardUI Discord"
+                    className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+                  >
+                    <RiDiscordFill className="size-5 shrink-0" aria-hidden />
+                  </a>
+                  <a
+                    href="https://github.com/BoardUI/boardui"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="BoardUI on GitHub"
+                    className="relative hidden h-9 shrink-0 items-center justify-center gap-0.5 overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default px-2 text-body-medium text-text-primary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 sm:inline-flex"
+                  >
+                    <RiGithubFill className="size-5 shrink-0" aria-hidden />
+                    <span className="inline-flex items-center justify-center px-1 shrink-0">
+                      <span dir="ltr" className="tabular-nums" aria-hidden="true">
+                        1,084
+                      </span>
+                    </span>
                   </a>
                   <GetProLink />
                 </div>

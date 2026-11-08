@@ -74,7 +74,7 @@ npx boardui@latest add button select date-picker
 
 BoardUI speaks MCP: connect your agent once and it browses all 103 components with real usage examples, sets up your project, and writes the source files in. Pro unlocks in the same chat with your license key.
 
-## Free and BoardUI Pro
+## Free and Pro
 
 Free — 73 components and blocks, MIT licensed. BoardUI Pro — a one-time purchase unlocks 30 Pro components and blocks and all 10 full-page templates, with lifetime updates.
 
@@ -429,7 +429,7 @@ export default function GettingStartedPage() {
         </ButtonLink>
       </Section>
 
-      <Section id="free-and-pro" title="Free and BoardUI Pro">
+      <Section id="free-and-pro" title="Free and Pro">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-5 dark:border-separator-border dark:bg-background-secondary-default">
             <div className="mb-1.5">

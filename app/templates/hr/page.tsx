@@ -3,16 +3,25 @@
 import {
   RiAddFill,
   RiArrowDownSLine,
+  RiArrowLeftLine,
+  RiArrowRightLine,
   RiArrowUpSLine,
   RiBriefcaseLine,
+  RiChat1Line,
   RiCloseLine,
   RiDeleteBinLine,
   RiEyeLine,
+  RiFileTextLine,
   RiFilter3Fill,
   RiMenuLine,
+  RiPhoneLine,
   RiSearchLine,
+  RiShakeHandsLine,
   RiTeamLine,
+  RiTimeLine,
   RiUserAddLine,
+  RiUserMinusLine,
+  RiUserSearchLine,
   RiUserSharedLine,
 } from "@remixicon/react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -33,11 +42,10 @@ import { IconButton } from "@/components/base/buttons/icon-button";
 import { cx } from "@/utils/cx";
 
 /**
- * HR Management template — built from the official description only.
- * NOTE: /templates/hr-management has no original demo page (404), so there
- * is no original to compare against. Sections follow INVENTORY.md:
- * headcount KPIs, recent hires, hiring funnel, engagement radar,
- * hires vs leavers, team breakdown, employee data table.
+ * HR Management template — aligned to the original live demo at
+ * boardui.com/templates/hr (harness probe 2026-11-08): headcount KPIs,
+ * recent hires, hiring funnel, engagement radar, hires vs leavers, tabbed
+ * team breakdowns, employee data table.
  * Built only from free BoardUI components + mock data. Not the Pro source.
  *
  * The shared sidebar (DASHBOARD_NAV) is the original 9-item nav plus the
@@ -86,7 +94,7 @@ function HrShell({
                 Mertcan
               </BreadcrumbItem>
               <BreadcrumbItem current icon={RiTeamLine}>
-                HR Management
+                HR Team
               </BreadcrumbItem>
             </Breadcrumb>
             <div className="flex w-full flex-wrap items-end justify-between gap-2">
@@ -98,7 +106,7 @@ function HrShell({
                   onClick={() => setNavOpen((open) => !open)}
                   className="lg:hidden"
                 />
-                <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">HR Management</h1>
+                <h1 className="px-1 text-title-2-medium whitespace-nowrap text-text-primary">HR Team</h1>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2.5">
                 <AllTemplatesButton />
@@ -117,25 +125,25 @@ function HrShell({
 /* Data                                                                */
 /* ------------------------------------------------------------------ */
 
-/* `up` is the direction the value moved (arrow); `good` is whether that
- * move is favorable (chip color), defaulting to `up`. They differ for
- * attrition and time-to-hire, where down is good. */
-type Kpi = { label: string; value: string; delta: string; up: boolean; good?: boolean };
+/* `up` is the direction the value moved (arrow); `tone` is whether that
+ * move reads as good (lime chip) or neutral (grey chip) on the original —
+ * Open roles is the only neutral one. */
+type Kpi = { label: string; value: string; delta: string; up: boolean; tone: "good" | "neutral"; icon: typeof RiTeamLine };
 
 /* Single KPI set, from the live template: no period switcher on the original. */
 const KPIS: Kpi[] = [
-  { label: "Employees", value: "248", delta: "+4.2%", up: true },
-  { label: "Open roles", value: "12", delta: "+8.3%", up: true },
-  { label: "Time to hire", value: "24 days", delta: "-8.3%", up: false, good: true },
-  { label: "Attrition", value: "3.8%", delta: "-0.6%", up: false, good: true },
+  { label: "Employees", value: "248", delta: "+4.2%", up: true, tone: "good", icon: RiTeamLine },
+  { label: "Open roles", value: "12", delta: "+8.3%", up: true, tone: "neutral", icon: RiUserSearchLine },
+  { label: "Time to hire", value: "24 days", delta: "-8.3%", up: false, tone: "good", icon: RiTimeLine },
+  { label: "Attrition", value: "3.8%", delta: "-0.6%", up: false, tone: "good", icon: RiUserMinusLine },
 ];
 
 const FUNNEL = [
-  { stage: "Applications", value: 412 },
-  { stage: "Screens", value: 156 },
-  { stage: "Interviews", value: 68 },
-  { stage: "Offers", value: 21 },
-  { stage: "Hires", value: 12 },
+  { stage: "Applications", value: 412, color: "var(--color-chart-2)", icon: RiFileTextLine },
+  { stage: "Screens", value: 156, color: "var(--color-chart-6)", icon: RiPhoneLine },
+  { stage: "Interviews", value: 68, color: "var(--color-chart-5)", icon: RiChat1Line },
+  { stage: "Offers", value: 21, color: "var(--color-chart-3)", icon: RiShakeHandsLine },
+  { stage: "Hires", value: 12, color: "var(--color-chart-8)", icon: RiUserAddLine },
 ];
 
 const RADAR_AXES = ["Growth", "Compensation", "Culture", "Management", "Balance", "Tools"];
@@ -171,6 +179,33 @@ const TEAMS = [
   { name: "Marketing", count: 26, color: "var(--color-chart-4)" },
   { name: "Design", count: 22, color: "var(--color-chart-5)" },
 ];
+
+/* Tab panels of the team breakdown, from the live template (2026-11-08):
+ * Departments is the default tab; Hiring sources and Locations switch the
+ * list only — the employee table below is untouched by the tabs. */
+const SOURCES = [
+  { name: "Referrals", count: 52, color: "var(--color-chart-1)" },
+  { name: "LinkedIn", count: 38, color: "var(--color-chart-2)" },
+  { name: "Job boards", count: 24, color: "var(--color-chart-3)" },
+  { name: "Inbound", count: 17, color: "var(--color-chart-4)" },
+  { name: "Agencies", count: 10, color: "var(--color-chart-5)" },
+];
+
+const LOCATIONS = [
+  { name: "Remote", count: 84, color: "var(--color-chart-1)" },
+  { name: "Berlin", count: 62, color: "var(--color-chart-2)" },
+  { name: "London", count: 48, color: "var(--color-chart-3)" },
+  { name: "New York", count: 34, color: "var(--color-chart-4)" },
+  { name: "Singapore", count: 20, color: "var(--color-chart-5)" },
+];
+
+const BREAKDOWN_TABS = [
+  { id: "departments", label: "Departments" },
+  { id: "sources", label: "Hiring sources" },
+  { id: "locations", label: "Locations" },
+] as const;
+
+type BreakdownTab = (typeof BREAKDOWN_TABS)[number]["id"];
 
 const RECENT_HIRES = [
   { name: "Livia Saris", role: "Backend Engineer", team: "Sales", when: "Joined today", avatar: "/avatars/livia-saris.webp" },
@@ -218,8 +253,10 @@ function salaryInBand(salary: string, band: string) {
   return true;
 }
 
-/** Radar chart (hexagon, 6 axes) with hover tooltips. */
-function EngagementRadar({ values, onHover }: { values: number[]; onHover: (axis: string | null, value: number | null) => void }) {
+/** Radar chart (hexagon, 6 axes) with the axis labels around the chart and
+ * the overall score in a centre circle, as on the original. Label positions
+ * are percentages of the wrapper, so they track the SVG at any width. */
+function EngagementRadar({ values }: { values: number[] }) {
   const cx0 = 200;
   const cy0 = 140;
   const R = 92;
@@ -233,40 +270,52 @@ function EngagementRadar({ values, onHover }: { values: number[]; onHover: (axis
     return { x: cx0 + r * Math.cos(angle), y: cy0 + r * Math.sin(angle) };
   });
   const polygon = valuePoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  // Clockwise from the top vertex: label side per axis.
+  const LABEL_POS: Record<string, string> = {
+    Growth: "left-1/2 top-0 -translate-x-1/2 text-center",
+    Compensation: "left-[73%] top-[37%] -translate-y-1/2 text-start",
+    Culture: "left-[73%] top-[62%] -translate-y-1/2 text-start",
+    Management: "left-1/2 top-[76%] -translate-x-1/2 text-center",
+    Balance: "left-[27%] top-[62%] -translate-x-full -translate-y-1/2 text-end",
+    Tools: "left-[27%] top-[37%] -translate-x-full -translate-y-1/2 text-end",
+  };
   return (
-    <svg viewBox="0 0 400 280" className="mx-auto w-full max-w-[340px]" role="img" aria-label="Engagement radar chart">
-      {[0.25, 0.5, 0.75, 1].map((f) => (
-        <polygon
-          key={f}
-          points={points.map((p) => `${(cx0 + (p.x - cx0) * f).toFixed(1)},${(cy0 + (p.y - cy0) * f).toFixed(1)}`).join(" ")}
-          fill="none"
-          stroke="var(--color-border-button-default)"
-          strokeWidth="1"
-        />
-      ))}
-      {points.map((p) => (
-        <line key={p.x} x1={cx0} y1={cy0} x2={p.x} y2={p.y} stroke="var(--color-border-button-default)" strokeWidth="1" />
-      ))}
-      <polygon points={polygon} fill="var(--color-chart-2)" fillOpacity="0.25" stroke="var(--color-chart-2)" strokeWidth="2" strokeLinejoin="round" />
-      {valuePoints.map((p, i) => (
-        <g key={RADAR_AXES[i]}>
-          <circle
-            cx={p.x} cy={p.y} r="14" fill="transparent"
-            onMouseEnter={() => onHover(RADAR_AXES[i], values[i])}
-            onMouseLeave={() => onHover(null, null)}
-            style={{ cursor: "pointer" }}
+    <div className="relative mx-auto aspect-[340/314] w-full max-w-[340px]">
+      <svg viewBox="0 0 400 280" className="absolute inset-x-0 top-[12%] h-[76%] w-full" role="img" aria-label="Engagement radar chart">
+        {[0.25, 0.5, 0.75, 1].map((f) => (
+          <polygon
+            key={f}
+            points={points.map((p) => `${(cx0 + (p.x - cx0) * f).toFixed(1)},${(cy0 + (p.y - cy0) * f).toFixed(1)}`).join(" ")}
+            fill="none"
+            stroke="var(--color-border-button-default)"
+            strokeWidth="1"
           />
-          <circle cx={p.x} cy={p.y} r="4.5" fill="var(--color-chart-2)" stroke="var(--color-background-primary-default)" strokeWidth="2" />
-        </g>
+        ))}
+        {points.map((p) => (
+          <line key={p.x} x1={cx0} y1={cy0} x2={p.x} y2={p.y} stroke="var(--color-border-button-default)" strokeWidth="1" />
+        ))}
+        <polygon points={polygon} fill="var(--color-chart-2)" fillOpacity="0.25" stroke="var(--color-chart-2)" strokeWidth="2" strokeLinejoin="round" />
+        {valuePoints.map((p, i) => (
+          <circle key={RADAR_AXES[i]} cx={p.x} cy={p.y} r="4.5" fill="var(--color-chart-2)" stroke="var(--color-background-primary-default)" strokeWidth="2" />
+        ))}
+      </svg>
+      <div className="absolute top-1/2 left-1/2 flex size-[104px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-background-primary-default">
+        <p className="text-title-1-medium text-text-primary tabular-nums">80</p>
+        <p className="text-body-medium text-text-secondary">Strong</p>
+      </div>
+      {RADAR_AXES.map((axis, i) => (
+        <div key={axis} className={cx("absolute flex flex-col", LABEL_POS[axis])}>
+          <span className="text-body-medium whitespace-nowrap text-text-tertiary">{axis}</span>
+          <span className="text-title-3-semibold text-text-primary tabular-nums">{values[i]}</span>
+        </div>
       ))}
-    </svg>
+    </div>
   );
 }
 
 export default function HrManagementTemplatePage() {
-  const [funnelStage, setFunnelStage] = useState<number | null>(null);
-  const [radarHover, setRadarHover] = useState<{ axis: string; value: number } | null>(null);
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
+  const [breakdownTab, setBreakdownTab] = useState<BreakdownTab>("departments");
   const [query, setQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All departments");
   const [statusFilter, setStatusFilter] = useState("All statuses");
@@ -297,7 +346,8 @@ export default function HrManagementTemplatePage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [viewEmployee, hireOpen]);
 
-  const maxTeam = Math.max(...TEAMS.map((t) => t.count));
+  const breakdownRows = breakdownTab === "departments" ? TEAMS : breakdownTab === "sources" ? SOURCES : LOCATIONS;
+  const breakdownMax = Math.max(...breakdownRows.map((t) => t.count));
 
   const employees = useMemo(() => {
     let rows = [...extraHires, ...EMPLOYEES]
@@ -372,9 +422,12 @@ export default function HrManagementTemplatePage() {
       <div className="grid w-full grid-cols-2 gap-4 xl:grid-cols-4">
         {KPIS.map((kpi) => (
           <section key={kpi.label} className="flex flex-col gap-1.5 rounded-2xl bg-background-secondary-default p-4">
+            <span className="flex size-10 items-center justify-center rounded-xl bg-background-primary-default">
+              <kpi.icon className="size-5 text-foreground-icon-primary" aria-hidden />
+            </span>
             <p className="text-body-medium text-text-secondary">{kpi.label}</p>
             <p className="text-title-1-medium text-text-primary tabular-nums">{kpi.value}</p>
-            <span className={cx("flex w-fit items-center gap-0.5 rounded-full px-2 py-0.5 text-body-2-medium", (kpi.good ?? kpi.up) ? "bg-status-lime-background text-status-lime-text" : "bg-rose-100 text-rose-700")}>
+            <span className={cx("flex w-fit items-center gap-0.5 rounded-full px-2 py-0.5 text-body-2-medium", kpi.tone === "good" ? "bg-status-lime-background text-status-lime-text" : "bg-background-tertiary-default text-text-secondary")}>
               {kpi.up ? <RiArrowUpSLine className="size-3.5" aria-hidden /> : <RiArrowDownSLine className="size-3.5" aria-hidden />}
               {kpi.delta}
             </span>
@@ -384,13 +437,15 @@ export default function HrManagementTemplatePage() {
 
       {/* Recent hires */}
       <section className="flex w-full flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
-        <div className="flex items-center gap-2">
-          <RiUserAddLine className="size-5 text-foreground-icon-primary" aria-hidden />
+        <div className="flex items-center justify-between gap-2">
           <p className="text-body-medium text-text-secondary">Recent hires</p>
-          <span className="text-body-2-medium text-text-tertiary tabular-nums">56</span>
+          <span className="flex items-center gap-1 text-body-medium text-text-primary">
+            Board team
+            <RiArrowDownSLine className="size-4 text-foreground-icon-secondary" aria-hidden />
+          </span>
         </div>
-        <p className="text-body-2-regular text-text-tertiary">Board team</p>
-        <div className="grid w-full gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <p className="text-title-1-medium text-text-primary tabular-nums">56</p>
+        <div className="grid w-full gap-2 sm:grid-cols-2">
           {RECENT_HIRES.map((h) => (
             <button
               key={h.name}
@@ -400,23 +455,27 @@ export default function HrManagementTemplatePage() {
                 setPage(1);
                 document.getElementById("employee-table")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="flex cursor-pointer items-center gap-2.5 rounded-xl bg-background-inner-default px-3 py-2.5 text-start outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+              className="flex cursor-pointer flex-col gap-2 rounded-xl bg-background-primary-default p-3 text-start outline-none transition-colors hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
             >
-              <Avatar size="sm" src={h.avatar} alt={h.name} initials={initialsOf(h.name)} />
-              <span className="min-w-0">
-                <span className="block truncate text-body-medium text-text-primary">{h.name}</span>
-                <span className="block truncate text-body-2-regular text-text-tertiary">{h.when}</span>
-                <span className="block truncate text-body-2-regular text-text-tertiary">{h.role}</span>
+              <span className="flex min-w-0 items-center gap-2.5">
+                <Avatar size="sm" src={h.avatar} alt={h.name} initials={initialsOf(h.name)} />
+                <span className="min-w-0">
+                  <span className="block truncate text-body-medium text-text-primary">{h.name}</span>
+                  <span className="block truncate text-body-2-regular text-text-tertiary">{h.when}</span>
+                </span>
               </span>
+              <span className="w-full truncate rounded-lg bg-background-tertiary-default px-2 py-1.5 text-center text-body-2-regular text-text-secondary">{h.role}</span>
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1">
-          <button type="button" disabled aria-label="Previous hires" className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
+        <div className="flex items-center gap-2">
+          <button type="button" disabled aria-label="Previous hires" className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-button-default bg-background-primary-default px-3 py-2.5 text-body-medium text-text-primary outline-none hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
+            <RiArrowLeftLine className="size-4" aria-hidden />
             Previous
           </button>
-          <button type="button" disabled aria-label="Next hires" className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
+          <button type="button" disabled aria-label="Next hires" className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border-button-default bg-background-primary-default px-3 py-2.5 text-body-medium text-text-primary outline-none hover:bg-background-secondary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
             Next
+            <RiArrowRightLine className="size-4" aria-hidden />
           </button>
         </div>
       </section>
@@ -435,43 +494,36 @@ export default function HrManagementTemplatePage() {
             </span>
             <span className="text-body-2-medium text-text-tertiary">Last 30 days</span>
           </div>
-          <div className="flex flex-col gap-2">
-            {FUNNEL.map((stage, i) => {
+          <div className="flex flex-col gap-2.5">
+            {FUNNEL.map((stage) => {
               const pct = Math.round((stage.value / FUNNEL[0].value) * 100);
-              const conv = i === 0 ? null : `${((stage.value / FUNNEL[i - 1].value) * 100).toFixed(0)}% of previous`;
-              const active = funnelStage === i;
               return (
-                <button
-                  key={stage.stage}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setFunnelStage(active ? null : i)}
-                  className={cx(
-                    "w-full cursor-pointer rounded-xl px-3 py-2.5 text-start outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-                    active ? "bg-background-tertiary-default" : "bg-background-inner-default hover:bg-background-tertiary-default",
-                  )}
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="text-body-medium text-text-primary">{stage.stage}</span>
-                    <span className="text-body-medium text-text-primary tabular-nums">
-                      {stage.value.toLocaleString("en-US")}
+                <div key={stage.stage} className="flex items-center gap-3">
+                  <span className="w-[108px] shrink-0 text-end text-body-medium text-text-secondary">{stage.stage}</span>
+                  <span className="relative h-8 min-w-0 flex-1 overflow-hidden rounded-full bg-background-tertiary-default">
+                    <span
+                      className="flex h-full items-center rounded-full ps-2"
+                      style={{ width: `${Math.max(pct, 12)}%`, backgroundColor: stage.color }}
+                    >
+                      <stage.icon className="size-4 shrink-0" style={{ color: "var(--color-neutral-950)" }} aria-hidden />
                     </span>
                   </span>
-                  <span className="mt-2 block h-2 w-full overflow-hidden rounded-full bg-background-tertiary-default">
-                    <span className="block h-full rounded-full bg-chart-2" style={{ width: `${Math.max(pct, 2)}%` }} />
+                  <span className="flex w-[86px] shrink-0 items-baseline justify-end gap-1.5">
+                    <span className="text-body-medium text-text-primary tabular-nums">{stage.value.toLocaleString("en-US")}</span>
+                    <span className="text-body-2-regular text-text-tertiary tabular-nums">{pct}%</span>
                   </span>
-                  <span className="mt-1 block text-end text-body-2-regular text-text-tertiary tabular-nums">{pct}%</span>
-                  {active && conv && <span className="mt-1.5 block text-body-2-regular text-text-secondary">{conv} · {stage.value} candidates</span>}
-                  {active && !conv && <span className="mt-1.5 block text-body-2-regular text-text-secondary">All applicants enter here.</span>}
-                </button>
+                </div>
               );
             })}
           </div>
-          <div className="flex flex-col gap-1.5 border-t border-separator-border pt-3">
+          <div className="grid grid-cols-3 gap-2">
             {FUNNEL.map((stage) => (
-              <div key={stage.stage} className="flex items-center justify-between gap-2">
-                <span className="text-body-medium text-text-primary">{stage.stage}</span>
-                <span className="text-body-medium text-text-primary tabular-nums">{stage.value.toLocaleString("en-US")}</span>
+              <div key={stage.stage} className="flex flex-col gap-1 rounded-xl bg-background-primary-default p-3">
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="size-4 shrink-0 rounded-[4px]" style={{ backgroundColor: stage.color }} aria-hidden />
+                  <span className="truncate text-body-medium text-text-secondary">{stage.stage}</span>
+                </span>
+                <span className="text-title-3-semibold text-text-primary tabular-nums">{stage.value.toLocaleString("en-US")}</span>
               </div>
             ))}
           </div>
@@ -483,25 +535,7 @@ export default function HrManagementTemplatePage() {
             <p className="text-body-medium text-text-secondary">Team engagement</p>
             <span className="text-body-2-medium text-text-tertiary">Q3 survey</span>
           </div>
-          <EngagementRadar
-            values={RADAR_SCORES}
-            onHover={(axis, value) => setRadarHover(axis && value !== null ? { axis, value } : null)}
-          />
-          <div className="grid grid-cols-3 gap-2">
-            {RADAR_AXES.map((axis, i) => (
-              <div key={axis} className="flex flex-col items-center gap-0.5 rounded-xl bg-background-inner-default px-2 py-2">
-                <span className="text-body-2-regular text-text-tertiary">{axis}</span>
-                <span className="text-body-medium text-text-primary tabular-nums">{RADAR_SCORES[i]}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center gap-0.5">
-            <p className="text-title-1-medium text-text-primary tabular-nums">80</p>
-            <p className="text-body-medium text-text-secondary">Strong</p>
-          </div>
-          <p className="min-h-5 text-center text-body-medium text-text-primary tabular-nums" aria-live="polite">
-            {radarHover ? `${radarHover.axis}: ${radarHover.value}/100` : ""}
-          </p>
+          <EngagementRadar values={RADAR_SCORES} />
         </section>
       </div>
 
@@ -546,22 +580,55 @@ export default function HrManagementTemplatePage() {
           <p className="text-body-medium text-text-primary tabular-nums">4.3%</p>
         </section>
 
-        {/* Departments */}
+        {/* Team breakdown: Departments / Hiring sources / Locations tabs */}
         <section className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl bg-background-secondary-default p-4">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-body-medium text-text-secondary">Departments</p>
-          </div>
-          <p className="text-caption-1-medium uppercase text-text-tertiary">People</p>
-          <div className="flex flex-col gap-2">
-            {TEAMS.map((team) => {
-              const active = teamFilter === team.name;
-              return (
+            <div className="flex items-center gap-4" role="tablist" aria-label="Team breakdown">
+              {BREAKDOWN_TABS.map((tab) => (
                 <button
-                  key={team.name}
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={breakdownTab === tab.id}
+                  onClick={() => setBreakdownTab(tab.id)}
+                  className={cx(
+                    "cursor-pointer border-b-2 pb-1 text-body-medium whitespace-nowrap outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus-ring",
+                    breakdownTab === tab.id ? "border-accent-500 text-accent-500" : "border-transparent text-text-primary hover:text-text-secondary",
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-caption-1-medium uppercase text-text-tertiary">People</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {breakdownRows.map((row) => {
+              const isDepartment = breakdownTab === "departments";
+              const active = isDepartment && teamFilter === row.name;
+              const inner = (
+                <>
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-body-medium text-text-primary">
+                      <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.color }} aria-hidden />
+                      {row.name}
+                    </span>
+                    <span className="text-body-medium text-text-primary tabular-nums">
+                      {row.count}
+                    </span>
+                  </span>
+                  <span className="mt-2 block h-2 w-full overflow-hidden rounded-full bg-background-tertiary-default">
+                    <span className="block h-full rounded-full" style={{ width: `${(row.count / breakdownMax) * 100}%`, backgroundColor: row.color }} />
+                  </span>
+                </>
+              );
+              return isDepartment ? (
+                <button
+                  key={row.name}
                   type="button"
                   aria-pressed={active}
                   onClick={() => {
-                    setTeamFilter(active ? null : team.name);
+                    setTeamFilter(active ? null : row.name);
                     setPage(1);
                   }}
                   className={cx(
@@ -569,27 +636,25 @@ export default function HrManagementTemplatePage() {
                     active ? "bg-background-tertiary-default" : "bg-background-inner-default hover:bg-background-tertiary-default",
                   )}
                 >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 text-body-medium text-text-primary">
-                      <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: team.color }} aria-hidden />
-                      {team.name}
-                    </span>
-                    <span className="text-body-medium text-text-primary tabular-nums">
-                      {team.count}
-                    </span>
-                  </span>
-                  <span className="mt-2 block h-2 w-full overflow-hidden rounded-full bg-background-tertiary-default">
-                    <span className="block h-full rounded-full" style={{ width: `${(team.count / maxTeam) * 100}%`, backgroundColor: team.color }} />
-                  </span>
+                  {inner}
                 </button>
+              ) : (
+                <div
+                  key={row.name}
+                  className="w-full rounded-xl bg-background-inner-default px-3 py-2"
+                >
+                  {inner}
+                </div>
               );
             })}
           </div>
           <p className="text-body-2-regular text-text-tertiary">Total Results</p>
           <p className="text-body-medium text-text-primary tabular-nums">248 employees</p>
-          <p className="text-body-2-regular text-text-tertiary">
-            {teamFilter ? `Filtering the employee table to ${teamFilter} — tap again to clear.` : "Tap a team to filter the employee table below."}
-          </p>
+          {breakdownTab === "departments" && (
+            <p className="text-body-2-regular text-text-tertiary">
+              {teamFilter ? `Filtering the employee table to ${teamFilter} — tap again to clear.` : "Tap a team to filter the employee table below."}
+            </p>
+          )}
         </section>
       </div>
 

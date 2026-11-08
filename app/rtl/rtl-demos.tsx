@@ -152,7 +152,7 @@ const RTL_TEMPLATES: { slug: string; label: string }[] = [
   { slug: "multi-agent-chat", label: "Multi-agent Chat" },
   { slug: "finance", label: "Finance" },
   { slug: "marketing", label: "Marketing" },
-  { slug: "hr-management", label: "HR Management" },
+  { slug: "hr", label: "HR Management" },
   { slug: "medical-profile", label: "Medical Profile" },
   { slug: "ai-profile", label: "AI Profile" },
   { slug: "ai-image-generation", label: "AI Image Generation" },

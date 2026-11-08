@@ -16,8 +16,8 @@ export default function BlogIndexPage() {
     <DocsLayout variant="marketing" title="Blog" heading="Blog">
       <div className="flex flex-col gap-8 pb-8">
         <p className="text-body-regular text-text-secondary">
-          Notes on building React interfaces for agentic products — comparisons, component
-          walkthroughs, and what we noticed while building with each library.
+          Guides, comparisons and notes on building dashboards and agentic interfaces with React and Tailwind CSS,
+          from the team behind BoardUI.
         </p>
         <a
           href="/blog/rss.xml"

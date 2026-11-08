@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiArrowRightLine, RiDiscordFill, RiGithubFill, RiTwitterXFill } from "@remixicon/react";
 
 import { ButtonLink } from "@/components/base/buttons/button";
 
@@ -11,11 +11,11 @@ import { ButtonLink } from "@/components/base/buttons/button";
  * footer (brand blurb + six link columns + bottom bar).
  *
  * Links point at this site's own routes. Original links with no local
- * route (/getting-started, /llms.txt, /privacy, /terms, /license, and the
- * mailto contact) are plain text, not links — the same convention the
- * article pages use for outside links. The original "Get Pro" and
- * "Affiliate" controls are buttons on boardui.com; here "Get Pro" goes
- * to the local Install Pro page and "Affiliate" is plain text.
+ * route (/llms.txt, /privacy, /terms, /license) are plain text, not links
+ * — the same convention the article pages use for outside links. The
+ * original "Get Pro" and "Affiliate" controls are buttons on boardui.com;
+ * here "Get Pro" goes to the local Install Pro page and "Affiliate" is
+ * plain text.
  */
 
 export type BlogPostMeta = {
@@ -197,7 +197,7 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Resources",
     links: [
-      { label: "Getting started" },
+      { label: "Getting started", href: "/getting-started" },
       { label: "Installation", href: "/installation" },
       { label: "CLI", href: "/docs/cli" },
       { label: "MCP Server", href: "/mcp" },
@@ -212,7 +212,7 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Pricing", href: "/pricing" },
       { label: "Install Pro", href: "/components/pro-installation" },
-      { label: "Contact" },
+      { label: "Contact", href: "mailto:hi@boardui.com" },
     ],
   },
 ];
@@ -226,6 +226,40 @@ export function SiteFooter() {
           BoardUI is a dashboard design system and UI kit for React + Tailwind CSS, with data tables, charts and
           dashboard templates, designed in Figma.
         </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="https://x.com/boardui"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Follow BoardUI on X"
+            className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          >
+            <RiTwitterXFill className="size-5 shrink-0" aria-hidden />
+          </a>
+          <a
+            href="https://discord.gg/azcHkw8T6F"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Join the BoardUI Discord"
+            className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          >
+            <RiDiscordFill className="size-5 shrink-0" aria-hidden />
+          </a>
+          <a
+            href="https://github.com/BoardUI/boardui"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="BoardUI on GitHub"
+            className="relative inline-flex h-9 shrink-0 items-center justify-center gap-0.5 overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default px-2 text-body-medium text-text-primary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          >
+            <RiGithubFill className="size-5 shrink-0" aria-hidden />
+            <span className="inline-flex items-center justify-center px-1 shrink-0">
+              <span dir="ltr" className="tabular-nums" aria-hidden="true">
+                1,084
+              </span>
+            </span>
+          </a>
+        </div>
         <ButtonLink href="/components/pro-installation" variant="secondary" size="medium" className="w-fit">
           Get Pro
         </ButtonLink>
@@ -233,7 +267,22 @@ export function SiteFooter() {
       <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-6">
         {FOOTER_COLUMNS.map((column) => (
           <div key={column.title} className="flex flex-col gap-3">
-            <h2 className="text-body-medium text-text-primary">{column.title}</h2>
+            <h2
+              id={
+                column.title === "Components"
+                  ? "footer-components"
+                  : column.title === "Charts"
+                    ? "footer-charts"
+                    : column.title === "Agentic"
+                      ? "footer-agentic"
+                      : column.title === "Templates"
+                        ? "footer-templates"
+                        : undefined
+              }
+              className="text-caption-1-semibold tracking-wide text-text-tertiary uppercase"
+            >
+              {column.title}
+            </h2>
             <ul className="flex flex-col gap-2">
               {column.links.map((link) => (
                 <li key={link.label}>
