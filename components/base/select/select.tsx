@@ -22,6 +22,7 @@ import {
   MENU_POPOVER_SURFACE,
   MENU_POPOVER_WIDTH,
 } from "@/components/base/dropdown/menu-styles";
+import { Label } from "@/components/base/input/label";
 import { ChevronDownSmall } from "@/components/foundations/icons/chevrons";
 import { cx } from "@/utils/cx";
 import { useDismissOnOutsidePress, useTriggerToggle } from "@/utils/use-dismiss-on-outside-press";
@@ -41,6 +42,11 @@ import { useDismissOnOutsidePress, useTriggerToggle } from "@/utils/use-dismiss-
  * and radius/2lg rows with the same hover/selected surface.
  *
  * Item content is free-form: pass a `StatusDot` + text for status selects.
+ *
+ * `label` renders Input's field label above the trigger through React Aria's
+ * Label, which names the select for assistive technology. Without it, pass
+ * `aria-label` (or `aria-labelledby`) instead. `placeholder` is React Aria's:
+ * the trigger shows it until something is selected.
  */
 
 export type SelectSize = "sm" | "md";
@@ -49,6 +55,8 @@ const SelectSizeContext = createContext<SelectSize>("md");
 
 export interface SelectProps<T extends object>
   extends Omit<AriaSelectProps<T>, "children"> {
+  /** Visible label above the trigger; React Aria wires it as the select's accessible name. */
+  label?: ReactNode;
   /** Trigger width. Defaults to hug content; the menu uses the shared 266px width. */
   className?: string;
   triggerClassName?: string;
@@ -65,6 +73,7 @@ export interface SelectProps<T extends object>
 }
 
 export function Select<T extends object>({
+  label,
   className,
   triggerClassName,
   popoverClassName,
@@ -96,10 +105,11 @@ export function Select<T extends object>({
       {...props}
       isOpen={isOpen}
       onOpenChange={(o) => allowOpenChange(o) && setIsOpen(o)}
-      className={cx("group flex flex-col", className)}
+      className={cx("group flex flex-col", label ? "gap-1" : undefined, className)}
     >
-      {({ isOpen }) => (
+      {({ isOpen, isRequired }) => (
         <>
+          {label ? <Label isRequired={isRequired}>{label}</Label> : null}
           <AriaButton
             ref={triggerRef}
             className={cx(

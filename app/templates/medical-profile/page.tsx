@@ -22,6 +22,8 @@ import { WeekRangePill } from "@/components/application/medical/week-range-pill"
 import { NotificationBell } from "@/components/application/app-shell/notification-bell";
 import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
+import { Checkbox } from "@/components/base/checkbox/checkbox";
+import { Select, SelectItem } from "@/components/base/select/select";
 import { InputBase } from "@/components/base/input/input";
 import { cx } from "@/utils/cx";
 
@@ -664,38 +666,42 @@ export default function MedicalProfileTemplatePage() {
               fieldClassName="min-w-[153px] flex-1 rounded-full bg-background-secondary-default sm:w-[153px] sm:min-w-0 sm:flex-none"
               className="text-body-medium"
             />
-            <label className="flex shrink-0 items-center gap-1.5 text-body-2-medium text-text-secondary">
+            <span className="flex shrink-0 items-center gap-1.5 text-body-2-medium text-text-secondary">
               Status
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
+              <Select
+                size="sm"
                 aria-label="Filter by status"
-                className="cursor-pointer rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1.5 text-body-2-medium text-text-primary shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                selectedKey={statusFilter}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setStatusFilter(key);
+                    setPage(1);
+                  }
+                }}
               >
                 {["All statuses", ...STATUSES].map((s) => (
-                  <option key={s}>{s}</option>
+                  <SelectItem key={s} id={s} textValue={s}>{s}</SelectItem>
                 ))}
-              </select>
-            </label>
-            <label className="flex shrink-0 items-center gap-1.5 text-body-2-medium text-text-secondary">
+              </Select>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-body-2-medium text-text-secondary">
               Condition
-              <select
-                value={conditionFilter}
-                onChange={(e) => {
-                  setConditionFilter(e.target.value);
-                  setPage(1);
-                }}
+              <Select
+                size="sm"
                 aria-label="Filter by condition"
-                className="cursor-pointer rounded-2lg border border-border-button-default bg-background-primary-default px-2 py-1.5 text-body-2-medium text-text-primary shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                selectedKey={conditionFilter}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setConditionFilter(key);
+                    setPage(1);
+                  }
+                }}
               >
                 {["All conditions", ...CONDITIONS].map((s) => (
-                  <option key={s}>{s}</option>
+                  <SelectItem key={s} id={s} textValue={s}>{s}</SelectItem>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </span>
           </div>
         </div>
 
@@ -717,12 +723,12 @@ export default function MedicalProfileTemplatePage() {
             <thead>
               <tr className="border-b border-border-table">
                 <th className="w-10 py-2 pe-2 text-start">
-                  <input
-                    type="checkbox"
-                    checked={allChecked}
+                  <Checkbox
+                    size="sm"
+                    isSelected={allChecked}
+                    isIndeterminate={checked.size > 0 && !allChecked}
                     onChange={toggleCheckAll}
                     aria-label="Select all patients on this page"
-                    className="size-4 cursor-pointer accent-current"
                   />
                 </th>
                 <th className="py-2 pe-2 text-start">
@@ -748,12 +754,11 @@ export default function MedicalProfileTemplatePage() {
                 return (
                   <tr key={p.name} className="border-b border-border-table last:border-b-0">
                     <td className="py-2 pe-2">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
+                      <Checkbox
+                        size="sm"
+                        isSelected={isChecked}
                         onChange={() => toggleCheck(p.name)}
                         aria-label={`Select ${p.name}`}
-                        className="size-4 cursor-pointer accent-current"
                       />
                     </td>
                     <td className="py-2 pe-2">
@@ -906,19 +911,20 @@ export default function MedicalProfileTemplatePage() {
                 <RiCloseLine className="size-5" aria-hidden />
               </button>
             </div>
-            <label className="mt-4 block">
-              <span className="text-body-medium text-text-primary">Report type</span>
-              <select
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
-                aria-label="Report type"
-                className="mt-1.5 w-full cursor-pointer rounded-xl border border-border-button-default bg-background-tertiary-default px-3 py-2 text-body-regular text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            <div className="mt-4">
+              <Select
+                label="Report type"
+                selectedKey={reportType}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") setReportType(key);
+                }}
+                className="w-full"
               >
                 {["Lab results", "Imaging", "Prescription", "Referral", "Other"].map((t) => (
-                  <option key={t}>{t}</option>
+                  <SelectItem key={t} id={t} textValue={t}>{t}</SelectItem>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </div>
             <label className="mt-3 block">
               <span className="text-body-medium text-text-primary">Notes</span>
               <textarea

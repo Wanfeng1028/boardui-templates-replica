@@ -905,14 +905,20 @@ export default function HrManagementTemplatePage() {
               <span className="text-body-medium text-text-primary">Role</span>
               <input value={hireRole} onChange={(e) => setHireRole(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addHire(); }} placeholder="Role" aria-label="Employee role" className="mt-1.5 w-full rounded-xl border border-border-button-default bg-background-tertiary-default px-3 py-2 text-body-regular text-text-primary outline-none placeholder:text-text-tertiary focus-visible:ring-2 focus-visible:ring-border-focus-ring" />
             </label>
-            <label className="mt-3 block">
-              <span className="text-body-medium text-text-primary">Team</span>
-              <select value={hireTeam} onChange={(e) => setHireTeam(e.target.value)} aria-label="Employee team" className="mt-1.5 w-full cursor-pointer rounded-xl border border-border-button-default bg-background-tertiary-default px-3 py-2 text-body-regular text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+            <div className="mt-3">
+              <Select
+                label="Team"
+                selectedKey={hireTeam}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") setHireTeam(key);
+                }}
+                className="w-full"
+              >
                 {TEAMS.map((t) => (
-                  <option key={t.name}>{t.name}</option>
+                  <SelectItem key={t.name} id={t.name} textValue={t.name}>{t.name}</SelectItem>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </div>
             <div className="mt-5 flex justify-end gap-2">
               <Button variant="secondary" size="medium" onClick={() => setHireOpen(false)}>Cancel</Button>
               <Button variant="primary" size="medium" leadingIcon={RiUserSharedLine} onClick={addHire}>Add employee</Button>

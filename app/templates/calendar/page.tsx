@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { TemplateShell } from "@/components/application/template-shell/template-shell";
 import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
+import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { cx } from "@/utils/cx";
 
 /**
@@ -473,10 +474,13 @@ export default function CalendarTemplatePage() {
                 />
               </label>
             </div>
-            <label className="mt-3 flex cursor-pointer items-center gap-2 text-body-medium text-text-primary">
-              <input type="checkbox" checked={formAllDay} onChange={(e) => setFormAllDay(e.target.checked)} className="size-4 accent-current" />
+            <Checkbox
+              className="mt-3 cursor-pointer text-body-medium"
+              isSelected={formAllDay}
+              onChange={setFormAllDay}
+            >
               All day
-            </label>
+            </Checkbox>
             <p className="mt-4 text-body-medium text-text-primary">Colour</p>
             <div className="mt-2 flex gap-2" role="radiogroup" aria-label="Event colour">
               {TONES.map((tone) => (
