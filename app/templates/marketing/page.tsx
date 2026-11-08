@@ -43,6 +43,8 @@ import { StatCards, type Stat } from "@/components/application/dashboard/stat-ca
 import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
 import { Chip } from "@/components/base/badges/chip";
+import { StatusDot } from "@/components/base/badges/status-dot";
+import { Select, SelectItem } from "@/components/base/select/select";
 import { cx } from "@/utils/cx";
 
 /**
@@ -195,10 +197,10 @@ function buildCampaigns(): Campaign[] {
   return rows;
 }
 
-const DELIVERY_STYLE: Record<Delivery, string> = {
-  Active: "bg-status-lime-background text-status-lime-text",
-  Paused: "bg-status-yellow-background text-status-yellow-text",
-  Draft: "bg-background-tertiary-default text-text-secondary",
+const DELIVERY_DOT: Record<Delivery, "green" | "yellow" | "indigo"> = {
+  Active: "green",
+  Paused: "yellow",
+  Draft: "indigo",
 };
 
 const inputClass =
@@ -824,28 +826,59 @@ export default function MarketingTemplatePage() {
 
         {filtersOpen && (
           <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
-            <label className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5">
               <span className={labelClass}>Channel</span>
-              <select value={channelFilter} aria-label="Filter by channel" onChange={(event) => { setChannelFilter(event.target.value); setPage(1); }} className={inputClass}>
-                <option>All channels</option>
-                {CHANNELS.map((c) => (<option key={c} value={c}>{c}</option>))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>Objective</span>
-              <select value={objectiveFilter} aria-label="Filter by objective" onChange={(event) => { setObjectiveFilter(event.target.value); setPage(1); }} className={inputClass}>
-                <option>All objectives</option>
-                {OBJECTIVES.map((o) => (<option key={o} value={o}>{o}</option>))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>Spend</span>
-              <select value={spendFilter} aria-label="Filter by spend" onChange={(event) => { setSpendFilter(event.target.value); setPage(1); }} className={inputClass}>
-                {["All spend", "Under $1,000", "$1,000 – $5,000", "$5,000 – $20,000", "Over $20,000"].map((s) => (
-                  <option key={s} value={s}>{s}</option>
+              <Select
+                aria-label="Filter by channel"
+                selectedKey={channelFilter}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setChannelFilter(key);
+                    setPage(1);
+                  }
+                }}
+              >
+                <SelectItem id="All channels" textValue="All channels">All channels</SelectItem>
+                {CHANNELS.map((c) => (
+                  <SelectItem key={c} id={c} textValue={c}>{c}</SelectItem>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>Objective</span>
+              <Select
+                aria-label="Filter by objective"
+                selectedKey={objectiveFilter}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setObjectiveFilter(key);
+                    setPage(1);
+                  }
+                }}
+              >
+                <SelectItem id="All objectives" textValue="All objectives">All objectives</SelectItem>
+                {OBJECTIVES.map((o) => (
+                  <SelectItem key={o} id={o} textValue={o}>{o}</SelectItem>
+                ))}
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>Spend</span>
+              <Select
+                aria-label="Filter by spend"
+                selectedKey={spendFilter}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setSpendFilter(key);
+                    setPage(1);
+                  }
+                }}
+              >
+                {["All spend", "Under $1,000", "$1,000 – $5,000", "$5,000 – $20,000", "Over $20,000"].map((s) => (
+                  <SelectItem key={s} id={s} textValue={s}>{s}</SelectItem>
+                ))}
+              </Select>
+            </div>
           </div>
         )}
 
@@ -911,16 +944,24 @@ export default function MarketingTemplatePage() {
                     </span>
                   </td>
                   <td className="py-3 pe-3">
-                    <select
-                      value={campaign.delivery}
+                    <Select
                       aria-label={`Delivery status for ${campaign.name}`}
-                      onChange={(event) => setDelivery(campaign.id, event.target.value as Delivery)}
-                      className={cx("cursor-pointer rounded-md px-1.5 py-0.5 text-body-2-medium outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring", DELIVERY_STYLE[campaign.delivery])}
+                      selectedKey={campaign.delivery}
+                      onSelectionChange={(key) => {
+                        if (typeof key === "string") {
+                          setDelivery(campaign.id, key as Delivery);
+                        }
+                      }}
+                      size="sm"
+                      className="w-[132px]"
                     >
                       {(["Active", "Paused", "Draft"] as Delivery[]).map((d) => (
-                        <option key={d} value={d}>{d}</option>
+                        <SelectItem key={d} id={d} textValue={d}>
+                          <StatusDot color={DELIVERY_DOT[d]} />
+                          {d}
+                        </SelectItem>
                       ))}
-                    </select>
+                    </Select>
                   </td>
                   <td className="py-3 pe-3 text-body-medium text-text-secondary">{campaign.objective}</td>
                   <td className="py-3 pe-3 text-body-medium text-text-secondary tabular-nums">{campaign.updated}</td>
@@ -1054,26 +1095,57 @@ function CampaignEditor({
         </label>
 
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5">
             <span className={labelClass}>Channel</span>
-            <select value={draft.channel} aria-label="Channel" onChange={(event) => setDraft((prev) => ({ ...prev, channel: event.target.value }))} className={inputClass}>
-              {CHANNELS.map((c) => (<option key={c} value={c}>{c}</option>))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>Objective</span>
-            <select value={draft.objective} aria-label="Objective" onChange={(event) => setDraft((prev) => ({ ...prev, objective: event.target.value }))} className={inputClass}>
-              {OBJECTIVES.map((o) => (<option key={o} value={o}>{o}</option>))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>Delivery</span>
-            <select value={draft.delivery} aria-label="Delivery" onChange={(event) => setDraft((prev) => ({ ...prev, delivery: event.target.value as Delivery }))} className={inputClass}>
-              {(["Active", "Paused", "Draft"] as Delivery[]).map((d) => (
-                <option key={d} value={d}>{d}</option>
+            <Select
+              aria-label="Channel"
+              selectedKey={draft.channel}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setDraft((prev) => ({ ...prev, channel: key }));
+                }
+              }}
+            >
+              {CHANNELS.map((c) => (
+                <SelectItem key={c} id={c} textValue={c}>{c}</SelectItem>
               ))}
-            </select>
-          </label>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className={labelClass}>Objective</span>
+            <Select
+              aria-label="Objective"
+              selectedKey={draft.objective}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setDraft((prev) => ({ ...prev, objective: key }));
+                }
+              }}
+            >
+              {OBJECTIVES.map((o) => (
+                <SelectItem key={o} id={o} textValue={o}>{o}</SelectItem>
+              ))}
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className={labelClass}>Delivery</span>
+            <Select
+              aria-label="Delivery"
+              selectedKey={draft.delivery}
+              onSelectionChange={(key) => {
+                if (typeof key === "string") {
+                  setDraft((prev) => ({ ...prev, delivery: key as Delivery }));
+                }
+              }}
+            >
+              {(["Active", "Paused", "Draft"] as Delivery[]).map((d) => (
+                <SelectItem key={d} id={d} textValue={d}>
+                  <StatusDot color={DELIVERY_DOT[d]} />
+                  {d}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>Spend (USD)</span>
             <input
