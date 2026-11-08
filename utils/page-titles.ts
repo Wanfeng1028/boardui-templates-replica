@@ -6,8 +6,7 @@
  * have no title on the original (404, or a 307 redirect): /dashboard,
  * /login, /pricing, /pro-components, /pro-components/charts, /signup and
  * /templates. Those seven use a plain "<Name> | BoardUI" fallback,
- * listed in the fix report. /templates/hr-management is a 404 on the
- * original, so its title is verbatim "Page not found | BoardUI".
+ * listed in the fix report.
  */
 export const PAGE_TITLES: Record<string, string> = {
   "/": "BoardUI - React Design System for Dashboards",
@@ -138,7 +137,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/templates/chat-starter": "Chat Starter Template — Deploy a Working AI Chat in Two Minutes | BoardUI",
   "/templates/dashboard": "Dashboard Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/finance": "Finance Dashboard Template — React + Tailwind Admin Dashboard | BoardUI",
-  "/templates/hr-management": "Page not found | BoardUI",
+  "/templates/hr": "HR Management Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/marketing": "Marketing Dashboard Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/medical-profile": "Medical Profile Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/multi-agent-chat": "Multi-agent Chat Template — BoardUI | BoardUI",

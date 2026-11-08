@@ -39,7 +39,8 @@ const components: Entry[] = [
   { name: "Accordion", href: "/components/accordion", description: "Sections that expand in place, with a smooth height transition.", tier: "free", status: "shipped" },
   { name: "Announcement", href: "/components/announcement", description: "Dismissible banner for product news.", tier: "free", status: "shipped" },
   { name: "Avatar", href: "/components/avatar", description: "User photo with initials fallback.", tier: "free", status: "shipped" },
-  { name: "Badge", href: "/components/badge", description: "Counter pills and the Kbd shortcut hint.", tier: "free", status: "shipped" },
+  // No Badge card: on boardui.com/components Badge lives only in the
+  // sidebar, not as a directory card (live recount 2026-11-08: 96 cards).
   { name: "Breadcrumb", href: "/components/breadcrumb", description: "Path trail with collapsing levels.", tier: "free", status: "shipped" },
   { name: "Button", href: "/components/button", description: "Primary, secondary, and danger actions.", tier: "free", status: "shipped" },
   { name: "Button Group", href: "/components/button-group", description: "Fused row of selectable buttons.", tier: "free", status: "shipped" },
@@ -95,14 +96,14 @@ const blocks: Entry[] = [
   { name: "Agent Thinking", href: "/components/agent-thinking", description: "Agent thinking indicators for chat composers.", tier: "free", status: "shipped", isNew: true },
   { name: "Auth Card", href: "/components/auth-card", description: "Sign-in and sign-up blocks with social login.", tier: "free", status: "shipped", isNew: true },
   { name: "Calendar", href: "/components/calendar", description: "Full month view with event pills.", tier: "pro", status: "shipped" },
-  { name: "Composer", href: "/components/composer", description: "The AI chat composer: attachment and model menus, voice and send controls.", tier: "pro", status: "shipped" },
+  // No Composer card: sidebar-only on boardui.com/components (see Badge).
   { name: "Composer Attachments", href: "/components/composer-attachments", description: "File tiles landing one by one above the prompt.", tier: "pro", status: "shipped", isNew: true },
   { name: "Composer Loader", href: "/components/composer-loader", description: "Orbiting light band for a working composer.", tier: "free", status: "shipped", isNew: true },
   { name: "Composer Panel", href: "/components/composer-panel", description: "Two-row chat input with permission modes.", tier: "pro", status: "shipped", isNew: true },
   { name: "Data Grid", href: "/components/data-grid", description: "Editable spreadsheet with selection, filters, and live summaries.", tier: "free", status: "shipped", isNew: true },
   { name: "Data Table", href: "/components/data-table", description: "Filters, selection, and pagination wired up.", tier: "free", status: "shipped" },
   { name: "Notification Center", href: "/components/notification-center", description: "Grouped activity inbox with tabs and actions.", tier: "free", status: "shipped" },
-  { name: "Orders Chart", href: "/components/orders-chart-card", description: "A year of monthly orders as bars, this year beside last year.", tier: "free", status: "shipped" },
+  // No Orders Chart card: sidebar-only on boardui.com/components (see Badge).
   { name: "Questionnaire", href: "/components/questionnaire", description: "Plan-mode questions, one step at a time.", tier: "pro", status: "shipped", isNew: true },
   { name: "Settings Modal", href: "/components/settings-modal", description: "Multi-page settings in a controlled dialog.", tier: "free", status: "shipped" },
   { name: "Sidebar", href: "/components/sidebar", description: "Floating app navigation with teams menu.", tier: "free", status: "shipped" },

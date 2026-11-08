@@ -8,7 +8,7 @@ import { Chip } from "@/components/base/badges/chip";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
-import HrManagementTemplatePage from "@/app/templates/hr-management/page";
+import HrManagementTemplatePage from "@/app/templates/hr/page";
 
 const HR_PREVIEW_CODE = `import { HrShell } from "@/components/application/hr/hr-shell";
 
@@ -30,7 +30,7 @@ export default function HrManagementPage() {
           <span className="text-caption-1-regular text-text-tertiary">ui.gemmae.dev/components/hr-management</span>
         </div>
         <p className="text-body-regular text-text-secondary">A complete HR screen - headcount KPI cards, the recent hires grid, the hiring pipeline as stage bars, an engagement score radar, hires vs. attrition on twin axes, tabbed team breakdowns, and an employees data table. Fully responsive, down to a slide-in drawer on mobile.</p>
-        <TemplatePreview title="HR management" slug="hr-management" previewCode={HR_PREVIEW_CODE}>
+        <TemplatePreview title="HR management" slug="hr" previewCode={HR_PREVIEW_CODE}>
           <HrManagementTemplatePage />
         </TemplatePreview>
         <section className="flex flex-col gap-3">
@@ -55,7 +55,7 @@ export default function HrManagementPage() {
 // sorting, pagination).`}</pre>
           <div className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-primary-default p-5">
               <p className="text-body-regular text-text-secondary">The full template lives on this site - open it to explore the complete screen.</p>
-              <LinkButton href="/templates/hr-management" trailingIcon={RiArrowRightSLine}>Open the HR Management template</LinkButton>
+              <LinkButton href="/templates/hr" trailingIcon={RiArrowRightSLine}>Open the HR Management template</LinkButton>
             </div>
         </section>
         <div className="flex items-center gap-2 border-t border-separator-border pt-5">

@@ -30,7 +30,7 @@ const TEMPLATES = [
   { slug: "calendar", name: "Calendar", desc: "Month view — August 2026 grid with events pinned to dates.", icon: RiCalendarLine },
   { slug: "finance", name: "Finance", desc: "Finance dashboard — balance, income, expenses, cash flow, spending, portfolio.", icon: RiBankLine },
   { slug: "medical-profile", name: "Medical Profile", desc: "Patient info, important alerts, steps, sleep score.", icon: RiAsterisk },
-  { slug: "hr-management", name: "HR Management", desc: "Headcount KPIs, hiring pipeline, engagement radar, employees table. Built from the official description (no live demo).", icon: RiTeamLine },
+  { slug: "hr", name: "HR Management", desc: "Headcount KPIs, hiring pipeline, engagement radar, employees table.", icon: RiTeamLine },
   { slug: "ai-chat", name: "AI Chat", desc: "Coding agent chat — working chat with demo mode (no API key needed).", icon: RiChatAiLine },
   { slug: "ai-image-generation", name: "AI Image Generation", desc: "Gallery / Styles tabs with image generations and prompts.", icon: RiImageAiLine },
   { slug: "ai-profile", name: "AI Profile", desc: "Agent profile — lifetime tokens, activity, 32 agents.", icon: RiUserSmileLine },

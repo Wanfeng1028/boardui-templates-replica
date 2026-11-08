@@ -119,7 +119,7 @@ const TEMPLATE_EMBEDS: Record<string, string> = {
   "medical-profile": "/templates/medical-profile",
   "marketing-dashboard": "/templates/marketing",
   "finance-dashboard": "/templates/finance",
-  "hr-management": "/templates/hr-management",
+  "hr-management": "/templates/hr",
 };
 
 /**

@@ -11,9 +11,9 @@ import { useThemeMode } from "@/components/application/theme/theme-toggle";
 import { ButtonLink } from "@/components/base/buttons/button";
 
 const DISMISSED_KEY = "boardui:pro-offer-dismissed";
-/** No pricing page exists on this site, so "Get Pro" goes to the Pro
- *  components showcase — the closest in-site Pro destination. */
-const PRO_COMPONENTS_URL = "/pro-components";
+/** "Get Pro" now goes to the /pricing page (the site has one now), matching
+ *  the original's pricing destination. */
+const PRICING_URL = "/pricing";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
@@ -58,7 +58,7 @@ export function ProOfferCard() {
         <HeroRays config={rays} paused={reduceMotion} className="absolute inset-0 size-full" />
       }
       cta={
-        <ButtonLink href={PRO_COMPONENTS_URL} className="w-full">
+        <ButtonLink href={PRICING_URL} className="w-full">
           Get Pro
         </ButtonLink>
       }
