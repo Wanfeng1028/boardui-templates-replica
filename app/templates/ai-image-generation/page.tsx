@@ -33,7 +33,7 @@ import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } fr
 
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
-import { ProOfferCard } from "@/components/application/app-shell/pro-offer-card";
+import { ProBanner } from "@/components/application/templates/pro-banner";
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
@@ -153,6 +153,7 @@ const GALLERY_ITEMS = [
 
 export default function AiImageGenerationTemplatePage() {
   const [navOpen, setNavOpen] = useState(false);
+  const [proDismissed, setProDismissed] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [repos, setRepos] = useState<RepoGroup[]>(REPOS);
   const [activeId, setActiveId] = useState("image-generation");
@@ -364,11 +365,11 @@ export default function AiImageGenerationTemplatePage() {
           />
         )}
       </div>
-      {/* Pro popup, as on the original template pages (its text is the
-          free-repo ProOfferCard, "Buy once. Build forever." — the live
-          original's template popup reads "This template is part of Pro",
-          but the card text itself is out of scope for this lane). */}
-      <ProOfferCard />
+      {/* Template Pro card, as on the original live page (bottomCard:
+          "This template is part of Pro" / "Buy once and install the full
+          source with the CLI." / Get Pro) — same shared ProBanner as the
+          multi-agent-chat template. */}
+      {!proDismissed && <ProBanner onDismiss={() => setProDismissed(true)} />}
     </div>
   );
 }
