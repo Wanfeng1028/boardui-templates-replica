@@ -17,12 +17,15 @@ import {
   CHARTS,
   DISCORD_URL,
   FAQ_ITEMS,
+  FEATURE_ICONS,
   MCP_CURSOR_LINK,
   MCP_VSCODE_LINK,
   SHOWCASE,
   TEMPLATE_CARDS,
   TIERS,
 } from "./home-data";
+import { ProLogoMark } from "./pro-logo-mark";
+import { TestimonialsSection } from "./testimonials";
 import { cx } from "@/utils/cx";
 
 function SectionHeading({ title, blurb }: { title: string; blurb?: string }) {
@@ -276,54 +279,88 @@ function PricingSection() {
         blurb="Keep the code forever and use it in unlimited projects. Choose Pro updates for one year or forever. No subscription or auto-renewal."
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {TIERS.map((tier) => (
-          <article
-            key={tier.name}
-            className={cx(
-              "flex flex-col gap-4 rounded-3xl border p-5",
-              tier.featured
-                ? "border-accent-500 bg-background-secondary-default"
-                : "border-border-button-default bg-background-primary-default",
-            )}
-          >
-            <div className="flex flex-col gap-1.5">
-              <h3 className="text-title-3-semibold text-text-primary">{tier.name}</h3>
-              {tier.badge ? (
-                <p className="w-fit rounded-full bg-accent-500 px-2.5 py-0.5 text-caption-1-semibold text-white">
-                  {tier.badge}
-                </p>
-              ) : null}
-              <p className="text-body-regular text-text-secondary">{tier.blurb}</p>
-            </div>
-            <ul className="flex flex-1 flex-col gap-2">
-              {tier.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-body-regular text-text-secondary">
-                  <RiCheckLine className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
-                  {feature === "Discord access" ? (
-                    <span>
-                      Discord access{" "}
-                      <a
-                        href={DISCORD_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-text-tertiary underline"
-                      >
-                        Join now
-                      </a>
-                    </span>
-                  ) : (
-                    <span>{feature}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <ButtonLink href={tier.href} variant={tier.featured ? "primary" : "secondary"} size="medium">
-              {tier.cta}
-            </ButtonLink>
-          </article>
-        ))}
+        {TIERS.map((tier) => {
+          const TitleIcon = tier.titleIcon;
+          return (
+            <article
+              key={tier.name}
+              className={cx(
+                "flex flex-col gap-4 rounded-3xl border p-5",
+                tier.featured
+                  ? "border-accent-500 bg-background-secondary-default"
+                  : "border-border-button-default bg-background-primary-default",
+              )}
+            >
+              <div className="flex flex-col gap-1.5">
+                <TitleIcon className="mb-1.5 size-6 text-foreground-icon-primary" aria-hidden />
+                <h3 className="text-title-3-semibold text-text-primary">{tier.name}</h3>
+                {tier.badge ? (
+                  <p className="w-fit rounded-full bg-accent-500 px-2.5 py-0.5 text-caption-1-semibold text-white">
+                    {tier.badge}
+                  </p>
+                ) : null}
+                <p className="text-body-regular text-text-secondary">{tier.blurb}</p>
+              </div>
+              {/* Price row, as on the original: struck-through launch price,
+                  current price, and the two qualifier lines beside it. */}
+              <div className="flex items-center gap-3">
+                <span
+                  dir="ltr"
+                  className="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap text-text-primary"
+                >
+                  {tier.priceWas ? (
+                    <span className="text-[24px] font-medium opacity-30 line-through">{tier.priceWas}</span>
+                  ) : null}
+                  <span className="text-[36px] font-semibold">{tier.price}</span>
+                </span>
+                <span className="flex min-w-0 flex-col text-[14px] leading-[20px] font-medium text-text-primary">
+                  <span className="opacity-60">{tier.priceNote}</span>
+                  <span className="opacity-35">{tier.priceSubnote}</span>
+                </span>
+              </div>
+              <ul className="flex flex-1 flex-col gap-2">
+                {tier.features.map((feature) => {
+                  const FeatureIcon = FEATURE_ICONS[feature];
+                  return (
+                    <li key={feature} className="flex items-start gap-2 text-body-regular text-text-secondary">
+                      {FeatureIcon === "pro-mark" ? (
+                        <ProLogoMark scale={22 / 56} animated={false} className="mt-0.5" />
+                      ) : FeatureIcon ? (
+                        <FeatureIcon className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
+                      ) : (
+                        <RiCheckLine className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
+                      )}
+                      {feature === "Discord access" ? (
+                        <span>
+                          Discord access{" "}
+                          <a
+                            href={DISCORD_URL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-text-tertiary underline"
+                          >
+                            Join now
+                          </a>
+                        </span>
+                      ) : (
+                        <span>{feature}</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              <ButtonLink
+                href={tier.href}
+                variant={tier.featured ? "primary" : "secondary"}
+                size="medium"
+                leadingIcon={tier.ctaIcon}
+              >
+                {tier.cta}
+              </ButtonLink>
+            </article>
+          );
+        })}
       </div>
-      <p className="text-body-regular text-text-tertiary">Already used by startups and developers</p>
     </section>
   );
 }
@@ -511,6 +548,7 @@ export function HomeSections() {
       <TemplatesSection />
       <ChartsSection />
       <PricingSection />
+      <TestimonialsSection />
       <McpSection />
       <GithubSection />
       <FaqSection />
