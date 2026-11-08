@@ -22,6 +22,7 @@ import { NotificationBell } from "@/components/application/app-shell/notificatio
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { IconButton } from "@/components/base/buttons/icon-button";
+import { Select, SelectItem } from "@/components/base/select/select";
 import { cx } from "@/utils/cx";
 
 /**
@@ -740,42 +741,42 @@ export default function ProjectBoardTemplatePage() {
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>Status</span>
-                <select
-                  value={selected.column}
+                <Select
                   aria-label="Status"
-                  onChange={(event) => moveTicket(selectedTicket.id, selected.column, event.target.value as ColumnId)}
-                  className={inputClass}
+                  selectedKey={selected.column}
+                  onSelectionChange={(k) => moveTicket(selectedTicket.id, selected.column, String(k) as ColumnId)}
+                  className="w-full"
                 >
                   {COLUMNS.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <SelectItem key={c.id} id={c.id} textValue={c.name}>{c.name}</SelectItem>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>Priority</span>
-                <select
-                  value={selectedTicket.priority}
+                <Select
                   aria-label="Priority"
-                  onChange={(event) => updateTicket(selected.column, selectedTicket.id, { priority: event.target.value as Priority })}
-                  className={inputClass}
+                  selectedKey={selectedTicket.priority}
+                  onSelectionChange={(k) => updateTicket(selected.column, selectedTicket.id, { priority: String(k) as Priority })}
+                  className="w-full"
                 >
                   {(["Low", "Medium", "High", "Urgent"] as Priority[]).map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <SelectItem key={p} id={p} textValue={p}>{p}</SelectItem>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>Project</span>
-                <select
-                  value={selectedTicket.app}
+                <Select
                   aria-label="Project"
-                  onChange={(event) => updateTicket(selected.column, selectedTicket.id, { app: event.target.value as AppName })}
-                  className={inputClass}
+                  selectedKey={selectedTicket.app}
+                  onSelectionChange={(k) => updateTicket(selected.column, selectedTicket.id, { app: String(k) as AppName })}
+                  className="w-full"
                 >
                   {(["vibl", "firstview", "BoardUI"] as AppName[]).map((a) => (
-                    <option key={a} value={a}>{a}</option>
+                    <SelectItem key={a} id={a} textValue={a}>{a}</SelectItem>
                   ))}
-                </select>
+                </Select>
               </label>
               <div className="flex flex-col gap-1.5">
                 <span className={labelClass}>Opened</span>
@@ -909,29 +910,29 @@ export default function ProjectBoardTemplatePage() {
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>Project</span>
-                <select value={form.app} aria-label="Project" onChange={(event) => setForm((prev) => ({ ...prev, app: event.target.value as AppName }))} className={inputClass}>
+                <Select aria-label="Project" selectedKey={form.app} onSelectionChange={(k) => setForm((prev) => ({ ...prev, app: String(k) as AppName }))} className="w-full">
                   {(["vibl", "firstview", "BoardUI"] as AppName[]).map((a) => (
-                    <option key={a} value={a}>{a}</option>
+                    <SelectItem key={a} id={a} textValue={a}>{a}</SelectItem>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>Priority</span>
-                <select value={form.priority} aria-label="Priority" onChange={(event) => setForm((prev) => ({ ...prev, priority: event.target.value as Priority }))} className={inputClass}>
+                <Select aria-label="Priority" selectedKey={form.priority} onSelectionChange={(k) => setForm((prev) => ({ ...prev, priority: String(k) as Priority }))} className="w-full">
                   {(["Low", "Medium", "High", "Urgent"] as Priority[]).map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <SelectItem key={p} id={p} textValue={p}>{p}</SelectItem>
                   ))}
-                </select>
+                </Select>
               </label>
             </div>
 
             <label className="flex flex-col gap-1.5">
               <span className={labelClass}>Column</span>
-              <select value={newColumn} aria-label="Column" onChange={(event) => setNewColumn(event.target.value as ColumnId)} className={inputClass}>
+              <Select aria-label="Column" selectedKey={newColumn} onSelectionChange={(k) => setNewColumn(String(k) as ColumnId)} className="w-full">
                 {COLUMNS.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <SelectItem key={c.id} id={c.id} textValue={c.name}>{c.name}</SelectItem>
                 ))}
-              </select>
+              </Select>
             </label>
 
             <div className="flex flex-col gap-1.5">
