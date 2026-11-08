@@ -55,7 +55,7 @@ export function ActivityRingsCard({ className }: { className?: string }) {
                   strokeLinecap="round"
                   strokeDasharray={`${frac * c} ${c}`}
                   opacity={dimmed ? 0.3 : 1}
-                  className="cursor-pointer transition-all duration-300"
+                  className="cursor-pointer transition-[stroke-dasharray,opacity] duration-300"
                   onMouseEnter={() => setHover(ring.key)}
                   onMouseLeave={() => setHover(null)}
                 />

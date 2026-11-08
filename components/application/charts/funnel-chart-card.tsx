@@ -105,7 +105,7 @@ export function FunnelChartCard({ className }: { className?: string }) {
               >
                 <div className="flex justify-center">
                   <div
-                    className={cx("flex h-11 items-center justify-center text-body-medium text-white transition-all duration-500", dimmed && "opacity-40")}
+                    className={cx("flex h-11 items-center justify-center text-body-medium text-white transition-[width,opacity] duration-500", dimmed && "opacity-40")}
                     style={{
                       width: `${widthPct}%`,
                       background: mono ? MONO_COLORS[i] : stage.color,

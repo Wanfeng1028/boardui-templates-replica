@@ -22,7 +22,7 @@ import {
   RiInformationFill,
   RiNotification3Fill,
 } from "@remixicon/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Avatar, type AvatarProps } from "@/components/base/avatar/avatar";
 import { Button, type ButtonProps } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
@@ -218,6 +218,7 @@ export function Notification({
   const dismissed = dismissedProp || dismissedState;
   const Icon = icon ?? STATUS_ICON[status];
   const hasIntro = introDelay !== undefined;
+  const reduceMotion = useReducedMotion();
   const introDelayMs = (introDelay ?? 0) * 1000;
   const timed = Boolean(autoDismissDuration && autoDismissDuration > 0);
 
@@ -230,13 +231,13 @@ export function Notification({
 
   useEffect(() => {
     const element = barRef.current;
-    if (!timed || !element) return;
+    if (!timed || !element || reduceMotion) return;
     bar.current = element.animate(
       [{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }],
       { duration: autoDismissDuration, delay: introDelayMs, easing: "linear", fill: "forwards" },
     );
     return () => bar.current?.cancel();
-  }, [timed, autoDismissDuration, introDelayMs]);
+  }, [timed, autoDismissDuration, introDelayMs, reduceMotion]);
 
   useEffect(() => {
     if (!timed || dismissed) return;
@@ -260,12 +261,12 @@ export function Notification({
           ref={ref}
           role={role ?? (status === "error" ? "alert" : "status")}
           initial={
-            hasIntro
+            hasIntro && !reduceMotion
               ? { opacity: 0, y: 12, scale: 0.97, filter: "blur(4px)" }
               : false
           }
           animate={
-            hasIntro
+            hasIntro && !reduceMotion
               ? {
                   opacity: 1,
                   y: 0,
@@ -281,9 +282,7 @@ export function Notification({
           }
           exit={{
             opacity: 0,
-            y: 8,
-            scale: 0.96,
-            filter: "blur(3px)",
+            ...(reduceMotion ? {} : { y: 8, scale: 0.96, filter: "blur(3px)" }),
             transition: { duration: 0.18, ease: "easeOut" },
           }}
           className={cx(styles.card, className)}
@@ -356,6 +355,7 @@ export function NotificationViewport({
   ...props
 }: NotificationViewportProps) {
   const direction = useDirection();
+  const reduceMotion = useReducedMotion();
   const resolvedPosition = position ?? placement ?? "bottom-end";
   const mounted = useSyncExternalStore(
     subscribeToHydration,
@@ -384,12 +384,14 @@ export function NotificationViewport({
             key={isValidElement(child) && child.key !== null ? child.key : index}
             className="pointer-events-auto w-full"
             transition={{
-              layout: {
-                type: "spring",
-                stiffness: 520,
-                damping: 42,
-                mass: 0.7,
-              },
+              layout: reduceMotion
+                ? { duration: 0 }
+                : {
+                    type: "spring",
+                    stiffness: 520,
+                    damping: 42,
+                    mass: 0.7,
+                  },
             }}
           >
             {child}

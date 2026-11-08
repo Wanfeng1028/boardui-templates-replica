@@ -20,7 +20,7 @@ import {
   today,
 } from "@internationalized/date";
 import { RiCalendarLine } from "@remixicon/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/base/buttons/button";
 import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
 import {
@@ -154,6 +154,7 @@ function Footer({
   onApply: () => void;
 }) {
   const localize = useTemplateCopy();
+  const reduceMotion = useReducedMotion();
   return localize((
     <div className="flex items-center justify-between pt-3 pe-4">
       <div className="flex items-center gap-2.5">
@@ -161,10 +162,10 @@ function Footer({
           {value && (
             <motion.div
               key="range-summary"
-              initial={{ opacity: 0, y: -12 }}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: reduceMotion ? "easeOut" : [0.34, 1.2, 0.64, 1] }}
               className="flex items-center gap-2.5"
             >
               <div className="flex items-center gap-[5px]">

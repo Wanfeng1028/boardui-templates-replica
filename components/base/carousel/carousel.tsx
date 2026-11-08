@@ -229,7 +229,7 @@ export function Carousel({
               aria-current={index === active}
               onClick={() => scrollToIndex(index)}
               className={cx(
-                "h-1.5 cursor-pointer rounded-full transition-all duration-200 ease-out",
+                "h-1.5 cursor-pointer rounded-full transition-[width,background-color] duration-200 ease-out",
                 index === active
                   ? "w-4 bg-text-primary"
                   : "w-1.5 bg-background-tertiary-default hover:bg-border-button-active",

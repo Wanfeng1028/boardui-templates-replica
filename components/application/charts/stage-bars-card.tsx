@@ -71,7 +71,7 @@ export function StageBarsCard({ className }: { className?: string }) {
                 </span>
                 <span className="block h-3 w-full overflow-hidden rounded-full bg-background-tertiary-default">
                   <span
-                    className="block h-full rounded-full transition-all duration-500"
+                    className="block h-full rounded-full transition-[width,background-color,opacity] duration-500"
                     style={{
                       width: `${pct}%`,
                       background: stage.color,

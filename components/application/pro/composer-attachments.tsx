@@ -37,7 +37,7 @@ function UploadRing({ progress, done }: { progress: number; done: boolean }) {
         <circle cx="16" cy="16" r={r} fill="none" strokeWidth="2.5" className="stroke-background-tertiary-default" />
         <circle
           cx="16" cy="16" r={r} fill="none" strokeWidth="2.5" strokeLinecap="round"
-          className="stroke-accent-500 transition-all duration-150"
+          className="stroke-accent-500 transition-[stroke-dashoffset] duration-150"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - progress / 100)}
         />

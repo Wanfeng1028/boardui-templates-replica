@@ -7,7 +7,7 @@ import type { RefObject } from "react";
 import { Calendar, Dialog, Popover, useLocale } from "react-aria-components";
 import type { CalendarDate } from "@internationalized/date";
 import { RiCalendarLine } from "@remixicon/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/base/buttons/button";
 import {
   DateChipInput,
@@ -70,6 +70,7 @@ export function DatePicker({
   onOpenChange: controlledOnOpenChange,
 }: DatePickerProps) {
   const localize = useTemplateCopy();
+  const reduceMotion = useReducedMotion();
   const { locale } = useLocale();
   const ownTriggerRef = useRef<HTMLButtonElement>(null);
   const triggerRef = externalTriggerRef ?? ownTriggerRef;
@@ -154,10 +155,10 @@ export function DatePicker({
                     {pendingValue && (
                       <motion.div
                         key="date-summary"
-                        initial={{ opacity: 0, y: -12 }}
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.25, ease: [0.34, 1.2, 0.64, 1] }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+                        transition={{ duration: 0.25, ease: reduceMotion ? "easeOut" : [0.34, 1.2, 0.64, 1] }}
                       >
                         <DateChipInput date={pendingValue} label="Date" onCommit={setPendingValue} />
                       </motion.div>

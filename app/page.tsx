@@ -21,6 +21,22 @@ import { HomeSections } from "@/components/application/landing/home-sections";
  */
 export const metadata: Metadata = {
   title: { absolute: "BoardUI - React Design System for Dashboards" },
+  alternates: { canonical: "https://www.boardui.com" },
+  openGraph: {
+    title: "BoardUI - React Design System for Dashboards",
+    description:
+      "Build agentic products and data-rich dashboards with 103 React components (19 chart cards), 10 Pro templates, Tailwind CSS, and editable source code.",
+    type: "website",
+    url: "https://www.boardui.com",
+    images: [
+      {
+        url: "/og_image.png",
+        width: 1200,
+        height: 630,
+        alt: "BoardUI React design system components and dashboard templates",
+      },
+    ],
+  },
 };
 
 export default function Page() {

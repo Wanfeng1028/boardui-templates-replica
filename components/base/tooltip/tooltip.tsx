@@ -92,8 +92,8 @@ export function Tooltip({ children, className, size = "sm", showArrow = true, of
           // `data-exiting` is set so the same transition plays in reverse. The
           // `transition` utility covers scale, filter (blur) and opacity.
           "transition duration-200 ease-out",
-          "data-[entering]:scale-90 data-[entering]:opacity-0 data-[entering]:blur-[4px]",
-          "data-[exiting]:scale-90 data-[exiting]:opacity-0 data-[exiting]:blur-[4px]",
+          "motion-safe:data-[entering]:scale-90 data-[entering]:opacity-0 motion-safe:data-[entering]:blur-[4px]",
+          "motion-safe:data-[exiting]:scale-90 data-[exiting]:opacity-0 motion-safe:data-[exiting]:blur-[4px]",
           typeof className === "function" ? className(state) : className,
         )
       }

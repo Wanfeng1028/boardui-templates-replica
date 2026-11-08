@@ -3,7 +3,7 @@
 import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
 
 import type { ReactNode } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 import { ProLogoMark } from "@/components/application/landing/pro-logo-mark";
 import { CloseButton } from "@/components/base/buttons/close-button";
@@ -40,9 +40,10 @@ export function ProPromptCard({
   className?: string;
 }) {
   const localize = useTemplateCopy();
+  const reduceMotion = useReducedMotion();
   return localize((
     <motion.aside
-      initial={{ opacity: 0, y: 16 }}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 1.2, ease: "easeOut" }}
       aria-label={ariaLabel}

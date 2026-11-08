@@ -70,7 +70,7 @@ export function SleepScoreCard({ className }: { className?: string }) {
                   strokeDashoffset={offset}
                   strokeLinecap="round"
                   opacity={dimmed ? 0.3 : 1}
-                  className="cursor-pointer transition-all duration-300"
+                  className="cursor-pointer transition-[stroke-dasharray,opacity] duration-300"
                   onMouseEnter={() => setHover(a.key)}
                   onMouseLeave={() => setHover(null)}
                 />
