@@ -222,7 +222,7 @@ function Modal({
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
       <button type="button" aria-label="Close dialog" onClick={onClose} className="absolute inset-0 cursor-pointer bg-black/40" />
       <div className="relative flex max-h-[90vh] w-full max-w-[480px] flex-col gap-4 overflow-y-auto rounded-3xl border border-border-button-default bg-background-primary-default p-5 shadow-lg">
         <div className="flex w-full items-center justify-between">
@@ -238,7 +238,7 @@ function Modal({
 function Toast({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div className="fixed bottom-4 left-1/2 z-[70] -translate-x-1/2 rounded-full border border-border-button-default bg-background-primary-default px-4 py-2 text-body-medium text-text-primary shadow-lg">
+    <div className="fixed bottom-4 left-1/2 z-130 -translate-x-1/2 rounded-full border border-border-button-default bg-background-primary-default px-4 py-2 text-body-medium text-text-primary shadow-lg">
       {message}
     </div>
   );

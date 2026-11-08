@@ -450,7 +450,7 @@ export function AgentChat({
                 // header stays fully transparent and the transcript reads all
                 // the way up to the card's edge.
                 scrolledUnder && canClash
-                  ? "border-separator-border bg-white/20 backdrop-blur-[20px] dark:bg-black/20"
+                  ? "border-separator-border bg-background-primary-default/80 backdrop-blur-[20px]"
                   : "border-transparent",
               )}
             >
