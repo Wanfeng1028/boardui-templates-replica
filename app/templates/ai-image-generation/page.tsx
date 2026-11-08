@@ -3,21 +3,27 @@
 import {
   RiAddLine,
   RiArrowDownSLine,
+  RiArrowDropDownLine,
   RiArrowUpLine,
+  RiAttachment2,
+  RiCheckLine,
   RiCloseLine,
   RiDownloadLine,
   RiExpandDiagonalLine,
+  RiFocus3Line,
   RiImageAddLine,
   RiImageAiLine,
   RiFileCopyLine,
   RiHeadphoneLine,
   RiExpandUpDownLine,
+  RiFolder2Line,
   RiFolderLine,
   RiFolderOpenLine,
-  RiGitBranchLine,
+  RiGitMergeLine,
   RiLayoutGridLine,
+  RiListCheck3,
   RiMenuLine,
-  RiMicLine,
+  RiMic2Line,
   RiMore2Fill,
   RiInfinityLine,
   RiRobotLine,
@@ -29,14 +35,29 @@ import {
   RiThumbDownLine,
   RiThumbUpLine,
 } from "@remixicon/react";
-import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from "react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
+import {
+  Dialog as AriaDialog,
+  DialogTrigger as AriaDialogTrigger,
+  Popover as AriaPopover,
+  Pressable,
+  Slider as AriaSlider,
+  SliderThumb as AriaSliderThumb,
+  SliderTrack as AriaSliderTrack,
+} from "react-aria-components";
 
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { ProBanner } from "@/components/application/templates/pro-banner";
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
+import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
+import { SettingsModal } from "@/components/application/settings/settings-modal";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
+import { RadioDot } from "@/components/base/radio/radio";
+import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
+import { useDismissOnOutsidePress, useTriggerToggle } from "@/utils/use-dismiss-on-outside-press";
 import { cx } from "@/utils/cx";
 
 /**
@@ -151,21 +172,140 @@ const GALLERY_ITEMS = [
   { slug: "massive-box", prompt: "MASSIV3 packaging, studio mockup", ratio: "1120/2000" },
 ];
 
+// Original model menu (3oxmuz9pqr-wm.js, ModelMenu / ModelSettingsPanel):
+// models + effort levels, defaults "Fable 5" and index 1 ("Medium").
+const MODELS = ["Composer 2.5", "GPT-5.6 Sol", "Fable 5", "Sonnet 5"];
+const EFFORT_LEVELS = ["Low", "Medium", "Balanced", "High", "Very High", "Max"];
+
+// Original project menu (3oxmuz9pqr-wm.js, ProjectFolderMenu), default first.
+const PROJECTS = [
+  { prefix: "users/mertcan/", name: "project-sea" },
+  { prefix: "users/desktop/", name: "vibl" },
+  { prefix: "users/documents/", name: "boardui" },
+];
+
+// Original voice-on mic bars (3oxmuz9pqr-wm.js, Composer): 4 bars, the
+// .bui-composer-mic-bar keyframes live in styles/globals.css.
+const MIC_BARS = [
+  { height: 8, duration: "0.9s", delay: "-0.4s" },
+  { height: 15, duration: "0.7s", delay: "-0.15s" },
+  { height: 11, duration: "1.05s", delay: "-0.6s" },
+  { height: 14, duration: "0.8s", delay: "-0.3s" },
+];
+
+// Original attachment menu rows (3oxmuz9pqr-wm.js, AddMenu). The plugin
+// SVGs are the originals from www.boardui.com/ai-chat/.
+type AddMenuRow = {
+  icon?: ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  image?: string;
+  darkImage?: string;
+  label: string;
+  description?: string;
+};
+const ADD_ROWS: AddMenuRow[] = [
+  { icon: RiAttachment2, label: "Files and folders" },
+  { icon: RiFocus3Line, label: "Goal", description: "Set a goal for faster results" },
+  { icon: RiListCheck3, label: "Plan mode", description: "Manage complex tasks" },
+];
+const PLUGIN_ROWS: AddMenuRow[] = [
+  { image: "/ai-chat/plugin-documents.svg", darkImage: "/ai-chat/plugin-documents-dark.svg", label: "Documents", description: "Create and edit documents" },
+  { image: "/ai-chat/plugin-spreadsheets.svg", label: "Spreadsheets", description: "Generate spreadsheets" },
+  { image: "/ai-chat/plugin-presentations.svg", label: "Presentations", description: "Create marketing assets" },
+  { image: "/ai-chat/plugin-codeblocks.svg", label: "Code blocks", description: "Write and edit existing code" },
+];
+
+// Shared popover surface for the model / project menus (3oxmuz9pqr-wm.js:
+// the `x` class — 266px, origin-bottom-left, dropdown shadow, 150ms
+// enter/exit with scale 0.95 + 2px blur). The attachment menu is wider
+// (361px) with p-2 instead of p-2.5.
+const MENU_POPOVER_CLASS = cx(
+  "w-[266px] max-w-[calc(100vw-32px)] origin-bottom-left",
+  "rounded-2xl border border-border-button-default bg-background-primary-default p-2.5 shadow-dropdown",
+  "transition duration-150 ease-out",
+  "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",
+  "data-[exiting]:opacity-0 data-[exiting]:scale-95 data-[exiting]:blur-[2px]",
+);
+const ADD_POPOVER_CLASS = cx(
+  "w-[361px] max-w-[calc(100vw-32px)] origin-bottom-left",
+  "rounded-2xl border border-border-button-default bg-background-primary-default p-2 shadow-dropdown",
+  "transition duration-150 ease-out",
+  "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",
+  "data-[exiting]:opacity-0 data-[exiting]:scale-95 data-[exiting]:blur-[2px]",
+);
+
+// Original generation-frame entrance variants (2x-mkcjonn738.js, D):
+// outer fades with staggered children; the header slides up out of blur;
+// the card grows 0 -> 250px tall while fading out of blur.
+const GEN_OUTER_VARIANTS: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.4, ease: "easeOut", staggerChildren: 0.18 } },
+};
+const GEN_HEADER_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 6, filter: "blur(6px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } },
+};
+const GEN_CARD_VARIANTS: Variants = {
+  hidden: { height: 0, opacity: 0, filter: "blur(6px)" },
+  visible: {
+    height: 250,
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: {
+      height: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+      opacity: { duration: 0.35, ease: "easeOut" },
+      filter: { duration: 0.35, ease: "easeOut" },
+    },
+  },
+};
+
+// User-message entrance (2x-mkcjonn738.js, S + Line/w): the bubble is a
+// motion.div, outer fades in 0.4s (children stagger 0.18s), the inner line
+// rises 6px out of blur over 0.5s. Same numbers as the generation frame's
+// v/b — they are the same variants in the original.
+const MSG_OUTER_VARIANTS: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.4, ease: "easeOut", staggerChildren: 0.18 } },
+};
+const MSG_INNER_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 6, filter: "blur(6px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } },
+};
+
+// Original composer placeholder (3oxmuz9pqr-wm.js, Composer): "Ask me"
+// below 640px, "Ask me anything" otherwise.
+const subscribeNarrow = (onChange: () => void) => {
+  const mq = window.matchMedia("(max-width: 639px)");
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
+
 export default function AiImageGenerationTemplatePage() {
   const [navOpen, setNavOpen] = useState(false);
   const [proDismissed, setProDismissed] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [repos, setRepos] = useState<RepoGroup[]>(REPOS);
   const [activeId, setActiveId] = useState("image-generation");
   const [messages, setMessages] = useState<ChatMsg[]>(REPOS[1].threads[1].messages);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [model, setModel] = useState("Fable 5");
+  const [effort, setEffort] = useState(1);
   const [project, setProject] = useState("project-sea");
   const [voiceOn, setVoiceOn] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  // Which user messages already have their generation frame mounted. The
+  // original plays its thread on a timer (2x-mkcjonn738.js, O): the user
+  // bubble first, the generation frame 900ms later.
+  const [genVisible, setGenVisible] = useState<Record<string, boolean>>({});
+  const genTimer = useRef<number | undefined>(undefined);
+  // Which message's generation currently owns `busy`. The seeded Messi
+  // frame and a user-submitted frame can overlap (submit within the first
+  // ~5s); only the latest generation may clear `busy`, otherwise the
+  // seeded frame's completion would re-enable Send mid-generation.
+  const busyForId = useRef<string | null>(null);
   // Wide screens open with the gallery visible, like the original;
   // narrow screens start with the chat full-width and the gallery as a drawer.
   useEffect(() => {
@@ -176,16 +316,22 @@ export default function AiImageGenerationTemplatePage() {
   const [copied, setCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const busyTimer = useRef<number | undefined>(undefined);
 
-  useEffect(() => () => window.clearTimeout(busyTimer.current), []);
+  useEffect(() => () => window.clearTimeout(genTimer.current), []);
+
+  // The seeded Messi thread plays like the original: bubble on mount, the
+  // generation frame 900ms later.
+  useEffect(() => {
+    const t = window.setTimeout(() => setGenVisible((prev) => ({ ...prev, "m-vintage-messi": true })), 900);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const activeThread =
     ALL_THREADS.find((t) => t.id === activeId) ?? ALL_THREADS[1];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, busy]);
+  }, [messages, busy, genVisible]);
 
   const toggleRepo = useCallback((name: string) => {
     setRepos((prev) => prev.map((r) => (r.name === name ? { ...r, open: !r.open } : r)));
@@ -207,21 +353,29 @@ export default function AiImageGenerationTemplatePage() {
     (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
-      // The live original completes a generation with the result frame;
-      // a newly submitted prompt only adds the user bubble and runs the
-      // composer loader; no canned assistant reply is invented.
-      setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", text: trimmed, at: Date.now() }]);
+      // Like the original's thread player: the user bubble appears at once,
+      // the working state (AgentThinking + ComposerLoader glass) runs, and
+      // the generation frame mounts 900ms later — the result is never shown
+      // outright. The frame itself runs its own 4s countdown and calls
+      // onGenerated when the image is revealed, which clears `busy`.
+      const id = `u-${Date.now()}`;
+      setMessages((prev) => [...prev, { id, role: "user", text: trimmed, at: Date.now() }]);
       setInput("");
       setBusy(true);
-      window.clearTimeout(busyTimer.current);
-      busyTimer.current = window.setTimeout(() => setBusy(false), 1400);
+      busyForId.current = id;
+      window.clearTimeout(genTimer.current);
+      genTimer.current = window.setTimeout(() => {
+        setGenVisible((prev) => ({ ...prev, [id]: true }));
+      }, 900);
     },
     [busy],
   );
 
-  const stopGenerating = useCallback(() => {
-    window.clearTimeout(busyTimer.current);
-    setBusy(false);
+  const handleGenerated = useCallback((id: string) => {
+    if (busyForId.current === id) {
+      busyForId.current = null;
+      setBusy(false);
+    }
   }, []);
 
   const shareChat = useCallback(() => {
@@ -244,6 +398,7 @@ export default function AiImageGenerationTemplatePage() {
     onSelectThread: selectThread,
     collapsed: sidebarCollapsed,
     onToggleCollapse: () => setSidebarCollapsed((c) => !c),
+    onOpenSettings: () => setSettingsOpen(true),
   };
 
   // Height follows the preview container when embedded in a docs preview
@@ -252,7 +407,7 @@ export default function AiImageGenerationTemplatePage() {
   return (
     <div className="relative flex h-[var(--template-preview-height,100dvh)] w-full gap-4 overflow-hidden bg-background-full p-3">
       <DocumentTitle />
-      <style>{`@keyframes agent-msg-in{from{opacity:0;filter:blur(6px);transform:translateY(6px)}to{opacity:1;filter:blur(0);transform:translateY(0)}}@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}@keyframes agent-card-in{from{opacity:0;filter:blur(8px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}`}</style>
+      <style>{`@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}@keyframes agent-card-in{from{opacity:0;filter:blur(8px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}`}</style>
       <div className="hidden xl:flex">
         <AgentSidebar {...sidebarProps} />
       </div>
@@ -298,9 +453,6 @@ export default function AiImageGenerationTemplatePage() {
                   <>
                     <button type="button" aria-label="Close menu" onClick={() => setMoreMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
                     <div className="absolute end-0 top-9 z-20 w-56 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                      <button type="button" onClick={() => { setMoreMenuOpen(false); shareChat(); }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                        <RiFileCopyLine className="size-4 shrink-0" aria-hidden /> Copy chat transcript
-                      </button>
                       <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多选项待实测确认</p>
                     </div>
                   </>
@@ -313,16 +465,21 @@ export default function AiImageGenerationTemplatePage() {
           )}
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]">
-            <div className="flex min-h-full flex-col justify-end gap-5 px-4 pt-4 pb-6">
+            <div className="flex min-h-full flex-col justify-end gap-3 px-4 pt-4 pb-6">
               {messages.map((message) => (
                 <Fragment key={message.id}>
-                  <p
-                    className="ms-auto w-fit max-w-[calc(50%+6px)] rounded-2xl bg-background-primary-default px-3 py-[11px] text-start text-body-regular break-words whitespace-pre-wrap text-text-primary shadow-card"
-                    style={{ animation: "agent-msg-in 0.45s ease-out both" }}
+                  <motion.div
+                    layout
+                    variants={MSG_OUTER_VARIANTS}
+                    initial="hidden"
+                    animate="visible"
+                    className="-me-1.5 ms-auto flex w-fit max-w-[calc(50%+6px)] flex-col rounded-2xl bg-background-primary-default px-3 py-[11px] text-start text-body-regular text-text-primary shadow-card"
                   >
-                    {message.text}
-                  </p>
-                  {message.id === "m-vintage-messi" && <GenerationResult />}
+                    <motion.div variants={MSG_INNER_VARIANTS}>
+                      <p className="break-words whitespace-pre-wrap">{message.text}</p>
+                    </motion.div>
+                  </motion.div>
+                  {genVisible[message.id] && <GenerationResult messageId={message.id} onGenerated={handleGenerated} />}
                 </Fragment>
               ))}
             </div>
@@ -333,10 +490,11 @@ export default function AiImageGenerationTemplatePage() {
               value={input}
               onValueChange={setInput}
               onSubmit={() => submit(input)}
-              onStop={stopGenerating}
               busy={busy}
               model={model}
               onModelChange={setModel}
+              effort={effort}
+              onEffortChange={setEffort}
               project={project}
               onProjectChange={setProject}
               voiceOn={voiceOn}
@@ -370,6 +528,12 @@ export default function AiImageGenerationTemplatePage() {
           source with the CLI." / Get Pro) — same shared ProBanner as the
           multi-agent-chat template. */}
       {!proDismissed && <ProBanner onDismiss={() => setProDismissed(true)} />}
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        defaultPage="general"
+        planArtSrc="/templates/settings-plan-art.png"
+      />
     </div>
   );
 }
@@ -381,42 +545,214 @@ export default function AiImageGenerationTemplatePage() {
 /* through a feathered radial mask, and Good / Bad / Copy feedback.    */
 /* ------------------------------------------------------------------ */
 
-function GenerationResult() {
-  const [feedback, setFeedback] = useState<"good" | "bad" | null>(null);
-  const [copied, setCopied] = useState(false);
-  const copyTimer = useRef<number | undefined>(undefined);
+/* ------------------------------------------------------------------ */
+/* Generation result — the original's live ImageGenerationResponse     */
+/* (2x-mkcjonn738.js, D). Mounts generating: a 200x250 card whose     */
+/* canvas draws a 9px dot grid in the icon tokens, lit by a travelling */
+/* wave, with "Generating image" + a split-flap countdown from 4s.     */
+/* At 4000ms the countdown hits 0, the canvas fades, and the image is  */
+/* revealed through a feathered radial mask (blur 10px -> 0, reveal    */
+/* 0% -> 132%, 1.55s). "Image generated" + Good / Bad / Copy appear    */
+/* only once the image is revealed; feedback toasts clear after        */
+/* 2200ms.                                                             */
+/*                                                                     */
+/* NOTE (evidence conflict, verified 2026-11-08): the brief described  */
+/* this canvas as blue 2x2 dots on a 3px grid with a blue gradient —   */
+/* that drawing is a different component (3oxmuz9pqr-wm.js, `y`, the   */
+/* WebGL-flame fallback). D's own canvas, transcribed here, is the     */
+/* 9px grid + icon-token wave above; the 300ms canvas fade, the 4s     */
+/* countdown, the 132% reveal and the 2200ms toast all match D.        */
+/* ------------------------------------------------------------------ */
 
-  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+function GenerationResult({ messageId, onGenerated }: { messageId: string; onGenerated?: (id: string) => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const onGeneratedRef = useRef(onGenerated);
+  const [generated, setGenerated] = useState(false);
+  const [seconds, setSeconds] = useState(4);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | undefined>(undefined);
 
-  const onCopy = () => {
-    navigator.clipboard?.writeText("Vintage editorial Messi, Argentina kit").catch(() => {});
-    setCopied(true);
-    window.clearTimeout(copyTimer.current);
-    copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
-  };
+  useEffect(() => {
+    onGeneratedRef.current = onGenerated;
+  }, [onGenerated]);
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
-  const feedbackBtn =
-    "group flex cursor-pointer items-center rounded-lg bg-background-tertiary-default p-1.5 hover:bg-background-secondary-hover outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring";
-  const feedbackIcon = "size-4 text-foreground-icon-secondary";
+  const showToast = useCallback((text: string) => {
+    window.clearTimeout(toastTimer.current);
+    setToast(text);
+    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !parent || !ctx) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const start = performance.now();
+    let stopped = false;
+    let raf = 0;
+    let lastSeconds = 4;
+    let rect = parent.getBoundingClientRect();
+    let needsResize = true;
+    const observer = new ResizeObserver(() => {
+      rect = parent.getBoundingClientRect();
+      needsResize = true;
+    });
+    observer.observe(parent);
+    const readColors = () => {
+      const cs = getComputedStyle(parent);
+      return {
+        active: cs.getPropertyValue("--color-foreground-icon-primary").trim(),
+        neutral: cs.getPropertyValue("--color-foreground-icon-quaternary").trim(),
+      };
+    };
+    let colors = readColors();
+    let lastColorRead = performance.now();
+    const smooth = (e: number, t: number, a: number) => {
+      const i = Math.max(0, Math.min(1, (a - e) / (t - e)));
+      return i * i * (3 - 2 * i);
+    };
+    const wave = (x: number, y: number, time: number, aspect: number) => {
+      const nx = (x - 0.5) * aspect;
+      const ny = y - 0.5;
+      const s = Math.sqrt(nx * nx + ny * ny) / 0.5;
+      const o = 1.8 / 0.7;
+      const l = time % 1.3;
+      const c = Math.ceil(1.8 / 0.7 / 1.3) + 1;
+      let d = 0;
+      for (let e = 0; e < c; e += 1) {
+        const t = (l + 1.3 * e) / o;
+        if (t > 1) continue;
+        const a = s - t;
+        d += Math.exp(-(a * a) / 0.01119008) * smooth(0, 0.1, t) * (1 - smooth(0.62, 1, t));
+      }
+      return Math.min(1, d);
+    };
+    const frame = (now: number) => {
+      if (stopped) return;
+      if (needsResize) {
+        needsResize = false;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.max(1, Math.round(rect.width * dpr));
+        const h = Math.max(1, Math.round(rect.height * dpr));
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      const elapsed = now - start;
+      if (now - lastColorRead > 500) {
+        colors = readColors();
+        lastColorRead = now;
+      }
+      const { active, neutral } = colors;
+      const cols = Math.ceil(rect.width / 9) + 1;
+      const rows = Math.ceil(rect.height / 9) + 1;
+      const ox = (rect.width - (cols - 1) * 9) / 2;
+      const oy = (rect.height - (rows - 1) * 9) / 2;
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      for (let row = 0; row < rows; row += 1) {
+        const y = oy + 9 * row;
+        const yn = y / rect.height;
+        for (let col = 0; col < cols; col += 1) {
+          const x = ox + 9 * col;
+          const xn = x / rect.width;
+          const o = reduced ? 0.24 : wave(xn, yn, elapsed / 1000, rect.width / rect.height);
+          const alpha =
+            Math.min(1, 7 * xn, (1 - xn) * 7, 7 * yn, (1 - yn) * 7) * (0.08 + 0.68 * o * 0.92);
+          const r = 0.72 + 0.48 * o;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = o > 0.22 ? active : neutral;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+      // Clamp elapsed to [0, 4000]: the first rAF timestamp can predate
+      // `start` (headless BeginFrame control), which would otherwise make
+      // the countdown briefly read 5 — it starts at 4 by spec.
+      const remaining = Math.ceil(Math.min(4000, Math.max(0, 4000 - elapsed)) / 1000);
+      if (remaining !== lastSeconds) {
+        lastSeconds = remaining;
+        setSeconds(remaining);
+      }
+      raf = window.requestAnimationFrame(frame);
+    };
+    raf = window.requestAnimationFrame(frame);
+    const done = window.setTimeout(() => {
+      stopped = true;
+      window.cancelAnimationFrame(raf);
+      setSeconds(0);
+      setGenerated(true);
+      onGeneratedRef.current?.(messageId);
+    }, 4000);
+    return () => {
+      stopped = true;
+      observer.disconnect();
+      window.clearTimeout(done);
+      window.cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <div className="flex w-full flex-col items-start gap-2">
-      <div className="flex w-[200px] items-baseline text-body-regular">
-        <span className="text-text-primary">Image generated</span>
-      </div>
-      <div className="w-[200px] overflow-hidden">
+    <motion.div
+      layout
+      variants={GEN_OUTER_VARIANTS}
+      initial="hidden"
+      animate="visible"
+      className="flex w-full flex-col items-start gap-2"
+    >
+      <motion.div variants={GEN_HEADER_VARIANTS} className="flex w-[200px] items-baseline text-body-regular">
+        {generated && <span className="text-text-primary">Image generated</span>}
+      </motion.div>
+      <motion.div variants={GEN_CARD_VARIANTS} initial="hidden" animate="visible" className="w-[200px] overflow-hidden">
         <div
           className="relative h-[250px] w-[200px] overflow-hidden rounded-2xl bg-background-primary-default shadow-card"
           aria-live="polite"
-          aria-label="Generated image: Vintage-style illustration of a football player in Argentina's striped kit"
+          aria-label={
+            generated
+              ? "Generated image: Vintage-style illustration of a football player in Argentina's striped kit"
+              : "Generating image"
+          }
         >
-          <canvas aria-hidden className="absolute inset-0 size-full opacity-0" width={200} height={250} />
+          <canvas
+            ref={canvasRef}
+            aria-hidden
+            className={cx(
+              "absolute inset-0 size-full transition-opacity duration-300",
+              generated ? "opacity-0" : "opacity-100",
+            )}
+          />
           <div
+            className={cx(
+              "absolute inset-x-3 bottom-3 flex items-center justify-between gap-3",
+              "text-body-2-medium text-text-tertiary transition-opacity duration-300",
+              generated ? "opacity-0" : "opacity-100",
+            )}
+          >
+            <span aria-label="Generating image" className="agent-progress-loading-text inline-block">
+              Generating image
+            </span>
+            <FlipSeconds seconds={seconds} />
+          </div>
+          <motion.div
             className="absolute inset-0"
+            initial={false}
+            animate={
+              generated
+                ? { opacity: 1, filter: "blur(0px)", "--reveal": "132%" }
+                : { opacity: 0, filter: "blur(10px)", "--reveal": "0%" }
+            }
+            transition={{ duration: 1.55, ease: [0.4, 0, 0.2, 1] }}
             style={
               {
-                "--reveal": "132%",
+                "--reveal": "0%",
                 maskImage:
+                  "radial-gradient(circle at 50% 50%, #000 calc(var(--reveal) - 26%), transparent var(--reveal))",
+                WebkitMaskImage:
                   "radial-gradient(circle at 50% 50%, #000 calc(var(--reveal) - 26%), transparent var(--reveal))",
               } as React.CSSProperties
             }
@@ -425,35 +761,185 @@ function GenerationResult() {
             <img
               src="/ai-chat/generated-footballer.jpg"
               alt="Vintage-style illustration of a football player in Argentina's striped kit"
+              sizes="200px"
               className="size-full object-cover"
             />
-          </div>
-          <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 text-body-2-medium text-text-tertiary opacity-0">
-            <span className="agent-progress-loading-text">Generating image</span>
-            <span className="flex items-baseline gap-0.5">
-              <span>0</span>
-              <span>s</span>
-              <span className="sr-only">0 seconds remaining</span>
-            </span>
-          </div>
+          </motion.div>
+          <AnimatePresence>
+            {toast && (
+              <motion.div
+                role="status"
+                initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-x-3 bottom-3 rounded-lg px-2.5 py-1.5 text-center bg-neutral-950/80 text-body-2-medium text-white backdrop-blur-sm"
+              >
+                {toast}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <button type="button" aria-label="Good response" aria-pressed={feedback === "good"} onClick={() => setFeedback((f) => (f === "good" ? null : "good"))} className={cx(feedbackBtn, feedback === "good" && "bg-background-secondary-hover")}>
-          <RiThumbUpLine className={feedbackIcon} aria-hidden />
-        </button>
-        <button type="button" aria-label="Bad response" aria-pressed={feedback === "bad"} onClick={() => setFeedback((f) => (f === "bad" ? null : "bad"))} className={cx(feedbackBtn, feedback === "bad" && "bg-background-secondary-hover")}>
-          <RiThumbDownLine className={feedbackIcon} aria-hidden />
-        </button>
-        <button type="button" aria-label="Copy response" onClick={onCopy} className={feedbackBtn}>
-          <RiFileCopyLine className={feedbackIcon} aria-hidden />
-        </button>
-        {copied && (
-          <span role="status" className="text-body-2-medium text-text-secondary">
-            Copied to clipboard.
-          </span>
+      </motion.div>
+      {generated && (
+        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          <FeedbackRow onToast={showToast} />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/* Split-flap countdown digit (2x-mkcjonn738.js, E/A): an 11px card whose
+ * top half shows the new digit and bottom half the old one; on change the
+ * old top half swings down (animate-flap-fall) and the new bottom half
+ * swings up (animate-flap-rise). Keyframes in styles/globals.css. */
+function DigitHalf({ digit, half }: { digit: string; half: "top" | "bottom" }) {
+  return (
+    <span className="block h-2 overflow-hidden bg-background-tertiary-default">
+      <span
+        className={cx(
+          "block h-4 text-center leading-4 text-text-secondary tabular-nums",
+          half === "bottom" && "-mt-2",
         )}
-      </div>
+      >
+        {digit}
+      </span>
+    </span>
+  );
+}
+
+function FlipDigit({ digit }: { digit: string }) {
+  const [state, setState] = useState({ settled: digit, from: digit, key: 0 });
+  if (state.settled !== digit) {
+    setState({ settled: digit, from: state.settled, key: state.key + 1 });
+  }
+  const changing = state.settled !== digit;
+  const bottomDigit = changing ? state.settled : state.from;
+  const key = changing ? state.key + 1 : state.key;
+  return (
+    <span
+      aria-hidden
+      className="relative block w-[11px] overflow-hidden rounded-[3px] bg-background-tertiary-default [perspective:70px]"
+    >
+      <DigitHalf digit={digit} half="top" />
+      <DigitHalf digit={bottomDigit} half="bottom" />
+      {key > 0 && (
+        <span key={key} className="pointer-events-none absolute inset-0">
+          <span className="animate-flap-fall absolute inset-x-0 top-0">
+            <DigitHalf digit={bottomDigit} half="top" />
+          </span>
+          <span className="animate-flap-rise absolute inset-x-0 bottom-0">
+            <DigitHalf digit={digit} half="bottom" />
+          </span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+function FlipSeconds({ seconds }: { seconds: number }) {
+  return (
+    <span className="flex shrink-0 items-center gap-px">
+      {String(seconds)
+        .split("")
+        .map((d, i) => (
+          <FlipDigit key={i} digit={d} />
+        ))}
+      <span aria-hidden>s</span>
+      <span className="sr-only">{seconds} seconds remaining</span>
+    </span>
+  );
+}
+
+/* Feedback row (2x-mkcjonn738.js, T): Good / Bad / Copy are one-shot
+ * buttons with hover tooltips, not toggles. Good / Bad fire a toast
+ * ("Thanks for the feedback" / "Thanks — we'll use this to improve");
+ * Copy morphs its icon to a check and shows a "Copied!" tooltip for
+ * 1600ms. The toast itself is cleared by GenerationResult after 2200ms. */
+function FeedbackButton({
+  icon: Icon,
+  label,
+  tooltip,
+  isTooltipOpen,
+  onTooltipOpenChange,
+  onPress,
+  children,
+}: {
+  icon?: ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  label: string;
+  tooltip?: string;
+  isTooltipOpen?: boolean;
+  onTooltipOpenChange?: (open: boolean) => void;
+  onPress: () => void;
+  children?: ReactNode;
+}) {
+  return (
+    <TooltipTrigger delay={200} isOpen={isTooltipOpen} onOpenChange={onTooltipOpenChange}>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onPress}
+        className="group flex cursor-pointer items-center rounded-lg bg-background-tertiary-default p-1.5 transition-colors duration-150 ease hover:bg-background-secondary-hover"
+      >
+        {children ??
+          (Icon ? (
+            <Icon
+              className="size-4 text-foreground-icon-secondary transition-colors duration-150 ease group-hover:text-foreground-icon-primary"
+              aria-hidden
+            />
+          ) : null)}
+      </button>
+      <Tooltip size="sm">{tooltip ?? label}</Tooltip>
+    </TooltipTrigger>
+  );
+}
+
+function FeedbackRow({ onToast }: { onToast: (text: string) => void }) {
+  const [copied, setCopied] = useState(false);
+  const [copyTipOpen, setCopyTipOpen] = useState(false);
+  const copyTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
+  const onCopy = () => {
+    window.clearTimeout(copyTimer.current);
+    setCopied(true);
+    setCopyTipOpen(true);
+    copyTimer.current = window.setTimeout(() => {
+      setCopied(false);
+      setCopyTipOpen(false);
+    }, 1600);
+  };
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <FeedbackButton icon={RiThumbUpLine} label="Good response" onPress={() => onToast("Thanks for the feedback")} />
+      <FeedbackButton icon={RiThumbDownLine} label="Bad response" onPress={() => onToast("Thanks — we'll use this to improve")} />
+      <FeedbackButton
+        label="Copy response"
+        tooltip={copied ? "Copied!" : undefined}
+        isTooltipOpen={copyTipOpen}
+        onTooltipOpenChange={setCopyTipOpen}
+        onPress={onCopy}
+      >
+        <span className="relative inline-flex size-4 shrink-0 items-center justify-center">
+          <RiFileCopyLine
+            aria-hidden
+            className={cx(
+              "absolute size-4 text-foreground-icon-secondary transition-all duration-200 ease-out group-hover:text-foreground-icon-primary",
+              copied ? "scale-75 opacity-0 blur-[2px]" : "scale-100 opacity-100 blur-0",
+            )}
+          />
+          <RiCheckLine
+            aria-hidden
+            className={cx(
+              "absolute size-4 text-foreground-icon-secondary transition-all duration-200 ease-out group-hover:text-foreground-icon-primary",
+              copied ? "scale-100 opacity-100 blur-0" : "scale-75 opacity-0 blur-[2px]",
+            )}
+          />
+        </span>
+      </FeedbackButton>
     </div>
   );
 }
@@ -469,6 +955,7 @@ function AgentSidebar({
   onSelectThread,
   collapsed,
   onToggleCollapse,
+  onOpenSettings,
   mobile = false,
   onClose,
 }: {
@@ -478,6 +965,7 @@ function AgentSidebar({
   onSelectThread: (id: string) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onOpenSettings: () => void;
   mobile?: boolean;
   onClose?: () => void;
 }) {
@@ -610,10 +1098,10 @@ function AgentSidebar({
             <RiHeadphoneLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
             <span className="text-body-medium whitespace-nowrap text-text-secondary">Support</span>
           </a>
-          <a href="#" aria-label="Settings" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
+          <button type="button" aria-label="Settings" onClick={onOpenSettings} className="flex w-full cursor-pointer items-center gap-2 rounded-2lg p-2 text-start transition-colors duration-150 ease hover:bg-background-secondary-hover">
             <RiSettingsLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
             <span className="text-body-medium whitespace-nowrap text-text-secondary">Settings</span>
-          </a>
+          </button>
         </nav>
         <div className="flex w-full items-center justify-between rounded-xl bg-background-secondary-default py-2 pe-3 ps-2.5">
           <span className="flex min-w-0 items-center gap-2">
@@ -699,16 +1187,17 @@ function ProgressRing({ progress }: { progress: number }) {
 }
 
 function LocalComposer({
-  value, onValueChange, onSubmit, onStop, busy, model, onModelChange,
+  value, onValueChange, onSubmit, busy, model, onModelChange, effort, onEffortChange,
   project, onProjectChange, voiceOn, onVoiceToggle, files, onFiles, onRemoveFile, inputRef,
 }: {
   value: string;
   onValueChange: (v: string) => void;
   onSubmit: () => void;
-  onStop: () => void;
   busy: boolean;
   model: string;
   onModelChange: (m: string) => void;
+  effort: number;
+  onEffortChange: (e: number) => void;
   project: string;
   onProjectChange: (p: string) => void;
   voiceOn: boolean;
@@ -718,10 +1207,8 @@ function LocalComposer({
   onRemoveFile: (name: string) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
 }) {
-  const [modelMenuOpen, setModelMenuOpen] = useState(false);
-  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
-  const [agentMenuOpen, setAgentMenuOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const narrow = useSyncExternalStore(subscribeNarrow, () => window.matchMedia("(max-width: 639px)").matches, () => false);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -732,6 +1219,7 @@ function LocalComposer({
 
   return (
     <div className="flex w-full flex-col gap-2.5">
+      {busy && <AgentThinking variant="infinity" className="px-1.5" />}
       {files.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-1">
           {files.map((f) => (
@@ -748,15 +1236,7 @@ function LocalComposer({
         <div className="relative">
           <div className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-full p-2", busy ? "bg-transparent" : "bg-background-primary-default shadow-xs")}>
             <input ref={fileRef} type="file" multiple className="hidden" aria-label="Choose files to attach" onChange={(e) => { const names = Array.from(e.target.files ?? []).map((f) => f.name); if (names.length > 0) onFiles(names); e.target.value = ""; }} />
-            <button
-              type="button"
-              aria-label="Add attachment"
-              aria-expanded="false"
-              onClick={() => fileRef.current?.click()}
-              className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-ai-chat-composer-add-background text-foreground-icon-primary transition-colors duration-150 ease hover:bg-ai-chat-composer-add-hover-background"
-            >
-              <RiAddLine className="size-5" aria-hidden />
-            </button>
+            <AddMenu onPickFiles={() => fileRef.current?.click()} />
 
             <label className="sr-only" htmlFor="agent-composer-input">Message</label>
             <input
@@ -766,34 +1246,14 @@ function LocalComposer({
               value={value}
               onChange={(e) => onValueChange(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Ask me anything"
+              placeholder={narrow ? "Ask me" : "Ask me anything"}
               autoComplete="off"
               aria-label="Message"
               className="h-5 min-w-0 flex-1 bg-transparent text-body-regular text-text-primary caret-accent-500 outline-none placeholder:text-text-tertiary [&:not(:focus)]:[mask-image:linear-gradient(to_right,#000_calc(100%-32px),transparent_100%)] rtl:[&:not(:focus)]:[mask-image:linear-gradient(to_left,#000_calc(100%-32px),transparent_100%)]"
             />
 
             <div className="relative shrink-0">
-              <button
-                type="button"
-                aria-expanded={modelMenuOpen}
-                onClick={() => setModelMenuOpen((o) => !o)}
-                className="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl bg-background-primary-default py-1.5 pe-1 ps-2 outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <span className="px-0.5 text-body-medium whitespace-nowrap text-text-secondary">{model}</span>
-                <RiArrowDownSLine className={cx("size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", modelMenuOpen && "rotate-180")} aria-hidden />
-              </button>
-              {modelMenuOpen && (
-                <>
-                  <button type="button" aria-label="Close model menu" onClick={() => setModelMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-                  <div className="absolute end-0 bottom-10 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                    <button type="button" onClick={() => setModelMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                      Fable 5
-                      <span className="text-body-2-medium text-text-tertiary">Active</span>
-                    </button>
-                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多模型待实测确认</p>
-                  </div>
-                </>
-              )}
+              <ModelMenu model={model} onModelChange={onModelChange} effort={effort} onEffortChange={onEffortChange} />
             </div>
 
             <div className="flex shrink-0 items-center gap-2 ps-1.5">
@@ -802,27 +1262,34 @@ function LocalComposer({
                 aria-label="Voice input"
                 aria-pressed={voiceOn}
                 onClick={onVoiceToggle}
+                className="flex size-9 cursor-pointer items-center justify-center rounded-full border border-border-button-default bg-background-primary-default p-2 shadow-xs transition-colors duration-150 ease hover:bg-background-primary-hover"
+              >
+                {voiceOn ? (
+                  <span aria-hidden className="flex h-5 items-center justify-center gap-[2.5px]">
+                    {MIC_BARS.map((bar, i) => (
+                      <span
+                        key={i}
+                        className="bui-composer-mic-bar w-[2.5px] rounded-full bg-accent-500"
+                        style={{ height: bar.height, animationDuration: bar.duration, animationDelay: bar.delay }}
+                      />
+                    ))}
+                  </span>
+                ) : (
+                  <RiMic2Line className="size-5 text-foreground-icon-primary" aria-hidden />
+                )}
+              </button>
+              <button
+                type="button"
+                aria-label="Send message"
+                disabled={busy}
+                onClick={onSubmit}
                 className={cx(
-                  "flex size-9 cursor-pointer items-center justify-center rounded-full border border-border-button-default bg-background-primary-default shadow-xs transition-colors duration-150 ease hover:bg-background-primary-hover",
-                  voiceOn && "border-accent-500 bg-accent-50",
+                  "flex size-9 cursor-pointer items-center justify-center rounded-full bg-button-primary p-2 transition-opacity duration-200 ease",
+                  busy && "cursor-not-allowed opacity-40",
                 )}
               >
-                <RiMicLine className="size-5 text-foreground-icon-primary" aria-hidden />
+                <RiArrowUpLine className="size-5 text-white" aria-hidden />
               </button>
-              {busy ? (
-                <button type="button" onClick={onStop} aria-label="Stop generating" className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-background-secondary-default text-foreground-icon-secondary transition-colors hover:bg-background-secondary-hover">
-                  <RiCloseLine className="size-5" aria-hidden />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  aria-label="Send message"
-                  onClick={onSubmit}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-button-primary text-white transition-opacity duration-200 ease"
-                >
-                  <RiArrowUpLine className="size-5" aria-hidden />
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -833,66 +1300,354 @@ function LocalComposer({
         <div className="flex h-[26px] w-full items-center justify-between">
           <div className="flex items-center gap-3">
             <button type="button" className="flex cursor-pointer items-center gap-1">
-              <RiGitBranchLine className="size-4 shrink-0 -scale-y-100 text-foreground-icon-secondary" aria-hidden />
+              <RiGitMergeLine className="size-4 shrink-0 -scale-y-100 text-foreground-icon-secondary" aria-hidden />
               <span className="flex items-center"><span className="text-body-2-medium whitespace-nowrap text-text-secondary">Main</span></span>
             </button>
-            <div className="relative">
-              <button
-                type="button"
-                aria-expanded={projectMenuOpen}
-                onClick={() => setProjectMenuOpen((o) => !o)}
-                className="flex cursor-pointer items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                <RiFolderLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                <span className="flex items-center">
-                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">{project}</span>
-                  <RiArrowDownSLine className={cx("size-4 shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", projectMenuOpen && "rotate-180")} aria-hidden />
-                </span>
-              </button>
-              {projectMenuOpen && (
-                <>
-                  <button type="button" aria-label="Close project menu" onClick={() => setProjectMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-                  <div className="absolute start-0 bottom-7 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                    <button type="button" onClick={() => { onProjectChange("project-sea"); setProjectMenuOpen(false); }} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                      project-sea
-                      <span className="text-body-2-medium text-text-tertiary">Active</span>
-                    </button>
-                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多项目待实测确认</p>
-                  </div>
-                </>
-              )}
-            </div>
+            <ProjectMenu project={project} onProjectChange={onProjectChange} />
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <button
-                type="button"
-                aria-expanded={agentMenuOpen}
-                onClick={() => setAgentMenuOpen((o) => !o)}
-                className="flex cursor-pointer items-center gap-1"
-              >
-                <RiInfinityLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
-                <span className="flex items-center">
-                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">Agent</span>
-                  <RiArrowDownSLine className={cx("size-4 shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease", agentMenuOpen && "rotate-180")} aria-hidden />
-                </span>
-              </button>
-              {agentMenuOpen && (
-                <>
-                  <button type="button" aria-label="Close agent menu" onClick={() => setAgentMenuOpen(false)} className="fixed inset-0 z-10 cursor-default" />
-                  <div className="absolute end-0 bottom-7 z-20 w-44 rounded-xl border border-border-button-default bg-background-primary-default p-1.5 shadow-card">
-                    <button type="button" onClick={() => setAgentMenuOpen(false)} className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover">
-                      Agent
-                      <span className="text-body-2-medium text-text-tertiary">Active</span>
-                    </button>
-                    <p className="px-2 py-1.5 text-body-2-regular text-text-tertiary">更多选项待实测确认</p>
-                  </div>
-                </>
-              )}
-            </div>
+            {/* Original: a plain button with a chevron — the Agent "dropdown"
+                opens no menu (3oxmuz9pqr-wm.js, StatusBar `f`). */}
+            <button type="button" className="flex cursor-pointer items-center gap-1">
+              <RiInfinityLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              <span className="flex items-center">
+                <span className="text-body-2-medium whitespace-nowrap text-text-secondary">Agent</span>
+                <RiArrowDropDownLine className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+              </span>
+            </button>
             <ProgressRing progress={57} />
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Composer menus — React Aria DialogTrigger + non-modal Popover,      */
+/* the original's own wiring (3oxmuz9pqr-wm.js). Outside-press         */
+/* dismissal and trigger-toggle come from the repo's utils, as in      */
+/* components/base/popover.                                            */
+/* ------------------------------------------------------------------ */
+
+function useMenuState() {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement>(null);
+  const popoverRef = useRef<HTMLElement>(null);
+  useDismissOnOutsidePress(open, () => setOpen(false), [triggerRef, popoverRef]);
+  const allowOpenChange = useTriggerToggle(open, triggerRef);
+  const onOpenChange = (next: boolean) => {
+    if (allowOpenChange(next)) setOpen(next);
+  };
+  return { open, setOpen, triggerRef, popoverRef, onOpenChange };
+}
+
+function ModelMenu({
+  model,
+  onModelChange,
+  effort,
+  onEffortChange,
+}: {
+  model: string;
+  onModelChange: (m: string) => void;
+  effort: number;
+  onEffortChange: (e: number) => void;
+}) {
+  const { open, setOpen, triggerRef, popoverRef, onOpenChange } = useMenuState();
+  return (
+    <AriaDialogTrigger isOpen={open} onOpenChange={onOpenChange}>
+      <Pressable ref={triggerRef}>
+        <button
+          type="button"
+          className="flex h-8 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl bg-background-primary-default py-1.5 pe-1 ps-2 outline-none transition-colors duration-150 ease hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <span className="px-0.5 text-body-medium whitespace-nowrap text-text-secondary">{model}</span>
+          <RiArrowDownSLine
+            className={cx(
+              "size-[18px] shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease",
+              open && "rotate-180",
+            )}
+            aria-hidden
+          />
+        </button>
+      </Pressable>
+      <AriaPopover ref={popoverRef} isNonModal placement="top start" offset={8} className={MENU_POPOVER_CLASS}>
+        <AriaDialog aria-label="Model settings" className="flex flex-col outline-none">
+          <div className="flex flex-col">
+            <div className="flex w-full flex-col gap-1.5 pt-1">
+              <span className="ps-2 text-body-medium text-text-secondary">Models</span>
+              <div className="flex w-full flex-col gap-1" role="radiogroup" aria-label="Model">
+                {MODELS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="radio"
+                    aria-checked={m === model}
+                    onClick={() => {
+                      onModelChange(m);
+                      setOpen(false);
+                    }}
+                    className={cx(
+                      "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-2lg p-2 outline-none transition-colors",
+                      m === model
+                        ? "bg-background-primary-hover"
+                        : "hover:bg-background-primary-hover focus-visible:bg-background-primary-hover",
+                    )}
+                  >
+                    <span className="truncate text-body-medium whitespace-nowrap text-text-primary">{m}</span>
+                    <RadioDot selected={m === model} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="-mx-2.5 mt-[7px] mb-3 h-px bg-border-button-default" />
+            <div className="flex w-full flex-col">
+              <span className="ps-2 text-body-medium text-text-secondary">
+                Effort{" "}
+                <motion.span
+                  key={EFFORT_LEVELS[effort]}
+                  initial={{ opacity: 0, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="inline-block text-text-primary"
+                >
+                  {EFFORT_LEVELS[effort]}
+                </motion.span>
+              </span>
+              <div className="flex w-full flex-col gap-1">
+                <div className="flex w-full items-center justify-between px-2 pt-2 pb-[3px]">
+                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">Faster</span>
+                  <span className="text-body-2-medium whitespace-nowrap text-text-secondary">Smarter</span>
+                </div>
+                <div className="w-full px-2 pb-2">
+                  <EffortSlider value={effort} onChange={onEffortChange} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </AriaDialog>
+      </AriaPopover>
+    </AriaDialogTrigger>
+  );
+}
+
+// Original effort slider (3oxmuz9pqr-wm.js, EffortSlider): a React Aria
+// slider with a custom 27px track — a fill that grows with the value,
+// 3px tick bars that scatter away when Max is picked, and a 21px thumb.
+// (The original also mounts a WebGL flame burst at Max; that shader is
+// not reproduced — see the report.)
+function EffortSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const isMax = value === EFFORT_LEVELS.length - 1;
+  const scatter = useMemo(
+    () =>
+      EFFORT_LEVELS.map(() => ({
+        x: -(70 + 130 * Math.random()),
+        y: (Math.random() - 0.5) * 70,
+        rotate: (Math.random() - 0.5) * 720,
+        delay: 0.3 * Math.random(),
+      })),
+    [isMax],
+  );
+  const d = value / (EFFORT_LEVELS.length - 1);
+  return (
+    <AriaSlider
+      aria-label="Effort"
+      minValue={0}
+      maxValue={EFFORT_LEVELS.length - 1}
+      step={1}
+      value={value}
+      onChange={onChange}
+      className="w-full"
+    >
+      <div className="relative h-[27px] w-full overflow-hidden rounded-lg bg-background-secondary-default">
+        <div
+          className="absolute inset-y-0 start-0 rounded-lg bg-background-tertiary-hover transition-[width] duration-150 ease-out"
+          style={{ width: `calc(${d} * (100% - 21px) + 21px)` }}
+        />
+        <div className="absolute inset-x-[9px] top-[7px] flex h-[13px] items-center justify-between">
+          {EFFORT_LEVELS.map((label, i) => (
+            <motion.span
+              key={label}
+              animate={
+                isMax
+                  ? { x: scatter[i].x, y: scatter[i].y, rotate: scatter[i].rotate, opacity: 0 }
+                  : { x: 0, y: 0, rotate: 0, opacity: i > value ? 0.3 : 1 }
+              }
+              transition={
+                isMax
+                  ? { duration: 1.6, ease: [0.22, 0.5, 0.5, 1], delay: scatter[i].delay }
+                  : { duration: 0.3, ease: "easeOut" }
+              }
+              className="h-full w-[3px] rounded-[2px] bg-foreground-icon-tertiary"
+            />
+          ))}
+        </div>
+        <div className="absolute inset-x-[10.5px] inset-y-0">
+          <AriaSliderTrack className="h-full w-full">
+            <AriaSliderThumb className="top-1/2 h-[27px] w-[21px] cursor-grab rounded-[7px] border border-border-checkbox-default bg-background-primary-default shadow-xs outline-none transition-shadow data-[dragging]:cursor-grabbing data-[focus-visible]:ring-2 data-[focus-visible]:ring-border-focus-ring" />
+          </AriaSliderTrack>
+        </div>
+      </div>
+    </AriaSlider>
+  );
+}
+
+function ProjectMenu({
+  project,
+  onProjectChange,
+}: {
+  project: string;
+  onProjectChange: (p: string) => void;
+}) {
+  const { open, setOpen, triggerRef, popoverRef, onOpenChange } = useMenuState();
+  return (
+    <AriaDialogTrigger isOpen={open} onOpenChange={onOpenChange}>
+      <Pressable ref={triggerRef}>
+        <button
+          type="button"
+          className="flex cursor-pointer items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <RiFolder2Line className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden />
+          <span className="flex items-center">
+            <span className="text-body-2-medium whitespace-nowrap text-text-secondary">{project}</span>
+            <RiArrowDropDownLine
+              className={cx(
+                "size-4 shrink-0 text-foreground-icon-secondary transition-transform duration-200 ease",
+                open && "rotate-180",
+              )}
+              aria-hidden
+            />
+          </span>
+        </button>
+      </Pressable>
+      <AriaPopover ref={popoverRef} isNonModal placement="top start" offset={8} className={MENU_POPOVER_CLASS}>
+        <AriaDialog aria-label="Local folders" className="outline-none">
+          <div className="flex w-full flex-col gap-1.5 pt-1">
+            <span className="ps-2 text-body-medium text-text-secondary">Local Folders</span>
+            <div className="flex w-full flex-col gap-1">
+              {PROJECTS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  aria-pressed={p.name === project}
+                  onClick={() => {
+                    onProjectChange(p.name);
+                    setOpen(false);
+                  }}
+                  className={cx(
+                    "flex w-full cursor-pointer items-center gap-2 rounded-2lg p-2 outline-none transition-colors",
+                    p.name === project
+                      ? "bg-background-primary-hover"
+                      : "hover:bg-background-primary-hover focus-visible:bg-background-primary-hover",
+                  )}
+                >
+                  <RiFolder2Line className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
+                  <span className="truncate text-body-medium whitespace-nowrap">
+                    <span className="text-text-secondary">{p.prefix}</span>
+                    <span className="text-text-primary">{p.name}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </AriaDialog>
+      </AriaPopover>
+    </AriaDialogTrigger>
+  );
+}
+
+// Original attachment menu (3oxmuz9pqr-wm.js, AddMenu). In the original
+// preview the rows only close the menu; here "Files and folders" also
+// opens this page's existing file picker, so attaching keeps working.
+function AddMenu({ onPickFiles }: { onPickFiles: () => void }) {
+  const { open, setOpen, triggerRef, popoverRef, onOpenChange } = useMenuState();
+  const close = () => setOpen(false);
+  return (
+    <AriaDialogTrigger isOpen={open} onOpenChange={onOpenChange}>
+      <Pressable ref={triggerRef}>
+        <button
+          type="button"
+          aria-label="Add attachment"
+          className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-ai-chat-composer-add-background p-2 text-foreground-icon-primary outline-none transition-colors duration-150 ease hover:bg-ai-chat-composer-add-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+        >
+          <RiAddLine
+            className={cx("size-5 text-foreground-icon-primary transition-transform duration-200 ease", open && "rotate-45")}
+            aria-hidden
+          />
+        </button>
+      </Pressable>
+      <AriaPopover ref={popoverRef} isNonModal placement="top start" offset={8} className={ADD_POPOVER_CLASS}>
+        <AriaDialog aria-label="Add to chat" className="flex flex-col gap-2 outline-none">
+          <AddMenuSection
+            label="Add"
+            rows={ADD_ROWS}
+            onSelect={(label) => {
+              close();
+              if (label === "Files and folders") onPickFiles();
+            }}
+          />
+          <AddMenuSection label="Plugins" rows={PLUGIN_ROWS} onSelect={close} />
+        </AriaDialog>
+      </AriaPopover>
+    </AriaDialogTrigger>
+  );
+}
+
+function AddMenuSection({
+  label,
+  rows,
+  onSelect,
+}: {
+  label: string;
+  rows: AddMenuRow[];
+  onSelect: (label: string) => void;
+}) {
+  return (
+    <div className="flex w-full flex-col gap-1.5 pt-1">
+      <span className="ps-2 text-body-medium text-text-secondary">{label}</span>
+      <div className="flex w-full flex-col gap-1">
+        {rows.map((row) => {
+          const Icon = row.icon;
+          return (
+            <button
+              key={row.label}
+              type="button"
+              onClick={() => onSelect(row.label)}
+              className="flex w-full cursor-pointer items-center gap-2 rounded-2lg px-2 py-1.5 outline-none transition-colors hover:bg-background-primary-hover focus-visible:bg-background-primary-hover"
+            >
+              {Icon ? <Icon className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden /> : null}
+              {row.image ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={row.image}
+                    alt=""
+                    width={24}
+                    height={24}
+                    aria-hidden
+                    className={cx("size-6 shrink-0", row.darkImage && "theme-asset-light")}
+                  />
+                  {row.darkImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={row.darkImage}
+                      alt=""
+                      width={24}
+                      height={24}
+                      aria-hidden
+                      className="theme-asset-dark size-6 shrink-0"
+                    />
+                  ) : null}
+                </>
+              ) : null}
+              <span className="truncate text-body-medium whitespace-nowrap">
+                <span className="text-text-primary">{row.label}</span>
+                {row.description ? <span className="ms-1.5 text-text-secondary">{row.description}</span> : null}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
