@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { RiArrowLeftLine, RiCheckLine, RiFileCopyLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiCheckLine, RiErrorWarningLine, RiFileCopyLine } from "@remixicon/react";
 
 import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -74,6 +74,24 @@ const LOADED_CODE = `<div aria-busy={!loaded}>
   </Skeleton>
 </div>`;
 
+const FAIL_CODE = `const [status, setStatus] = useState<"loading" | "error" | "loaded">("loading");
+
+if (status === "loading") {
+  return <SkeletonText lines={3} />; // grey placeholders only while loading
+}
+if (status === "error") {
+  // Never leave the skeleton up: say what happened and offer a retry.
+  return (
+    <div role="alert">
+      <p>Couldn't load this card. Check your connection and try again.</p>
+      <Button variant="secondary" size="small" onClick={retry}>
+        Retry
+      </Button>
+    </div>
+  );
+}
+return <LoadedCard />;`;
+
 const SHAPES_CODE = `<Skeleton shape="circle" className="size-12" />  // avatars
 <Skeleton className="size-12" />                  // rect: images, cards (radius 12)
 <Skeleton shape="text" className="h-5 w-40" />    // a line of text (radius 6)
@@ -91,6 +109,20 @@ const RTL_CODE = `import { DirectionProvider } from "@/components/foundations/di
 /** Skeleton detail page, mirroring boardui.com/components/skeleton. */
 export default function SkeletonPage() {
   const [loaded, setLoaded] = useState(false);
+
+  // Failed-load demo: the first attempt fails, every retry succeeds. A
+  // skeleton only means "loading": on failure it must give way to an
+  // explicit error and a retry, never stay up on its own.
+  const [failRun, setFailRun] = useState(0);
+  const [failStatus, setFailStatus] = useState<"idle" | "loading" | "error" | "loaded">("idle");
+  useEffect(() => {
+    if (failRun === 0) return;
+    setFailStatus("loading");
+    const timer = window.setTimeout(() => {
+      setFailStatus(failRun === 1 ? "error" : "loaded");
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [failRun]);
   return (
     <DocsLayout variant="library" title="Skeleton">
       <div className="flex flex-col gap-8 pb-8">
@@ -163,6 +195,74 @@ export default function SkeletonPage() {
             </div>
           </Demo>
           <CodeBlock code={LOADED_CODE} />
+        </Section>
+
+        <Section title="Failed to load">
+          <p className="text-body-regular text-text-secondary">
+            A skeleton only means loading. If the request fails, replace it with an explicit error and a retry —
+            never leave the skeleton up on its own. The first attempt below fails on purpose; retrying loads the
+            card.
+          </p>
+          <Demo>
+            <div className="flex flex-col gap-4">
+              <div aria-busy={failStatus === "loading"} className="flex flex-col gap-3">
+                {failStatus === "error" ? (
+                  <div role="alert" className="flex flex-col items-start gap-3">
+                    <div className="flex items-start gap-2.5">
+                      <RiErrorWarningLine className="mt-0.5 size-5 shrink-0 text-text-error-primary" aria-hidden />
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-body-medium text-text-primary">Couldn&apos;t load this card</p>
+                        <p className="text-body-regular text-text-secondary">
+                          Check your connection and try again.
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="secondary" size="small" onClick={() => setFailRun((run) => run + 1)}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : failStatus === "loaded" ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Avatar size="lg" initials="MC" color="blue" className="size-10" />
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-body-medium text-text-primary">Maya Chen</span>
+                        <span className="text-body-regular text-text-secondary">Design lead, Acme</span>
+                      </div>
+                    </div>
+                    <p className="text-body-regular text-text-secondary">
+                      Shipped the new onboarding flow. Activation is up 18% in the first week, and support tickets
+                      about setup are down by half.
+                    </p>
+                  </>
+                ) : failStatus === "idle" ? (
+                  <p className="text-body-regular text-text-tertiary">
+                    Press &ldquo;Load card&rdquo; to simulate a request — the first attempt fails on purpose.
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <Skeleton shape="circle" className="size-10" />
+                      <SkeletonText lines={2} />
+                    </div>
+                    <SkeletonText lines={2} lineClassName="h-3" />
+                  </>
+                )}
+              </div>
+              <div>
+                {failStatus === "idle" ? (
+                  <Button variant="secondary" size="small" onClick={() => setFailRun(1)}>
+                    Load card
+                  </Button>
+                ) : failStatus === "loaded" ? (
+                  <Button variant="secondary" size="small" onClick={() => setFailRun((run) => run + 1)}>
+                    Reload
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </Demo>
+          <CodeBlock code={FAIL_CODE} />
         </Section>
 
         <Section title="Shapes and text">
