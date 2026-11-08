@@ -2,7 +2,7 @@
 
 import type { ComponentType, HTMLAttributes, ReactNode, Ref } from "react";
 import { useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { RiShieldStarFill } from "@remixicon/react";
 import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
@@ -101,6 +101,7 @@ export function Announcement({
   ref,
   ...props
 }: AnnouncementProps) {
+  const reduceMotion = useReducedMotion();
   const [dismissed, setDismissed] = useState(false);
   const hasIntro = introDelay !== undefined;
 
@@ -109,9 +110,9 @@ export function Announcement({
       {!dismissed && (
         <motion.div
           ref={ref}
-          initial={hasIntro ? { opacity: 0, y: 15, scale: 0.85, filter: "blur(6px)" } : false}
+          initial={hasIntro && !reduceMotion ? { opacity: 0, y: 15, scale: 0.85, filter: "blur(6px)" } : false}
           animate={
-            hasIntro
+            hasIntro && !reduceMotion
               ? {
                   opacity: 1,
                   y: 0,
@@ -123,8 +124,7 @@ export function Announcement({
           }
           exit={{
             opacity: 0,
-            scale: 0.85,
-            filter: "blur(6px)",
+            ...(reduceMotion ? {} : { scale: 0.85, filter: "blur(6px)" }),
             transition: { duration: 0.25, ease: "easeInOut" },
           }}
           className={cx(styles.card, className)}

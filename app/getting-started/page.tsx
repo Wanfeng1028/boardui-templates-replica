@@ -111,14 +111,14 @@ function CopyPageButton() {
         <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
           <RiFileCopyLine
             className={cx(
-              "absolute size-5 text-foreground-icon-secondary transition-all duration-200 ease-out",
+              "absolute size-5 text-foreground-icon-secondary transition-[transform,opacity,filter] duration-200 ease-out",
               copied ? "scale-75 opacity-0 blur-[2px]" : "scale-100 opacity-100 blur-0",
             )}
             aria-hidden
           />
           <RiCheckLine
             className={cx(
-              "absolute size-5 text-foreground-icon-secondary transition-all duration-200 ease-out",
+              "absolute size-5 text-foreground-icon-secondary transition-[transform,opacity,filter] duration-200 ease-out",
               copied ? "scale-100 opacity-100 blur-0" : "scale-75 opacity-0 blur-[2px]",
             )}
             aria-hidden
@@ -201,14 +201,14 @@ function DocsPkgCommand({ npm, pnpm, yarn }: { npm: string; pnpm: string; yarn: 
             <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
               <RiFileCopyLine
                 className={cx(
-                  "absolute size-5 text-foreground-icon-secondary transition-all duration-200 ease-out",
+                  "absolute size-5 text-foreground-icon-secondary transition-[transform,opacity,filter] duration-200 ease-out",
                   copied ? "scale-75 opacity-0 blur-[2px]" : "scale-100 opacity-100 blur-0",
                 )}
                 aria-hidden
               />
               <RiCheckLine
                 className={cx(
-                  "absolute size-5 text-foreground-icon-secondary transition-all duration-200 ease-out",
+                  "absolute size-5 text-foreground-icon-secondary transition-[transform,opacity,filter] duration-200 ease-out",
                   copied ? "scale-100 opacity-100 blur-0" : "scale-75 opacity-0 blur-[2px]",
                 )}
                 aria-hidden

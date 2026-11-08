@@ -24,12 +24,34 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.boardui.com"),
   title: {
     template: "%s | BoardUI",
     default: "BoardUI - React Design System for Dashboards",
   },
   description:
-    "BoardUI is a dashboard design system and UI kit for React + Tailwind CSS, with data tables, charts and dashboard templates, designed in Figma.",
+    "Build agentic products and data-rich dashboards with 103 React components (19 chart cards), 10 Pro templates, Tailwind CSS, and editable source code.",
+  openGraph: {
+    title: "BoardUI - React Design System for Dashboards",
+    description:
+      "Build agentic products and data-rich dashboards with 103 React components (19 chart cards), 10 Pro templates, Tailwind CSS, and editable source code.",
+    type: "website",
+    images: [
+      {
+        url: "/og_image.png",
+        width: 1200,
+        height: 630,
+        alt: "BoardUI React design system components and dashboard templates",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BoardUI - React Design System for Dashboards",
+    description:
+      "Build agentic products and data-rich dashboards with 103 React components (19 chart cards), 10 Pro templates, Tailwind CSS, and editable source code.",
+    images: ["/og_image.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

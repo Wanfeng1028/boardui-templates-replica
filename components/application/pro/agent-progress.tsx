@@ -72,7 +72,7 @@ export function AgentProgress({ className }: { className?: string }) {
 
       <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background-tertiary-default" role="progressbar" aria-valuenow={doneCount} aria-valuemin={0} aria-valuemax={STEPS.length}>
         <div
-          className="h-full rounded-full bg-chart-2 transition-all duration-500"
+          className="h-full rounded-full bg-chart-2 transition-[width] duration-500"
           style={{ width: `${(doneCount / STEPS.length) * 100}%` }}
         />
       </div>

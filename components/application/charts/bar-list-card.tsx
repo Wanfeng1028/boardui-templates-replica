@@ -81,7 +81,7 @@ export function BarListCard({ className }: { className?: string }) {
               >
                 <span
                   aria-hidden
-                  className="absolute inset-y-1 left-0 rounded-r-xl transition-all duration-500"
+                  className="absolute inset-y-1 left-0 rounded-r-xl transition-[width,opacity] duration-500"
                   style={{ width: `${pct}%`, background: "var(--color-chart-4)", opacity: dimmed ? 0.08 : 0.16 }}
                 />
                 <span className="relative flex items-baseline gap-3">

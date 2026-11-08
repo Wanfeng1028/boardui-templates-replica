@@ -201,8 +201,8 @@ export function DashboardTeamMenu({
           "w-[265px] max-w-[calc(100vw-32px)] origin-bottom-left overflow-y-auto",
           "rounded-2xl border border-border-button-default bg-background-primary-default p-2.5 shadow-dropdown",
           "transition duration-150 ease-out",
-          "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",
-          "data-[exiting]:opacity-0 data-[exiting]:scale-95 data-[exiting]:blur-[2px]",
+          "data-[entering]:opacity-0 motion-safe:data-[entering]:scale-95 motion-safe:data-[entering]:blur-[2px]",
+          "data-[exiting]:opacity-0 motion-safe:data-[exiting]:scale-95 motion-safe:data-[exiting]:blur-[2px]",
         )}
       >
         <AriaDialog aria-label="Board team menu" className="flex flex-col gap-[7px] outline-none">

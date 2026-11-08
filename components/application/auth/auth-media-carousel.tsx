@@ -181,7 +181,7 @@ export function AuthMediaCarousel({
               key={slide.src}
               aria-hidden
               className={cx(
-                "h-1.5 rounded-full bg-white transition-all duration-500 ease-out",
+                "h-1.5 rounded-full bg-white transition-[width,opacity] duration-500 ease-out",
                 slideIndex === index ? "w-5 opacity-90" : "w-1.5 opacity-45",
               )}
             />

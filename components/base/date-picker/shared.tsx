@@ -324,6 +324,6 @@ export const popoverClassName = cx(
   // Above the modal layer (z-100), like the menu surfaces.
   "z-110 origin-top rounded-3xl bg-background-secondary-default shadow-dropdown",
   "transition duration-150 ease-out",
-  "data-[entering]:opacity-0 data-[entering]:scale-95 data-[entering]:blur-[2px]",
-  "data-[exiting]:opacity-0 data-[exiting]:scale-95 data-[exiting]:blur-[2px]",
+  "data-[entering]:opacity-0 motion-safe:data-[entering]:scale-95 motion-safe:data-[entering]:blur-[2px]",
+  "data-[exiting]:opacity-0 motion-safe:data-[exiting]:scale-95 motion-safe:data-[exiting]:blur-[2px]",
 );
