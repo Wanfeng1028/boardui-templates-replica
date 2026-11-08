@@ -414,6 +414,10 @@ export default function ProjectBoardTemplatePage() {
   const [toolbarMenu, setToolbarMenu] = useState<"inbox" | "sort" | "filter" | "display" | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<Set<Priority>>(new Set());
   const [displayOpts, setDisplayOpts] = useState({ assignees: true, dates: true, apps: true });
+  // Original Display menu (both on by default): "Show done column" gates the
+  // Done column, "Fill wide screens" stretches columns at >=1441px widths.
+  const [showDone, setShowDone] = useState(true);
+  const [fillWide, setFillWide] = useState(true);
   // Keyboard drag (dnd-kit style): Space lifts the focused card, Left/Right
   // move it between columns, Space/Enter drops, Escape cancels.
   const [grabbed, setGrabbed] = useState<{ id: string; column: ColumnId } | null>(null);
@@ -633,6 +637,11 @@ export default function ProjectBoardTemplatePage() {
       heading="BoardUI Design Tasks"
       icon={RiKanbanView2}
       selected="project-board"
+      // The original shell has no content max-width; the 1300px cap keeps the
+      // 1449px board grid overflowing at every wide viewport where the
+      // original fits, so this page opts out of the cap (page-only override,
+      // the shared shell default is untouched).
+      columnClassName="max-w-none"
       actions={
         <>
           <NotificationBell />
@@ -775,6 +784,22 @@ export default function ProjectBoardTemplatePage() {
                 ))}
                 <button
                   type="button"
+                  aria-pressed={showDone}
+                  onClick={() => setShowDone((v) => !v)}
+                  className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                >
+                  {showDone ? "✓ " : ""}Show done column
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={fillWide}
+                  onClick={() => setFillWide((v) => !v)}
+                  className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
+                >
+                  {fillWide ? "✓ " : ""}Fill wide screens
+                </button>
+                <button
+                  type="button"
                   onClick={() => setToolbarMenu(null)}
                   className="w-full cursor-pointer rounded-lg px-2.5 py-2 text-start text-body-medium text-text-primary hover:bg-background-secondary-hover"
                 >
@@ -794,15 +819,23 @@ export default function ProjectBoardTemplatePage() {
       </div>
       <Toaster />
 
-      {/* Board: horizontal-scroll strip, 273px columns, exact original geometry */}
+      {/* Board: horizontal-scroll strip, 273px columns, exact original geometry.
+          At >=1441px with "Fill wide screens" on, the original stretches the
+          columns (minmax 273px, 1fr) and widens the grid to the container
+          (min 1449px with Done shown, 1168px without) so wide screens fit
+          instead of scrolling. */}
       <div
         className="-mx-3 min-h-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:thin] sm:-mx-6 lg:-me-7"
         role="region"
         aria-label="Project board columns"
         tabIndex={0}
       >
-        <div className="grid h-full w-max grid-flow-col auto-cols-[273px] gap-2 px-3 sm:px-6 lg:pe-7 max-lg:h-auto">
-          {COLUMNS.map((column) => {
+        <div className={cx(
+          "grid h-full w-max grid-flow-col auto-cols-[273px] gap-2 px-3 sm:px-6 lg:pe-7 max-lg:h-auto",
+          fillWide && "min-[1441px]:auto-cols-[minmax(273px,1fr)]",
+          fillWide && (showDone ? "min-[1441px]:w-[max(100%,1449px)]" : "min-[1441px]:w-[max(100%,1168px)]"),
+        )}>
+          {COLUMNS.filter((column) => showDone || column.id !== "done").map((column) => {
             const tickets = board[column.id];
             const visible = visibleTickets(tickets);
             const isDropTarget = dropColumn === column.id;
@@ -966,57 +999,59 @@ export default function ProjectBoardTemplatePage() {
             <div aria-hidden className="pointer-events-none absolute inset-0 rounded-3xl" style={{ boxShadow: "-10px 0 34px #0000000d, -10px 0 250px #00000040" }} />
             <Dialog aria-label={`${selectedTicket.id} ticket details`} className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-3xl bg-ticket-detail-surface outline-none">
               <header className="flex shrink-0 items-center justify-between gap-3 px-6 pt-6 pb-5 max-sm:px-4 max-sm:pt-4">
-                <div className="flex min-w-0 items-center gap-0.5 text-body-2-medium text-text-secondary">
-                  <span className="shrink-0">BoardUI Design Tasks</span>
-                  <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
-                  <span className="shrink-0">{selectedTicket.id}</span>
-                  <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
-                  <span className="truncate">{selectedTicket.tag}</span>
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <div className="flex min-w-0 items-center gap-0.5 text-body-2-medium text-text-secondary">
+                    <span className="shrink-0">BoardUI Design Tasks</span>
+                    <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
+                    <span className="shrink-0">{selectedTicket.id}</span>
+                    <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
+                    <span className="truncate">{selectedTicket.tag}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <TooltipTrigger delay={200}>
+                      <IconButton
+                        icon={FavoriteStarIcon}
+                        size="small"
+                        className={cx(base, "[&>svg]:size-[17px]", isFav && "text-ticket-detail-favorite [&_path]:fill-current")}
+                        aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+                        aria-pressed={isFav}
+                        onClick={toggleFav}
+                      />
+                      <Tooltip placement="bottom" className="z-[120]">{isFav ? "Remove from favorites" : "Add to favorites"}</Tooltip>
+                    </TooltipTrigger>
+                    <TooltipTrigger delay={200}>
+                      <IconButton
+                        icon={CopyLinkIcon}
+                        size="small"
+                        className={cx(base, "group")}
+                        data-copied={toastMessage === "Ticket link copied"}
+                        aria-label="Copy ticket link"
+                        onClick={copyTicketLink}
+                      />
+                      <Tooltip placement="bottom" className="z-[120]">{toastMessage === "Ticket link copied" ? "Ticket link copied" : "Copy ticket link"}</Tooltip>
+                    </TooltipTrigger>
+                    <Dropdown isOpen={actionsOpen} onOpenChange={setActionsOpen}>
+                      <DropdownTrigger aria-label="Ticket actions" className={cx("flex items-center justify-center border border-border-button-default bg-background-primary-default shadow-xs hover:bg-background-primary-hover", base)}>
+                        <RiMore2Fill className="size-[18px]" aria-hidden />
+                      </DropdownTrigger>
+                      <DropdownPopover aria-label="Ticket actions" className="z-[120] w-[220px] rounded-[14px] p-1" placement="bottom end">
+                        <DropdownItem className="px-2 py-1.5" onSelect={() => { setDescDraft(descShown); setDescEditing(true); setActionsOpen(false); }}>
+                          <RiEditLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />
+                          <span className="truncate text-body-medium whitespace-nowrap">Edit description</span>
+                        </DropdownItem>
+                        <DropdownItem className="px-2 py-1.5" onSelect={copyTicketId}>
+                          <RiFileCopyLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />
+                          <span className="truncate text-body-medium whitespace-nowrap">{toastMessage === "Ticket ID copied" ? "Ticket ID copied" : "Copy ticket ID"}</span>
+                        </DropdownItem>
+                        <DropdownItem className="px-2 py-1.5" onSelect={() => { setActionsOpen(false); moveTicket(selectedTicket.id, selected.column, selected.column === "done" ? "todo" : "done"); }}>
+                          {selected.column === "done" ? <RiRestartLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden /> : <RiCheckboxCircleLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />}
+                          <span className="truncate text-body-medium whitespace-nowrap">{selected.column === "done" ? "Reopen ticket" : "Mark as done"}</span>
+                        </DropdownItem>
+                      </DropdownPopover>
+                    </Dropdown>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <TooltipTrigger delay={200}>
-                    <IconButton
-                      icon={FavoriteStarIcon}
-                      size="small"
-                      className={cx(base, "[&>svg]:size-[17px]", isFav && "text-ticket-detail-favorite [&_path]:fill-current")}
-                      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
-                      aria-pressed={isFav}
-                      onClick={toggleFav}
-                    />
-                    <Tooltip placement="bottom" className="z-[120]">{isFav ? "Remove from favorites" : "Add to favorites"}</Tooltip>
-                  </TooltipTrigger>
-                  <TooltipTrigger delay={200}>
-                    <IconButton
-                      icon={CopyLinkIcon}
-                      size="small"
-                      className={cx(base, "group")}
-                      data-copied={toastMessage === "Ticket link copied"}
-                      aria-label="Copy ticket link"
-                      onClick={copyTicketLink}
-                    />
-                    <Tooltip placement="bottom" className="z-[120]">{toastMessage === "Ticket link copied" ? "Ticket link copied" : "Copy ticket link"}</Tooltip>
-                  </TooltipTrigger>
-                  <Dropdown isOpen={actionsOpen} onOpenChange={setActionsOpen}>
-                    <DropdownTrigger aria-label="Ticket actions" className={cx(base, "flex items-center justify-center border border-border-button-default bg-background-primary-default shadow-xs hover:bg-background-primary-hover")}>
-                      <RiMore2Fill className="size-[18px]" aria-hidden />
-                    </DropdownTrigger>
-                    <DropdownPopover aria-label="Ticket actions" className="z-[120] w-[220px] rounded-[14px] p-1" placement="bottom end">
-                      <DropdownItem className="px-2 py-1.5" onSelect={() => { setDescDraft(descShown); setDescEditing(true); setActionsOpen(false); }}>
-                        <RiEditLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />
-                        <span className="truncate text-body-medium whitespace-nowrap">Edit description</span>
-                      </DropdownItem>
-                      <DropdownItem className="px-2 py-1.5" onSelect={copyTicketId}>
-                        <RiFileCopyLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />
-                        <span className="truncate text-body-medium whitespace-nowrap">{toastMessage === "Ticket ID copied" ? "Ticket ID copied" : "Copy ticket ID"}</span>
-                      </DropdownItem>
-                      <DropdownItem className="px-2 py-1.5" onSelect={() => { setActionsOpen(false); moveTicket(selectedTicket.id, selected.column, selected.column === "done" ? "todo" : "done"); }}>
-                        {selected.column === "done" ? <RiRestartLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden /> : <RiCheckboxCircleLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />}
-                        <span className="truncate text-body-medium whitespace-nowrap">{selected.column === "done" ? "Reopen ticket" : "Mark as done"}</span>
-                      </DropdownItem>
-                    </DropdownPopover>
-                  </Dropdown>
-                  <CloseButton size="sm" className="self-start" aria-label="Close ticket details" onClick={() => setSelected(null)} />
-                </div>
+                <CloseButton size="sm" className="self-start" aria-label="Close ticket details" onClick={() => setSelected(null)} />
                 <span className="sr-only" role="status">{toastMessage}</span>
               </header>
 
