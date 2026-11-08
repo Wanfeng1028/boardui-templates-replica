@@ -13,7 +13,7 @@ import { RiCloseLine } from "@remixicon/react";
 
 export function ProBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="fixed inset-x-3 bottom-3 z-60 flex w-auto flex-col items-start gap-3 overflow-hidden rounded-2xl border border-border-button-white bg-background-secondary-default p-4 shadow-waitlist sm:inset-x-auto sm:w-[280px]">
+    <div className="fixed inset-x-3 bottom-3 z-60 flex w-auto flex-col items-start gap-3 overflow-hidden rounded-2xl border border-border-button-white bg-background-secondary-default p-4 shadow-waitlist sm:inset-x-auto sm:start-3 sm:w-[280px]">
       {/* Top artwork, measured live (s2-orig-banner): the original paints a
           pastel ray wash across the top 200px of the card on canvas,
           masked to fade out at 38%, above a silver metal "b" tile —

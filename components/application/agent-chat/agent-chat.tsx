@@ -204,9 +204,16 @@ export function AgentChat({
         });
       })
       .catch(() => {
-        // A failed probe shouldn't lock the composer — let the send attempt
-        // surface the real error rather than guessing the cause here.
-        if (!cancelled) setProbe({ status: "ready", provider: null, label: null, model: null });
+        // A failed probe is the same "unreachable" as a 404 or unreadable
+        // body: with showSetupWhenUnreachable, show the setup steps instead
+        // of a dead composer. Otherwise keep the composer usable and let
+        // the send attempt surface the real error.
+        if (cancelled) return;
+        if (showSetupWhenUnreachable) {
+          setProbe({ status: "unconfigured", provider: null, label: null, model: null });
+        } else {
+          setProbe({ status: "ready", provider: null, label: null, model: null });
+        }
       });
     return () => {
       cancelled = true;

@@ -151,8 +151,12 @@ const TIERS: Tier[] = [
 function SubscribeForm() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  // No newsletter backend in this replica, so the post-submit note says
+  // so plainly instead of claiming a signup happened.
   return done ? (
-    <p className="text-body-medium text-text-primary">You&apos;re on the list.</p>
+    <p className="text-body-medium text-text-primary">
+      Demo form — no newsletter backend here, so nothing was subscribed.
+    </p>
   ) : (
     <form
       className="flex w-full max-w-md flex-col gap-2 sm:flex-row"

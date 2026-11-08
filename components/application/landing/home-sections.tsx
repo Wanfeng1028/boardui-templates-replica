@@ -407,16 +407,7 @@ function FaqSection() {
               </button>
               {expanded ? (
                 <div id={`home-faq-panel-${i}`} className="pb-5">
-                  {item.answer ? (
-                    <p className="text-body-regular text-text-secondary">{item.answer}</p>
-                  ) : (
-                    <p className="text-body-regular text-text-secondary">
-                      We answer in the open, usually the same day.{" "}
-                      <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="underline hover:text-text-primary">
-                        Ask on Discord
-                      </a>
-                    </p>
-                  )}
+                  <p className="text-body-regular text-text-secondary">{item.answer}</p>
                 </div>
               ) : null}
             </div>
@@ -441,8 +432,13 @@ function FaqSection() {
 function SubscribeForm() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  // This replica has no newsletter backend (the original's 49 JS chunks
+  // contain no subscribe endpoint either — only /api/geo), so the form
+  // never claims a signup happened: the post-submit note says so plainly.
   return done ? (
-    <p className="text-body-medium text-text-primary">You&apos;re on the list.</p>
+    <p className="text-body-medium text-text-primary">
+      Demo form — no newsletter backend here, so nothing was subscribed.
+    </p>
   ) : (
     <form
       className="flex w-full max-w-md flex-col gap-2 sm:flex-row"

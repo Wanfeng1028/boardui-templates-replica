@@ -215,6 +215,7 @@ const RECENT_HIRES = [
 ];
 
 type Employee = {
+  id: string;
   name: string;
   role: string;
   team: string;
@@ -225,16 +226,16 @@ type Employee = {
 };
 
 const EMPLOYEES: Employee[] = [
-  { name: "John Clarkson", role: "Backend Engineer", team: "Engineering", start: "Apr 06, 2023", status: "Active", salary: "$78K", avatar: "/avatars/john-clarkson.webp" },
-  { name: "Aspen Lubin", role: "Legal Counsel", team: "Operations", start: "Mar 03, 2026", status: "Active", salary: "$125K", avatar: "/avatars/aspen-lubin.webp" },
-  { name: "Michael Ekstrom", role: "Finance Ops", team: "Operations", start: "Jun 19, 2026", status: "Active", salary: "$48K", avatar: "/avatars/michael-ekstrom.webp" },
-  { name: "Kianna Vaccaro", role: "Design Lead", team: "Design", start: "Oct 05, 2025", status: "Active", salary: "$64K", avatar: "/avatars/kianna-vaccaro.webp" },
-  { name: "Livia Saris", role: "SDR", team: "Sales", start: "Nov 19, 2025", status: "Contract", salary: "$147K", avatar: "/avatars/livia-saris.webp" },
-  { name: "Jaydon Aminoff", role: "Support Specialist", team: "Support", start: "Nov 27, 2025", status: "Active", salary: "$103K", avatar: "/avatars/jaydon-aminoff.webp" },
-  { name: "Maria Lubin", role: "Content Lead", team: "Marketing", start: "Oct 05, 2024", status: "On leave", salary: "$88K", avatar: "/avatars/maria-lubin.webp" },
-  { name: "Ann Press", role: "Legal Counsel", team: "Operations", start: "Jul 22, 2022", status: "Active", salary: "$110K", avatar: "/avatars/ann-press.webp" },
-  { name: "Dulce Calzoni", role: "Product Designer", team: "Design", start: "Aug 03, 2024", status: "Active", salary: "$65K" },
-  { name: "Gretchen Rosser", role: "User Researcher", team: "Design", start: "Jan 24, 2025", status: "Active", salary: "$78K" },
+  { id: "john-clarkson", name: "John Clarkson", role: "Backend Engineer", team: "Engineering", start: "Apr 06, 2023", status: "Active", salary: "$78K", avatar: "/avatars/john-clarkson.webp" },
+  { id: "aspen-lubin", name: "Aspen Lubin", role: "Legal Counsel", team: "Operations", start: "Mar 03, 2026", status: "Active", salary: "$125K", avatar: "/avatars/aspen-lubin.webp" },
+  { id: "michael-ekstrom", name: "Michael Ekstrom", role: "Finance Ops", team: "Operations", start: "Jun 19, 2026", status: "Active", salary: "$48K", avatar: "/avatars/michael-ekstrom.webp" },
+  { id: "kianna-vaccaro", name: "Kianna Vaccaro", role: "Design Lead", team: "Design", start: "Oct 05, 2025", status: "Active", salary: "$64K", avatar: "/avatars/kianna-vaccaro.webp" },
+  { id: "livia-saris", name: "Livia Saris", role: "SDR", team: "Sales", start: "Nov 19, 2025", status: "Contract", salary: "$147K", avatar: "/avatars/livia-saris.webp" },
+  { id: "jaydon-aminoff", name: "Jaydon Aminoff", role: "Support Specialist", team: "Support", start: "Nov 27, 2025", status: "Active", salary: "$103K", avatar: "/avatars/jaydon-aminoff.webp" },
+  { id: "maria-lubin", name: "Maria Lubin", role: "Content Lead", team: "Marketing", start: "Oct 05, 2024", status: "On leave", salary: "$88K", avatar: "/avatars/maria-lubin.webp" },
+  { id: "ann-press", name: "Ann Press", role: "Legal Counsel", team: "Operations", start: "Jul 22, 2022", status: "Active", salary: "$110K", avatar: "/avatars/ann-press.webp" },
+  { id: "dulce-calzoni", name: "Dulce Calzoni", role: "Product Designer", team: "Design", start: "Aug 03, 2024", status: "Active", salary: "$65K" },
+  { id: "gretchen-rosser", name: "Gretchen Rosser", role: "User Researcher", team: "Design", start: "Jan 24, 2025", status: "Active", salary: "$78K" },
 ];
 
 function initialsOf(name: string) {
@@ -291,8 +292,8 @@ function EngagementRadar({ values }: { values: number[] }) {
             strokeWidth="1"
           />
         ))}
-        {points.map((p) => (
-          <line key={p.x} x1={cx0} y1={cy0} x2={p.x} y2={p.y} stroke="var(--color-border-button-default)" strokeWidth="1" />
+        {points.map((p, i) => (
+          <line key={RADAR_AXES[i]} x1={cx0} y1={cy0} x2={p.x} y2={p.y} stroke="var(--color-border-button-default)" strokeWidth="1" />
         ))}
         <polygon points={polygon} fill="var(--color-chart-2)" fillOpacity="0.25" stroke="var(--color-chart-2)" strokeWidth="2" strokeLinejoin="round" />
         {valuePoints.map((p, i) => (
@@ -351,8 +352,8 @@ export default function HrManagementTemplatePage() {
 
   const employees = useMemo(() => {
     let rows = [...extraHires, ...EMPLOYEES]
-      .map((e) => ({ ...e, status: statusOverrides[e.name] ?? e.status }))
-      .filter((e) => !removed.includes(e.name));
+      .map((e) => ({ ...e, status: statusOverrides[e.id] ?? e.status }))
+      .filter((e) => !removed.includes(e.id));
     if (teamFilter) rows = rows.filter((e) => e.team === teamFilter);
     if (departmentFilter !== "All departments") rows = rows.filter((e) => e.team === departmentFilter);
     if (statusFilter !== "All statuses") rows = rows.filter((e) => e.status === statusFilter);
@@ -394,7 +395,7 @@ export default function HrManagementTemplatePage() {
     const role = hireRole.trim() || "New hire";
     if (!name) return;
     setExtraHires((prev) => [
-      { name, role, team: hireTeam, start: "Nov 6, 2026", status: "Active", salary: "—" },
+      { id: `hire-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`, name, role, team: hireTeam, start: "Nov 6, 2026", status: "Active", salary: "—" },
       ...prev,
     ]);
     setHireOpen(false);
@@ -756,7 +757,7 @@ export default function HrManagementTemplatePage() {
             </thead>
             <tbody>
               {pageRows.map((e) => (
-                <tr key={e.name} className="border-b border-border-table last:border-b-0">
+                <tr key={e.id} className="border-b border-border-table last:border-b-0">
                   <td className="py-2 pe-2">
                     <span className="flex items-center gap-2">
                       <Avatar size="sm" src={e.avatar} alt={e.name} initials={initialsOf(e.name)} />
@@ -772,7 +773,7 @@ export default function HrManagementTemplatePage() {
                       selectedKey={e.status}
                       onSelectionChange={(key) => {
                         if (typeof key === "string") {
-                          setStatusOverrides((prev) => ({ ...prev, [e.name]: key as Employee["status"] }));
+                          setStatusOverrides((prev) => ({ ...prev, [e.id]: key as Employee["status"] }));
                         }
                       }}
                       size="sm"
@@ -795,7 +796,7 @@ export default function HrManagementTemplatePage() {
                         type="button"
                         aria-label={`Remove ${e.name}`}
                         onClick={() => {
-                          setRemoved((prev) => [...prev, e.name]);
+                          setRemoved((prev) => [...prev, e.id]);
                           setToast(`${e.name} removed from this view.`);
                           window.setTimeout(() => setToast(null), 3500);
                         }}

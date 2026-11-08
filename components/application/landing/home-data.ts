@@ -27,8 +27,8 @@ export type HeroPreviewTab = {
  * Hero preview rail — the original hero embeds the dashboard template with
  * this sidebar rail (aria-labels in the SSR HTML): Home, Project board,
  * Marketing, Calendar, Finance, Medical Report, AI Chat, AI Image
- * Generation, Profile, Support, Settings. The rail rows are links to the
- * template routes; switching a tab swaps the live preview.
+ * Generation, Profile. The rail rows are links to the template routes;
+ * switching a tab swaps the live preview.
  */
 export const HERO_PREVIEW_TABS: HeroPreviewTab[] = [
   { label: "Home", href: "/templates/dashboard", src: "/templates/dashboard" },
