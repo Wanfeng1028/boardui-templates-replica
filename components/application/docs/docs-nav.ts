@@ -5,7 +5,8 @@
  * order and New/Pro badges are the original's; nothing is invented.
  * Section sizes verified against the original's own grouping:
  * Getting started 5, Foundations 4, Base 49, Blocks 19, Charts 19,
- * Templates 10 — 106 links in all.
+ * Templates 10 — 106 links in all. The replica adds Cascader, Rate and
+ * Tree Select to Base (VibeHub terms, 2026-11-09): Base 52, 109 links.
  *
  * Two routes the original links to do not exist on this replica yet:
  * /privacy, /terms, /license (footer) — the hrefs are kept verbatim and
@@ -37,6 +38,7 @@ export const LIBRARY_NAV: LibraryNavSection[] = [
     { href: "/components/breadcrumb", label: "Breadcrumb" },
     { href: "/components/button", label: "Button" },
     { href: "/components/button-group", label: "Button Group" },
+    { href: "/components/cascader", label: "Cascader", isNew: true },
     { href: "/components/carousel", label: "Carousel", isNew: true },
     { href: "/components/checkbox", label: "Checkbox" },
     { href: "/components/chip", label: "Chip" },
@@ -63,6 +65,7 @@ export const LIBRARY_NAV: LibraryNavSection[] = [
     { href: "/components/popover", label: "Popover", isNew: true },
     { href: "/components/progress", label: "Progress", isNew: true },
     { href: "/components/radio", label: "Radio" },
+    { href: "/components/rate", label: "Rate", isNew: true },
     { href: "/components/search-field", label: "Search Field", isNew: true },
     { href: "/components/segmented-control", label: "Segmented Control" },
     { href: "/components/select", label: "Select" },
@@ -78,6 +81,7 @@ export const LIBRARY_NAV: LibraryNavSection[] = [
     { href: "/components/time-field", label: "Time Field", isNew: true },
     { href: "/components/toast", label: "Toast", isNew: true },
     { href: "/components/tooltip", label: "Tooltip" },
+    { href: "/components/tree-select", label: "Tree Select", isNew: true },
     { href: "/components/tree-view", label: "Tree View", isNew: true },
   ] },
   { title: "Blocks", items: [
@@ -168,8 +172,9 @@ export const PREV_NEXT: Record<string, { prev?: LibraryNavItem; next?: LibraryNa
   "/components/badge": { prev: { href: "/components/avatar", label: "Avatar", sub: "User images and initials" }, next: { href: "/components/breadcrumb", label: "Breadcrumb", sub: "Hierarchical path trail" } },
   "/components/breadcrumb": { prev: { href: "/components/badge", label: "Badge", sub: "Small status labels" }, next: { href: "/components/button", label: "Button", sub: "The core action" } },
   "/components/button": { prev: { href: "/components/breadcrumb", label: "Breadcrumb", sub: "Hierarchical path trail" }, next: { href: "/components/button-group", label: "Button Group", sub: "Segmented action row" } },
-  "/components/button-group": { prev: { href: "/components/button", label: "Button", sub: "The core action" }, next: { href: "/components/carousel", label: "Carousel", sub: "Swipeable slide deck" } },
-  "/components/carousel": { prev: { href: "/components/button-group", label: "Button Group", sub: "Segmented action row" }, next: { href: "/components/checkbox", label: "Checkbox", sub: "Animated tick control" } },
+  "/components/button-group": { prev: { href: "/components/button", label: "Button", sub: "The core action" }, next: { href: "/components/cascader", label: "Cascader" } },
+  "/components/cascader": { prev: { href: "/components/button-group", label: "Button Group", sub: "Segmented action row" }, next: { href: "/components/carousel", label: "Carousel", sub: "Swipeable slide deck" } },
+  "/components/carousel": { prev: { href: "/components/cascader", label: "Cascader" }, next: { href: "/components/checkbox", label: "Checkbox", sub: "Animated tick control" } },
   "/components/checkbox": { prev: { href: "/components/carousel", label: "Carousel", sub: "Swipeable slide deck" }, next: { href: "/components/chip", label: "Chip", sub: "Compact removable tags" } },
   "/components/chip": { prev: { href: "/components/checkbox", label: "Checkbox", sub: "Animated tick control" }, next: { href: "/components/close-button", label: "Close Button", sub: "Dismiss affordance" } },
   "/components/close-button": { prev: { href: "/components/chip", label: "Chip", sub: "Compact removable tags" }, next: { href: "/components/color-picker", label: "Color Picker" } },
@@ -194,8 +199,9 @@ export const PREV_NEXT: Record<string, { prev?: LibraryNavItem; next?: LibraryNa
   "/components/pagination": { prev: { href: "/components/number-field", label: "Number Field" }, next: { href: "/components/popover", label: "Popover" } },
   "/components/popover": { prev: { href: "/components/pagination", label: "Pagination", sub: "Page number navigation" }, next: { href: "/components/progress", label: "Progress" } },
   "/components/progress": { prev: { href: "/components/popover", label: "Popover" }, next: { href: "/components/radio", label: "Radio", sub: "Single-choice options" } },
-  "/components/radio": { prev: { href: "/components/progress", label: "Progress" }, next: { href: "/components/search-field", label: "Search Field" } },
-  "/components/search-field": { prev: { href: "/components/radio", label: "Radio", sub: "Single-choice options" }, next: { href: "/components/segmented-control", label: "Segmented Control", sub: "Exclusive view switcher" } },
+  "/components/radio": { prev: { href: "/components/progress", label: "Progress" }, next: { href: "/components/rate", label: "Rate" } },
+  "/components/rate": { prev: { href: "/components/radio", label: "Radio", sub: "Single-choice options" }, next: { href: "/components/search-field", label: "Search Field" } },
+  "/components/search-field": { prev: { href: "/components/rate", label: "Rate" }, next: { href: "/components/segmented-control", label: "Segmented Control", sub: "Exclusive view switcher" } },
   "/components/segmented-control": { prev: { href: "/components/search-field", label: "Search Field" }, next: { href: "/components/select", label: "Select", sub: "Styled value picker" } },
   "/components/select": { prev: { href: "/components/segmented-control", label: "Segmented Control", sub: "Exclusive view switcher" }, next: { href: "/components/skeleton", label: "Skeleton" } },
   "/components/skeleton": { prev: { href: "/components/select", label: "Select", sub: "Styled value picker" }, next: { href: "/components/slider", label: "Slider", sub: "Range value control" } },
@@ -209,8 +215,9 @@ export const PREV_NEXT: Record<string, { prev?: LibraryNavItem; next?: LibraryNa
   "/components/textarea": { prev: { href: "/components/tag-group", label: "Tag Group" }, next: { href: "/components/time-field", label: "Time Field" } },
   "/components/time-field": { prev: { href: "/components/textarea", label: "Textarea", sub: "Multiline text fields" }, next: { href: "/components/toast", label: "Toast" } },
   "/components/toast": { prev: { href: "/components/time-field", label: "Time Field" }, next: { href: "/components/tooltip", label: "Tooltip", sub: "Hover hint bubbles" } },
-  "/components/tooltip": { prev: { href: "/components/toast", label: "Toast" }, next: { href: "/components/tree-view", label: "Tree View" } },
-  "/components/tree-view": { prev: { href: "/components/tooltip", label: "Tooltip", sub: "Hover hint bubbles" }, next: { href: "/components/agent-creator", label: "Agent Creator" } },
+  "/components/tooltip": { prev: { href: "/components/toast", label: "Toast" }, next: { href: "/components/tree-select", label: "Tree Select" } },
+  "/components/tree-select": { prev: { href: "/components/tooltip", label: "Tooltip", sub: "Hover hint bubbles" }, next: { href: "/components/tree-view", label: "Tree View" } },
+  "/components/tree-view": { prev: { href: "/components/tree-select", label: "Tree Select" }, next: { href: "/components/agent-creator", label: "Agent Creator" } },
   "/components/agent-creator": { prev: { href: "/components/tree-view", label: "Tree View" }, next: { href: "/components/agent-limits-card", label: "Agent Limits", sub: "Usage meter card" } },
   "/components/agent-limits-card": { prev: { href: "/components/agent-creator", label: "Agent Creator" }, next: { href: "/components/agent-progress", label: "Agent Progress", sub: "Live task status" } },
   "/components/agent-progress": { prev: { href: "/components/agent-limits-card", label: "Agent Limits", sub: "Usage meter card" }, next: { href: "/components/agent-thinking", label: "Agent Thinking", sub: "Reasoning disclosure" } },

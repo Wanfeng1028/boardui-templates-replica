@@ -40,10 +40,11 @@ const components: Entry[] = [
   { name: "Announcement", href: "/components/announcement", description: "Dismissible banner for product news.", tier: "free", status: "shipped" },
   { name: "Avatar", href: "/components/avatar", description: "User photo with initials fallback.", tier: "free", status: "shipped" },
   // No Badge card: on boardui.com/components Badge lives only in the
-  // sidebar, not as a directory card (live recount 2026-11-08: 96 cards).
+  // sidebar, not as a directory card (live recount 2026-11-08: 99 cards).
   { name: "Breadcrumb", href: "/components/breadcrumb", description: "Path trail with collapsing levels.", tier: "free", status: "shipped" },
   { name: "Button", href: "/components/button", description: "Primary, secondary, and danger actions.", tier: "free", status: "shipped" },
   { name: "Button Group", href: "/components/button-group", description: "Fused row of selectable buttons.", tier: "free", status: "shipped" },
+  { name: "Cascader", href: "/components/cascader", description: "Pick a nested value level by level, with the full path echoed back.", tier: "free", status: "shipped", isNew: true },
   { name: "Carousel", href: "/components/carousel", description: "Slide through cards with snap, arrows and dots.", tier: "free", status: "shipped", isNew: true },
   { name: "Checkbox", href: "/components/checkbox", description: "Animated tick, card variant, two sizes.", tier: "free", status: "shipped" },
   { name: "Chip", href: "/components/chip", description: "Compact removable filter tokens.", tier: "free", status: "shipped" },
@@ -70,6 +71,7 @@ const components: Entry[] = [
   { name: "Popover", href: "/components/popover", description: "Free-form content anchored to a trigger, with smart positioning.", tier: "free", status: "shipped" },
   { name: "Progress", href: "/components/progress", description: "Progress bar and ring, determinate or indeterminate.", tier: "free", status: "shipped" },
   { name: "Radio", href: "/components/radio", description: "Gradient dot, card variant, two sizes.", tier: "free", status: "shipped" },
+  { name: "Rate", href: "/components/rate", description: "Five stars for a readable score, with optional half stars.", tier: "free", status: "shipped", isNew: true },
   { name: "Search Field", href: "/components/search-field", description: "Pill search input with a clear button and loading state.", tier: "free", status: "shipped" },
   { name: "Segmented Control", href: "/components/segmented-control", description: "Sliding pill option switcher.", tier: "free", status: "shipped" },
   { name: "Select", href: "/components/select", description: "Single-choice listbox with search.", tier: "free", status: "shipped" },
@@ -85,6 +87,7 @@ const components: Entry[] = [
   { name: "Time Field", href: "/components/time-field", description: "Time of day typed segment by segment, 12 and 24 hour cycles.", tier: "free", status: "shipped" },
   { name: "Toast", href: "/components/toast", description: "toast() calls from anywhere, stacked as Notification cards.", tier: "free", status: "shipped" },
   { name: "Tooltip", href: "/components/tooltip", description: "Positioned hints on hover and focus.", tier: "free", status: "shipped" },
+  { name: "Tree Select", href: "/components/tree-select", description: "Check one or more items in an expandable parent-child tree.", tier: "free", status: "shipped", isNew: true },
   { name: "Tree View", href: "/components/tree-view", description: "Nested folders with selection and keyboard navigation.", tier: "free", status: "shipped", isNew: true },
 
 ];

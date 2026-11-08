@@ -23,6 +23,7 @@ import { CloseButton } from "@/components/base/buttons/close-button";
 import { IconButton } from "@/components/base/buttons/icon-button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { Carousel, CarouselItem } from "@/components/base/carousel/carousel";
+import { Cascader } from "@/components/base/cascader/cascader";
 import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { Divider } from "@/components/base/divider/divider";
 import { Notification } from "@/components/base/notification/notification";
@@ -32,12 +33,14 @@ import { Input } from "@/components/base/input/input";
 import { InputOtp } from "@/components/base/input-otp/input-otp";
 import { Pagination } from "@/components/base/pagination/pagination";
 import { Radio, RadioGroup } from "@/components/base/radio/radio";
+import { Rate } from "@/components/base/rate/rate";
 import { SegmentedControl, SegmentedControlItem } from "@/components/base/segmented-control/segmented-control";
 import { Select, SelectItem } from "@/components/base/select/select";
 import { Slider } from "@/components/base/slider/slider";
 import { SocialButton } from "@/components/base/social-button/social-button";
 import { Switch } from "@/components/base/switch/switch";
 import { Textarea } from "@/components/base/textarea/textarea";
+import { TreeSelect } from "@/components/base/tree-select/tree-select";
 import { TreeViewPreview } from "@/components/application/docs/tree-view-preview";
 import { DataGridExample } from "@/components/application/docs/examples/data-grid-example";
 import { TOOLTIP_CARETS } from "@/components/base/tooltip/tooltip";
@@ -782,6 +785,70 @@ function SelectPreviewCard() {
   ));
 }
 
+function CascaderPreview() {
+  return (
+    <Center>
+      <div className="w-full max-w-[220px]">
+        <Cascader
+          aria-label="Region"
+          placeholder="Select a region"
+          defaultValue={["guangdong", "shenzhen", "nanshan"]}
+          options={[
+            { value: "guangdong", label: "广东省", children: [
+              { value: "shenzhen", label: "深圳市", children: [
+                { value: "nanshan", label: "南山区" },
+                { value: "futian", label: "福田区" },
+              ] },
+              { value: "guangzhou", label: "广州市", children: [
+                { value: "tianhe", label: "天河区" },
+              ] },
+            ] },
+            { value: "zhejiang", label: "浙江省", children: [
+              { value: "hangzhou", label: "杭州市", children: [
+                { value: "xihu", label: "西湖区" },
+              ] },
+            ] },
+          ]}
+        />
+      </div>
+    </Center>
+  );
+}
+
+function RatePreview() {
+  return (
+    <Center>
+      <Rate defaultValue={4} allowHalf aria-label="Rating" />
+    </Center>
+  );
+}
+
+function TreeSelectPreview() {
+  return (
+    <Center>
+      <div className="w-full max-w-[220px]">
+        <TreeSelect
+          aria-label="Teams"
+          placeholder="Select teams"
+          defaultValue={["frontend"]}
+          options={[
+            { value: "company", label: "公司", children: [
+              { value: "product", label: "产品部", children: [
+                { value: "growth", label: "增长组" },
+                { value: "experience", label: "体验组" },
+              ] },
+              { value: "engineering", label: "研发部", children: [
+                { value: "frontend", label: "前端组" },
+                { value: "backend", label: "后端组" },
+              ] },
+            ] },
+          ]}
+        />
+      </div>
+    </Center>
+  );
+}
+
 export type PreviewOptions = {
     fade?: boolean;
     fadeClassName?: string;
@@ -1114,6 +1181,7 @@ export const FREE_COMPONENT_PREVIEWS: Partial<Record<PreviewHref, () => React.Re
     </Center>
   ),
   "/components/carousel": CarouselPreviewCard,
+  "/components/cascader": CascaderPreview,
   "/components/checkbox": CheckboxPreview,
   "/components/close-button": () => (
     <Center>
@@ -1161,6 +1229,7 @@ export const FREE_COMPONENT_PREVIEWS: Partial<Record<PreviewHref, () => React.Re
     </Center>
   ),
   "/components/radio": RadioPreview,
+  "/components/rate": RatePreview,
   "/components/segmented-control": () => (
     <Center>
       <SegmentedControl defaultSelectedKeys={["weekly"]} aria-label="Period">
@@ -1184,5 +1253,6 @@ export const FREE_COMPONENT_PREVIEWS: Partial<Record<PreviewHref, () => React.Re
   "/components/switch": SwitchPreview,
   "/components/textarea": TextareaPreviewCard,
   "/components/tooltip": TooltipPreviewCard,
+  "/components/tree-select": TreeSelectPreview,
   "/components/tree-view": () => <Scaled width={384} insetRight><TreeViewPreview compact /></Scaled>,
 };
