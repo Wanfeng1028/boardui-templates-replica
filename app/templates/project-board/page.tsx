@@ -944,6 +944,7 @@ export default function ProjectBoardTemplatePage() {
       {/* Ticket detail side panel */}
       {selectedTicket && selected && (() => {
         const isFav = favorites.has(selectedTicket.id);
+        const descShown = selectedTicket.description.split("\n\n").at(-1) ?? selectedTicket.description;
         const toggleFav = () => {
           setFavorites((prev) => {
             const next = new Set(prev);
@@ -955,22 +956,22 @@ export default function ProjectBoardTemplatePage() {
             return next;
           });
         };
-        const base =
-          "relative flex size-9 shrink-0 items-center justify-center rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-primary shadow-xs transition-colors hover:border-border-button-hover hover:bg-background-primary-hover";
+        const base = "size-6 rounded-lg text-foreground-icon-secondary [&>svg]:size-[18px]";
         const sharedSelectTrigger =
           "w-auto min-w-0 justify-start rounded-md border-0 bg-transparent p-1 text-body-medium text-text-primary shadow-none [&>svg]:hidden";
         const selectPopover = "z-[120] w-[220px] rounded-[14px] p-1";
         return (
         <ModalOverlay isOpen isDismissable onOpenChange={(open) => { if (!open) setSelected(null); }} className="fixed inset-0 z-100 flex items-stretch justify-end overflow-hidden p-3 max-sm:p-2">
-          <Modal className="h-full w-full max-w-[609px] outline-none">
-            <Dialog aria-label={`${selectedTicket.id} ticket details`} className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl bg-ticket-detail-surface outline-none">
+          <Modal className="relative h-full w-full max-w-[609px] outline-none">
+            <div aria-hidden className="pointer-events-none absolute inset-0 rounded-3xl" style={{ boxShadow: "-10px 0 34px #0000000d, -10px 0 250px #00000040" }} />
+            <Dialog aria-label={`${selectedTicket.id} ticket details`} className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-3xl bg-ticket-detail-surface outline-none">
               <header className="flex shrink-0 items-center justify-between gap-3 px-6 pt-6 pb-5 max-sm:px-4 max-sm:pt-4">
-                <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-body-2-medium text-text-secondary">
+                <div className="flex min-w-0 items-center gap-0.5 text-body-2-medium text-text-secondary">
                   <span className="shrink-0">BoardUI Design Tasks</span>
                   <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
                   <span className="shrink-0">{selectedTicket.id}</span>
                   <RiArrowRightSLine className="size-[15px] shrink-0 rtl:rotate-180" aria-hidden />
-                  <span className="truncate">{selectedTicket.title}</span>
+                  <span className="truncate">{selectedTicket.tag}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <TooltipTrigger delay={200}>
@@ -1000,7 +1001,7 @@ export default function ProjectBoardTemplatePage() {
                       <RiMore2Fill className="size-[18px]" aria-hidden />
                     </DropdownTrigger>
                     <DropdownPopover aria-label="Ticket actions" className="z-[120] w-[220px] rounded-[14px] p-1" placement="bottom end">
-                      <DropdownItem className="px-2 py-1.5" onSelect={() => { setDescDraft(selectedTicket.description); setDescEditing(true); setActionsOpen(false); }}>
+                      <DropdownItem className="px-2 py-1.5" onSelect={() => { setDescDraft(descShown); setDescEditing(true); setActionsOpen(false); }}>
                         <RiEditLine className="size-[18px] shrink-0 text-foreground-icon-secondary" aria-hidden />
                         <span className="truncate text-body-medium whitespace-nowrap">Edit description</span>
                       </DropdownItem>
@@ -1057,7 +1058,7 @@ export default function ProjectBoardTemplatePage() {
                               </div>
                             </form>
                           ) : (
-                            <p className="whitespace-pre-wrap text-body-regular text-text-secondary wrap-anywhere">{selectedTicket.description}</p>
+                            <p className="whitespace-pre-wrap text-body-regular text-text-secondary wrap-anywhere">{descShown}</p>
                           )}
                         </div>
                       </section>
