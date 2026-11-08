@@ -135,6 +135,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/templates/ai-image-generation": "AI Image Generation Template — React + Tailwind Agent UI | BoardUI",
   "/templates/ai-profile": "AI Profile Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/calendar": "Calendar Template — React + Tailwind Admin Dashboard | BoardUI",
+  "/templates/chat-starter": "Chat Starter Template — Deploy a Working AI Chat in Two Minutes | BoardUI",
   "/templates/dashboard": "Dashboard Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/finance": "Finance Dashboard Template — React + Tailwind Admin Dashboard | BoardUI",
   "/templates/hr-management": "Page not found | BoardUI",

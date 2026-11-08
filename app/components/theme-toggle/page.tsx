@@ -35,7 +35,7 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-const PREVIEW_CODE = `import { ThemeToggle} from "@/components/application/theme/theme-toggle";
+const PREVIEW_CODE = `import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 
 export function SidebarFooter() {
   return <ThemeToggle />;

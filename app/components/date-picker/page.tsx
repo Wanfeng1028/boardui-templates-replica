@@ -12,7 +12,7 @@ import { PrevNext } from "@/components/application/docs/prev-next";
 import { FREE_COMPONENT_PREVIEWS } from "@/components/application/docs/component-previews-free";
 import { DateRangePicker } from "@/components/base/date-picker/date-range-picker";
 
-const PREVIEW_CODE = `import { DateRangePicker} from "@/components/base/date-picker/date-range-picker";
+const PREVIEW_CODE = `import { DateRangePicker } from "@/components/base/date-picker/date-range-picker";
 
 export function Example() {
   return <DateRangePicker aria-label="Trip dates" />;

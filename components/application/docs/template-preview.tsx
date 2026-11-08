@@ -48,6 +48,7 @@ function CopyPageButton({ code }: { code: string }) {
       await navigator.clipboard.writeText(text);
     } catch {
       // Clipboard access can be refused; leave the icon unchanged.
+      return;
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);

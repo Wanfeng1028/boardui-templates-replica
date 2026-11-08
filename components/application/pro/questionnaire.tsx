@@ -60,11 +60,13 @@ export function Questionnaire({
   /** Override the demo questions — the blog article shows a single harness question. */
   questions?: QuestionnaireQuestion[];
 }) {
-  const questions = questionsProp ?? QUESTIONS;
-  const [step, setStep] = useState(0);
+  const questions = questionsProp?.length ? questionsProp : QUESTIONS;
+  const [stepState, setStep] = useState(0);
   const [picked, setPicked] = useState<Record<number, string[]>>({});
   const [otherText, setOtherText] = useState<Record<number, string>>({});
   const [showOther, setShowOther] = useState<Record<number, boolean>>({});
+  // The prop may shrink after mount; clamp so questions[step] is always defined.
+  const step = Math.min(stepState, questions.length - 1);
   const q = questions[step];
   const last = step === questions.length - 1;
 

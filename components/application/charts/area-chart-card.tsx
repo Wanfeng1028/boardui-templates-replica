@@ -324,7 +324,8 @@ export function AreaChartCard({
   const { selected, selectedId, select } = useChartRange(resolvedRanges, defaultRange, onRangeChange);
 
   const rows = selected?.data ?? data ?? DEMO_DATA;
-  const resolvedSeries = selected?.series ?? series ?? DEMO_SERIES;
+  const resolvedSeries =
+    selected?.series?.length ? selected.series : series?.length ? series : DEMO_SERIES;
   const resolvedHeadline = selected?.headline ?? headline;
   const resolvedDelta = selected?.delta ?? delta;
   const tones = resolvedSeries.map((s, i) => resolveTone(i, s.color, s.activeColor));

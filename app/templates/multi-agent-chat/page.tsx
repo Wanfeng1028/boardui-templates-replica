@@ -33,7 +33,7 @@ import {
   RiThumbUpLine,
   RiVolumeUpLine,
 } from "@remixicon/react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import {
   Dropdown,
@@ -1848,6 +1848,18 @@ function AgentEditor({
   const colorInputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLElement>(null);
 
+  /* Last non-blank name: clearing the name field must fall back to it
+     (blur / close), never persist an empty name. */
+  const lastNameRef = useRef(agent.name);
+  if (agent.name.trim().length > 0) lastNameRef.current = agent.name;
+  const revertBlankName = useCallback(() => {
+    if (agent.name.trim().length === 0) onSave({ name: lastNameRef.current });
+  }, [agent.name, onSave]);
+  const handleClose = useCallback(() => {
+    revertBlankName();
+    onClose();
+  }, [revertBlankName, onClose]);
+
   /* Derived from the agent record (the editor is fully controlled — every
      change below calls onSave at once, so the sidebar and chat update
      live, exactly like the original). */
@@ -1864,11 +1876,11 @@ function AgentEditor({
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       const t = e.target as Node | null;
-      if (t === document.body || (rootRef.current && t && rootRef.current.contains(t))) onClose();
+      if (t === document.body || (rootRef.current && t && rootRef.current.contains(t))) handleClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [handleClose]);
 
   /* Stop any preview speech when the editor unmounts. */
   useEffect(() => {
@@ -1944,7 +1956,7 @@ function AgentEditor({
           <button
             type="button"
             aria-label="Close agent editor"
-            onClick={onClose}
+            onClick={handleClose}
             className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             <RiCloseLine className="size-5" aria-hidden />
@@ -2103,6 +2115,7 @@ function AgentEditor({
               <input
                 value={agent.name}
                 onChange={(e) => onSave({ name: e.target.value })}
+                onBlur={revertBlankName}
                 aria-label="Agent name"
                 placeholder="Michael Scott"
                 maxLength={48}
@@ -2409,6 +2422,16 @@ function MarketplacePane({ onClose }: { onClose: () => void }) {
   const showTools = tab === "Discover" || tab === "Plugins";
   const showEssentials = tab === "Discover" || tab === "Plugins" || tab === "Installed";
   const tabs = ["Discover", "Plugins", "Bots", "Installed"];
+  // Empty state follows the visible sections, not the unfiltered lists:
+  // on the Bots tab a matching tool must not hide the "no bots" state.
+  const isEmpty =
+    tab === "Bots"
+      ? bots.length === 0
+      : tab === "Plugins"
+        ? tools.length === 0 && essentials.length === 0
+        : tab === "Installed"
+          ? essentials.length === 0
+          : bots.length === 0 && tools.length === 0 && essentials.length === 0;
 
   const toolCard = (tool: MarketplaceTool) => {
     const isAdded = added[tool.id] ?? tool.installed;
@@ -2548,7 +2571,7 @@ function MarketplacePane({ onClose }: { onClose: () => void }) {
           </>
         )}
 
-        {bots.length === 0 && tools.length === 0 && essentials.length === 0 && (
+        {isEmpty && (
           <p className="px-2 py-6 text-body-regular text-text-tertiary">
             No tools or teammates match “{query.trim()}”.
           </p>
@@ -2805,12 +2828,13 @@ export default function MultiAgentChatTemplatePage() {
       name-word, capitalised, joined with " + ", in pick order. */
   const createGroup = (members: PickerMember[]) => {
     const firstWord = (name: string) => {
-      const w = name.trim().split(/\s+/)[0] ?? name;
+      const w = name.trim().split(/\s+/)[0] ?? "";
+      if (w === "") return "";
       return w.charAt(0).toUpperCase() + w.slice(1);
     };
     const created: GroupChat = {
       id: `group-${Date.now()}`,
-      name: members.map((m) => firstWord(m.name)).join(" + "),
+      name: members.map((m) => firstWord(m.name)).filter((w) => w !== "").join(" + "),
       members,
     };
     setGroups((prev) => [...prev, created]);

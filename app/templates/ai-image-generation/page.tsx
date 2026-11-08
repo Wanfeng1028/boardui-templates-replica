@@ -94,7 +94,7 @@ const REPOS: RepoGroup[] = [
         id: "image-generation",
         title: "image generation",
         badge: "now",
-        messages: [{ id: "m-user-1", role: "user", text: MESSI_PROMPT, at: NOW - 1000 * 60 * 12 }],
+        messages: [{ id: "m-vintage-messi", role: "user", text: MESSI_PROMPT, at: NOW - 1000 * 60 * 12 }],
       },
       { id: "coding-scenario", title: "coding scenario", badge: "now", messages: [] },
       { id: "mobile-vue", title: "mobile app for vuejs...", badge: "5h", messages: [] },

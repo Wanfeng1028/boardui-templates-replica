@@ -207,7 +207,10 @@ function initialsOf(name: string) {
 }
 
 function salaryInBand(salary: string, band: string) {
-  const value = Number(salary.replace(/[^0-9]/g, ""));
+  const digits = salary.replace(/[^0-9]/g, "");
+  // Unknown salary ("—" on a new hire) belongs to no band.
+  if (digits === "") return false;
+  const value = Number(digits);
   if (band === "Under $60K") return value < 60;
   if (band === "$60K – $90K") return value >= 60 && value <= 90;
   if (band === "$90K – $120K") return value > 90 && value <= 120;
@@ -752,9 +755,9 @@ export default function HrManagementTemplatePage() {
             <button type="button" disabled={safePage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="cursor-pointer rounded-lg px-2.5 py-1.5 text-body-2-medium text-text-secondary outline-none hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring disabled:cursor-default disabled:opacity-40">
               Previous
             </button>
-            {pageNumbers.map((n) =>
+            {pageNumbers.map((n, i) =>
               n === "…" ? (
-                <span key="ellipsis" className="px-1 text-body-2-medium text-text-tertiary">…</span>
+                <span key={`ellipsis-${i}`} className="px-1 text-body-2-medium text-text-tertiary">…</span>
               ) : (
                 <button
                   key={n}
