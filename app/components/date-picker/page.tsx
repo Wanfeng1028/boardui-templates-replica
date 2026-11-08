@@ -9,8 +9,8 @@ import { Chip } from "@/components/base/badges/chip";
 import { PkgCommand } from "@/components/application/docs/code-tabs";
 import { FileCodeBlock, InstallStep, InstallTabs } from "@/components/application/docs/install-tabs";
 import { PrevNext } from "@/components/application/docs/prev-next";
-import { FREE_COMPONENT_PREVIEWS } from "@/components/application/docs/component-previews-free";
 import { DateRangePicker } from "@/components/base/date-picker/date-range-picker";
+import { MeetingScheduler } from "@/components/base/date-picker/meeting-scheduler";
 
 const PREVIEW_CODE = `import { DateRangePicker } from "@/components/base/date-picker/date-range-picker";
 
@@ -329,6 +329,14 @@ export const popoverClassName = cx(
 );`;
 
 export default function DatePickerPage() {
+  /* Meeting scheduler on the original: the real MeetingScheduler component
+     (components/base/date-picker/meeting-scheduler.tsx) — its own trigger
+     button ("Schedule a meeting", calendar icon + rotating chevron) inside
+     the bordered slot, and the panel is the component's portaled react-aria
+     Popover (placement "bottom end", flips up when there is no room below),
+     so opening it never changes the section height. Only this page's usage
+     changes — the shared MeetingSchedulePreview component (also used by the
+     free landing page) is untouched. */
   return (
     <DocsLayout variant="library" hidePrevNext title="Date Picker">
       <div className="flex flex-col gap-6 pb-10">
@@ -342,9 +350,14 @@ export default function DatePickerPage() {
           <div className="overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4">
             <DateRangePicker aria-label="Trip dates" />
           </div>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
-            {PREVIEW_CODE}
-          </pre>
+          <div className="relative">
+            <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-medium leading-6 text-text-primary">
+              {PREVIEW_CODE}
+            </pre>
+            <div className="absolute right-3 top-3">
+              <CopyButton text={PREVIEW_CODE} />
+            </div>
+          </div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Installation</h2>
@@ -402,37 +415,37 @@ export default function DatePickerPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Meeting scheduler</h2>
           <p className="text-body-regular text-text-secondary">A Calendly/Cal.com-style booking panel — Figma node 3881:7618. Host card and meeting summary on the left, a single-month calendar in the middle (the same MonthPanel from shared.tsx), and a timezone / hour-format / time-slot sidebar on the right. Not a popover — a disclosure: the "Schedule a meeting" trigger toggles the whole panel open/closed, with the time-slot list scrolling within a fixed height instead of growing the panel.</p>
-          <div className="relative h-[451px] overflow-x-auto rounded-3xl border border-border-button-default bg-background-primary-default p-4 xl:h-[223px]">
-              {(() => { const Preview = FREE_COMPONENT_PREVIEWS["/components/date-picker"]; return Preview ? <Preview /> : null; })()}
-            </div>
+          <div className="flex justify-center rounded-3xl border border-border-button-default p-8">
+            <MeetingScheduler />
+          </div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Quick select</h2>
           <p className="text-body-regular text-text-secondary">The sidebar presets are computed from @internationalized/date each time the popover opens (so "Today" stays today). Selecting one updates the pending range and highlights the two months to match — it still requires Apply to commit, same as dragging a range directly on the calendar.</p>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_1_CODE}</code></pre>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_1_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_1_CODE} /></div></div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Controlled & uncontrolled value</h2>
           <p className="text-body-regular text-text-secondary">Pass value + onChange for a controlled range, or defaultValue for uncontrolled. Either way, the popover keeps its own pending draft internally - onChange only fires when the user presses Apply; Cancel discards the draft and reverts to the last committed value. The start/end chips in the footer are editable inputs (DD/MM/YYYY) that update the same pending draft.</p>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_2_CODE}</code></pre>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_2B_CODE}</code></pre>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_2_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_2_CODE} /></div></div>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_2B_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_2B_CODE} /></div></div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Disabled</h2>
           <p className="text-body-regular text-text-secondary">isDisabled dims the trigger button and blocks opening the popover.</p>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_3_CODE}</code></pre>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_3_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_3_CODE} /></div></div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">Single date</h2>
           <p className="text-body-regular text-text-secondary">DatePicker is the non-range sibling — Figma node 3879:6708. Same trigger, popover, month panel, day-cell rendering, and editable date chip as DateRangePicker (see shared.tsx below), built on a plain react-aria Calendar instead of RangeCalendar. There's only one month, so — unlike the dual view, where the two inner chevrons are inert spacers — both nav chevrons are fully functional. The Figma frame has no quick-select sidebar.</p>
           <p className="text-body-regular text-text-secondary">Same pending-vs-committed value pattern as the range picker, just with a single CalendarDate instead of a &#123; start, end &#125; pair.</p>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE}</code></pre>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE2}</code></pre>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_4_CODE} /></div></div>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 text-body-2-regular text-text-primary"><code>{CODE_4_CODE2}</code></pre><div className="absolute right-3 top-3"><CopyButton text={CODE_4_CODE2} /></div></div>
         </section>
         <section className="flex flex-col gap-3">
           <h2 className="text-title-2-medium text-text-primary">shared.tsx</h2>
           <p className="text-body-regular text-text-secondary">Both DateRangePicker and DatePicker import their shared chrome (chevrons, day cell, month panel, editable date chip, trigger/popover surfaces) from shared.tsx — source as published on the original page (components/base/date-picker/shared.tsx). Note: this embedded copy is the version the original page published when captured; the file installed in this repo (<code>components/base/date-picker/shared.tsx</code>) is the newer free-repo version, which adds <code>useLocale</code> and week helpers (<code>startOfWeek</code> / <code>endOfWeek</code> / <code>isSameDay</code>). The demos on this page run on the installed file.</p>
-          <pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-regular leading-6 text-text-primary"><code>{SHARED_TSX_CODE}</code></pre>
+          <div className="relative"><pre className="overflow-x-auto rounded-xl border border-border-button-default bg-background-secondary-default p-4 font-mono text-caption-1-regular leading-6 text-text-primary"><code>{SHARED_TSX_CODE}</code></pre><div className="absolute right-3 top-3"><CopyButton text={SHARED_TSX_CODE} /></div></div>
         </section>
         <PrevNext
           prev={{ href: "/components/date-calendar", label: "Date Calendar" }}

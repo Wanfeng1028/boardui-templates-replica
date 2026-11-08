@@ -11,7 +11,7 @@ import {
   RiCodeLine,
   RiFileCopyLine,
   RiFileTextLine,
-  RiDownloadLine,
+  RiShare2Line,
   RiEarthLine,
   RiHeadphoneLine,
   RiLayoutGridLine,
@@ -163,17 +163,22 @@ function ringOrder(selected: AvatarShape): AvatarShape[] {
 }
 
 /** Face silhouettes on a 0 0 40 40 viewBox. Star is a 5-point star,
-    diamond a rhombus, slender a plump blob, pocket a rounded square —
-    all read off the original's sidebar/editor screenshots; heart /
-    cloud / shield / petal / flower follow the original's shape names
+    diamond a rhombus, pocket a rounded square — all read off the
+    original's sidebar/editor screenshots. Shield and slender are
+    traced from the original's crops (live-final/L2/crop-orig-bigface.png
+    + crop-orig-sidebar.png, angular-sampled contours): shield is a
+    shallow-peaked roof over bulging sides tapering to a bottom point
+    (NOT the teardrop the old path drew), slender is the landing
+    designer's wide flat-topped asymmetric blob (NOT near-circular).
+    Heart / cloud / petal / flower follow the original's shape names
     (no vector data survives). */
 const SHAPE_PATHS: Record<AvatarShape, string> = {
   star: "M20 2.2l4.7 9.9 10.8 1.4-7.9 7.4 2 10.7L20 26.4l-9.6 5.2 2-10.7-7.9-7.4 10.8-1.4L20 2.2Z",
   heart: "M20 36.5C10 29 3.5 22 3.5 14.5 3.5 9.5 7.5 6 12 6c3.2 0 6 1.8 8 4.5C22 7.8 24.8 6 28 6c4.5 0 8.5 3.5 8.5 8.5 0 7.5-6.5 14.5-16.5 22Z",
   cloud: "M13.5 34.5c-4.5 0-8-3.2-8-7.4 0-3.6 2.5-6.6 6-7.3.9-4.6 5-8.3 10-8.3 4.4 0 8.1 2.8 9.4 6.8 3.6.7 6.1 3.7 6.1 7.3 0 4.2-3.6 7.4-8.5 7.4H13.5Z",
   diamond: "M20 3.5L35.5 20 20 36.5 4.5 20 20 3.5Z",
-  shield: "M20 2.5c8.5 0 15 6 15 14.5 0 9.5-6.5 18-15 20.5C11.5 35 5 26.5 5 17 5 8.5 11.5 2.5 20 2.5Z",
-  slender: "M20 3.5c7.5 0 9.8 2.2 12.6 5.7C35.5 13 36 16.8 36 20s-.5 7-3.4 10.8C29.8 34.3 27.5 36.5 20 36.5S10.2 34.3 7.4 30.8C4.5 27 4 23 4 20s.5-7 3.4-10.8C10.2 5.7 12.5 3.5 20 3.5Z",
+  shield: "M20 0.8C24 1.2 29 3 33 5.2 36.5 6.8 39.5 7.5 39.5 11 39.8 15 39.5 20 38.8 24.5 38 29 35 32.5 31 36 27 38.8 23 39.8 20 39.8 17 39.8 13 38.8 9 36 5 32.5 2 29 1.2 24.5 0.5 20 0.2 15 0.5 11 0.5 7.5 3.5 6.8 7 5.2 11 3 16 1.2 20 0.8Z",
+  slender: "M20 0.5C26 0.5 32 1 35.5 2.5 38.5 4 40 6.5 40 10L40 16C40 24 39.5 30 38 34.5 36.5 38 33 39.5 28 40 22 40.5 16 40 12 38 8 36 3 32 1.5 27 0.5 23 0 18 0 13 0 8 2 4 6 2 10 0.5 15 0.5 20 0.5Z",
   pocket: "M10 4h20a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6V10a6 6 0 0 1 6-6Z",
   petal: "M20 2.5C28 10 32.5 17.5 32.5 24.5a12.5 12.5 0 1 1-25 0C7.5 17.5 12 10 20 2.5Z",
   flower: "M20 6.5A6.8 6.8 0 0 1 31.7 13.25 6.8 6.8 0 0 1 31.7 26.75 6.8 6.8 0 0 1 20 33.5 6.8 6.8 0 0 1 8.3 26.75 6.8 6.8 0 0 1 8.3 13.25 6.8 6.8 0 0 1 20 6.5Z",
@@ -368,22 +373,35 @@ const AGENTS: Agent[] = [
     from the original's picker (probe-picker-avatars.json + screenshot:
     planner = blue diamond, support = green heart, analyst = blue
     rounded square "pocket"). */
-type PickerMember = { id: string; name: string; body: string; deep: string; shape: AvatarShape };
+type PickerMember = { id: string; name: string; label: string; body: string; deep: string; shape: AvatarShape };
+/** Picker-only agents' labels, probed live from the original (2026-11-08):
+    creating a group of Product planner + Support guide + Data analyst
+    (with the landing agent pre-selected) yields the sidebar title
+    "Design + Product + Support + Analytics". */
 const PICKER_EXTRA: PickerMember[] = [
-  { id: "planner", name: "Product planner", body: "#91B6EB", deep: "#7492BC", shape: "diamond" },
-  { id: "support-guide", name: "Support guide", body: "#A6E0B5", deep: "#85B391", shape: "heart" },
-  { id: "analyst", name: "Data analyst", body: "#9CC8E8", deep: "#7DA0BA", shape: "pocket" },
+  { id: "planner", name: "Product planner", label: "Product", body: "#91B6EB", deep: "#7492BC", shape: "diamond" },
+  { id: "support-guide", name: "Support guide", label: "Support", body: "#A6E0B5", deep: "#85B391", shape: "heart" },
+  { id: "analyst", name: "Data analyst", label: "Analytics", body: "#9CC8E8", deep: "#7DA0BA", shape: "pocket" },
 ];
 
 /** A group created from the picker. `members` are in pick order; the
-    name joins each member's first name-word capitalised with " + "
-    (orig: Cloud engineer + marketing bot + Product planner →
-    "Cloud + Marketing + Product", orig-group-start.json). */
+    name joins each member's agent label with " + " (orig: Cloud
+    engineer + marketing bot + Product planner → "Cloud + Marketing +
+    Product", orig-group-start.json; labels probed live, see above). */
 type GroupChat = {
   id: string;
   name: string;
   members: PickerMember[];
 };
+
+/** Group title for the chat header: the original shows at most three
+    labels, then "| +N" for the rest (orig: "Design + Product + Support
+    | +1" for a 4-member group). The sidebar shows the full name. */
+function groupHeaderTitle(group: GroupChat): string {
+  const labels = group.members.map((m) => m.label);
+  if (labels.length <= 3) return labels.join(" + ");
+  return `${labels.slice(0, 3).join(" + ")} | +${labels.length - 3}`;
+}
 
 /** Sidebar subtitle of a created group (orig-group-start.json). */
 const GROUP_DESC = "Start a conversation";
@@ -458,6 +476,13 @@ function AvatarEye({
   wanderClass,
   blinkDelay,
   bold = false,
+  /** Wheel-glyph rendering: the original's emotion-ring faces draw the
+      same eyes far larger — measured off crop-orig-bigface.png, a wheel
+      eye spans ~20% of the dot's width and ~25% of its height, with its
+      centre at ~55% of the dot — while the avatar's own eyes span ~14%
+      of the face width and ~23% of its height. One shared component
+      with two geometries, so the ring stops reading as fine symbols. */
+  mini = false,
 }: {
   cx: number;
   style: EyeStyle;
@@ -469,14 +494,16 @@ function AvatarEye({
   /** Thicker strokes for the editor wheel glyphs (measured: the
       original's wheel faces are drawn bold). */
   bold?: boolean;
+  mini?: boolean;
 }) {
-  const sw = bold ? 2.4 : 1.8;
-  const cy = 17.5 + lookY;
+  const sw = mini ? 3.2 : bold ? 2.4 : 1.8;
+  const cy = (mini ? 21 : 18) + lookY;
+  const k = mini ? 1.7 : 1;
   const x = cx + (style === "side" ? lookX : 0);
   if (style === "closed") {
     return (
       <path
-        d={`M${cx - 2.2} 17.5h4.4`}
+        d={`M${cx - 2.2 * k} ${cy}h${4.4 * k}`}
         stroke="#262626"
         strokeWidth={sw}
         fill="none"
@@ -487,7 +514,7 @@ function AvatarEye({
   if (style === "arc") {
     return (
       <path
-        d={`M${cx - 2.4} 18.2Q${cx} 14.8 ${cx + 2.4} 18.2`}
+        d={`M${cx - 2.4 * k} ${cy + 0.7 * k}Q${cx} ${cy - 2.7 * k} ${cx + 2.4 * k} ${cy + 0.7 * k}`}
         stroke="#262626"
         strokeWidth={sw}
         fill="none"
@@ -495,8 +522,23 @@ function AvatarEye({
       />
     );
   }
-  const ry = (style === "wide" ? 4.1 : style === "narrow" ? 2.2 : style === "half" ? 2.1 : 3.3) + (bold ? 0.4 : 0);
-  const rx = (style === "wide" ? 2.9 : 2.3) + (bold ? 0.4 : 0);
+  const ry =
+    (mini
+      ? style === "wide"
+        ? 6.8
+        : style === "narrow"
+          ? 3.4
+          : style === "half"
+            ? 3.0
+            : 6.0
+      : style === "wide"
+        ? 5.6
+        : style === "narrow"
+          ? 3.0
+          : style === "half"
+            ? 2.8
+            : 4.6) + (bold && !mini ? 0.4 : 0);
+  const rx = (mini ? (style === "wide" ? 5.0 : 4.6) : style === "wide" ? 3.3 : 2.9) + (bold && !mini ? 0.4 : 0);
   const eye = (
     <g>
       {/* No white highlight: the original's eyes are solid black pills. */}
@@ -570,7 +612,7 @@ function AgentAvatar({
         </g>
       </g>
       <AvatarEye
-        cx={14}
+        cx={15}
         style={expr.leftEye}
         lookX={expr.lookX ?? 0}
         lookY={expr.lookY ?? 0}
@@ -625,20 +667,26 @@ function MiniFace({ expression, size = 28 }: { expression: AvatarExpression; siz
   const lookY = expr.lookY ?? 0;
   return (
     <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true" className="block shrink-0">
-      <AvatarEye cx={14} style={expr.leftEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold />
-      <AvatarEye cx={26} style={expr.rightEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold />
+      <AvatarEye cx={11} style={expr.leftEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold mini />
+      <AvatarEye cx={29} style={expr.rightEye} lookX={lookX} lookY={lookY} blinkClass={null} wanderClass={null} blinkDelay="0s" bold mini />
       {expr.brows && (
-        <path d={expr.brows} stroke="#262626" strokeWidth="2.1" fill="none" strokeLinecap="round" />
+        <g transform="translate(20 0) scale(1.25 1) translate(-20 0)">
+          <path d={expr.brows} stroke="#262626" strokeWidth="3" fill="none" strokeLinecap="round" />
+        </g>
       )}
-      {expr.mouthFill ? (
-        <path d={expr.mouth} fill="#262626" />
-      ) : (
-        <path d={expr.mouth} stroke="#262626" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      )}
+      {/* Mouths sit lower on the original's wheel faces than on the
+          avatar table (measured: mouth band at ~75% of the dot). */}
+      <g transform="translate(0 3)">
+        {expr.mouthFill ? (
+          <path d={expr.mouth} fill="#262626" />
+        ) : (
+          <path d={expr.mouth} stroke="#262626" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+        )}
+      </g>
       {expr.blush && (
         <>
-          <ellipse cx="10.5" cy="22.5" rx={expr.strongBlush ? 2.6 : 2} ry="1.2" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
-          <ellipse cx="29.5" cy="22.5" rx={expr.strongBlush ? 2.6 : 2} ry="1.2" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
+          <ellipse cx="8.5" cy="24" rx={expr.strongBlush ? 3.2 : 2.6} ry="1.6" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
+          <ellipse cx="31.5" cy="24" rx={expr.strongBlush ? 3.2 : 2.6} ry="1.6" fill="#f2a0a0" opacity={expr.strongBlush ? 0.85 : 0.55} />
         </>
       )}
     </svg>
@@ -1201,18 +1249,23 @@ function ChatMain({
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2">
             {group && (
-              <span className="flex shrink-0 items-center">
+              /* Group avatar cluster, measured live (orig: three ~13px
+                 canvases in a 2-over-1 triangle — two on top, one
+                 centred below — not a row of 20px avatars). */
+              <span className="relative block h-[21px] w-[21px] shrink-0" aria-hidden="true">
                 {group.members.slice(0, 3).map((m, i) => (
                   <AgentAvatar
                     key={m.id}
                     agent={m}
-                    size={20}
-                    className={i > 0 ? "-ms-2" : undefined}
+                    size={13}
+                    className={
+                      i === 0 ? "absolute left-0 top-0" : i === 1 ? "absolute left-2 top-0" : "absolute left-1 top-2"
+                    }
                   />
                 ))}
               </span>
             )}
-            <span className="truncate text-body-2-medium text-text-secondary">{group?.name ?? ""}</span>
+            <span className="truncate text-body-2-medium text-text-secondary">{group ? groupHeaderTitle(group) : ""}</span>
           </div>
         )}
         {/* Template-switcher entry: an icon-only grid button in the header
@@ -1239,7 +1292,11 @@ function ChatMain({
           {copied ? (
             <RiCheckLine className="size-4 text-text-primary" aria-hidden />
           ) : (
-            <RiDownloadLine className="size-4" aria-hidden />
+            /* The original's copy control is a share glyph
+               (RiShare2Line — arrow up out of an open tray — probed live
+               and matched against the installed icon set), not a
+               download arrow. */
+            <RiShare2Line className="size-4" aria-hidden />
           )}
         </button>
         <Dropdown isOpen={menuOpen} onOpenChange={setMenuOpen}>
@@ -1252,12 +1309,11 @@ function ChatMain({
           <DropdownPopover
             aria-label="Conversation options"
             placement="bottom end"
-            offset={9}
-            crossOffset={-5}
-            className="w-[256px] overflow-x-hidden p-[6px]"
+            offset={4}
+            className="w-[266px] overflow-x-hidden rounded-[14px] p-[6px]"
           >
-            {/* Measured live (orig-convopts-lw.json): a 256×98 dialog at
-                [799,57] with the section label "In this conversation",
+            {/* Measured live (l2p-orig-menurect.json): a 266×108 dialog at
+                [794,52], r14, with the section label "In this conversation",
                 "Edit <agent>" and "Start a group chat". */}
             <DropdownGroup label="In this conversation" className="gap-1 pt-0">
               {agent ? (
@@ -1266,7 +1322,7 @@ function ChatMain({
                     setMenuOpen(false);
                     handleOpenEditor();
                   }}
-                  className="px-2 py-1"
+                  className="px-2 py-1.5"
                 >
                   <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
                     Edit {agent.name}
@@ -1280,7 +1336,7 @@ function ChatMain({
                   setMenuOpen(false);
                   onOpenGroupPicker();
                 }}
-                className="px-2 py-1"
+                className="px-2 py-1.5"
               >
                 <span className="min-w-0 truncate text-body-medium whitespace-nowrap text-text-primary">
                   Start a group chat
@@ -1673,7 +1729,10 @@ function Composer({
                     absolutely positioned against this relative row
                     instead, reusing the BoardUI menu surface and
                     DropdownGroup / DropdownItem rows. While open the
-                    trigger is a black "×"; clicking it closes the menu. */}
+                    trigger is a light-grey "×" — the original's open
+                    button is rgb(235,235,235) with the dark "+" icon
+                    rotated 45° (l2-orig-plus.json), not a black "×";
+                    clicking it closes the menu. */}
                 <button
                   ref={addTriggerRef}
                   type="button"
@@ -1684,12 +1743,12 @@ function Composer({
                   className={cx(
                     "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full p-2 outline-none transition-colors duration-150 ease focus-visible:ring-2 focus-visible:ring-border-focus-ring",
                     addMenuOpen
-                      ? "bg-text-primary hover:bg-text-primary"
+                      ? "bg-[#ebebeb] hover:bg-[#ebebeb]"
                       : "bg-composer-panel-add-background hover:bg-composer-panel-add-hover-background",
                   )}
                 >
                   {addMenuOpen ? (
-                    <RiCloseLine className="size-5 text-text-white" aria-hidden />
+                    <RiAddLine className="size-5 rotate-45 text-foreground-icon-primary transition-transform duration-200 ease" aria-hidden />
                   ) : (
                     <RiAddLine className="size-5 text-foreground-icon-primary" aria-hidden />
                   )}
@@ -2043,6 +2102,10 @@ function AgentEditor({
               "absolute left-1/2 top-[152px] z-0 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition-shadow",
               dragOver && "ring-2 ring-accent-500",
             )}
+            /* Big face is the original's 162×162 canvas (L2: orig 162×162
+               @[1175,127], ours was 150×150 @[1187,139]); the -6px nudge
+               recentres it on the original's page position. */
+            style={{ marginLeft: -6, marginTop: -6 }}
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -2057,7 +2120,7 @@ function AgentEditor({
               }
             }}
           >
-            <AgentAvatar agent={agent} size={150} />
+            <AgentAvatar agent={agent} size={162} />
           </div>
         </div>
 
@@ -2572,9 +2635,22 @@ function MarketplacePane({ onClose }: { onClose: () => void }) {
         )}
 
         {isEmpty && (
-          <p className="px-2 py-6 text-body-regular text-text-tertiary">
-            No tools or teammates match “{query.trim()}”.
-          </p>
+          /* Empty state, verbatim from the original (l2p-orig-marketa2.json):
+             "0 results / No matches yet / Try another name, category, or
+             keyword." + an "Explore marketplace" button that clears the
+             search and shows everything again. */
+          <div className="flex flex-col items-start gap-2 px-2 py-6">
+            <p className="text-body-2-medium text-text-tertiary">0 results</p>
+            <p className="text-title-3-medium text-text-primary">No matches yet</p>
+            <p className="text-body-regular text-text-secondary">Try another name, category, or keyword.</p>
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="mt-1 flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-background-tertiary-default px-3 text-body-medium text-text-primary outline-none transition-colors hover:bg-background-tertiary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+            >
+              Explore marketplace
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -2605,7 +2681,7 @@ function GroupPicker({
   onStart: (members: PickerMember[]) => void;
 }) {
   const all: PickerMember[] = [
-    ...agents.map((a) => ({ id: a.id, name: a.name, body: a.body, deep: a.deep, shape: a.shape })),
+    ...agents.map((a) => ({ id: a.id, name: a.name, label: a.label, body: a.body, deep: a.deep, shape: a.shape })),
     ...PICKER_EXTRA,
   ];
   const [selected, setSelected] = useState<string[]>(() =>
@@ -2702,10 +2778,28 @@ function GroupPicker({
 function ProBanner({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div className="fixed inset-x-3 bottom-3 z-60 flex w-auto flex-col items-start gap-3 overflow-hidden rounded-2xl border border-border-button-white bg-background-secondary-default p-4 shadow-waitlist sm:inset-x-auto sm:w-[280px]">
-      <div className="flex w-full items-start justify-between gap-2">
-        <span className="inline-flex size-8 shrink-0 select-none items-center justify-center overflow-hidden rounded-lg bg-blue-300 text-blue-900">
+      {/* Top artwork, measured live (s2-orig-banner): the original paints a
+          pastel ray wash across the top 200px of the card on canvas,
+          masked to fade out at 38%, above a silver metal "b" tile —
+          not the blue logo tile this card used to show. The wash is
+          approximated here with a pastel gradient (the canvas itself
+          has no public asset); the tile reuses the repo's own silver
+          BoardUI Pro mark (public/brand/boardui_pro.png). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden"
+        style={{
+          height: 200,
+          maskImage: "linear-gradient(rgb(0, 0, 0) 38%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(rgb(0, 0, 0) 38%, transparent 100%)",
+          background:
+            "linear-gradient(100deg, rgba(147, 197, 253, 0.55) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(249, 168, 212, 0.45) 62%, rgba(196, 181, 253, 0.4) 100%)",
+        }}
+      />
+      <div className="relative flex w-full items-start justify-between gap-2">
+        <span className="inline-flex size-10 shrink-0 select-none items-center justify-center overflow-hidden rounded-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/boardui_logo_circle.webp" alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+          <img src="/brand/boardui_pro.png" alt="" loading="lazy" decoding="async" className="size-full object-cover" />
         </span>
         <button
           type="button"
@@ -2824,17 +2918,12 @@ export default function MultiAgentChatTemplatePage() {
     setEditorOpen(false);
   };
 
-  /** Group name rule (orig-group-start.json): each member's first
-      name-word, capitalised, joined with " + ", in pick order. */
+  /** Group name rule (orig-group-start.json + live probe 2026-11-08):
+      each member's agent label, joined with " + ", in pick order. */
   const createGroup = (members: PickerMember[]) => {
-    const firstWord = (name: string) => {
-      const w = name.trim().split(/\s+/)[0] ?? "";
-      if (w === "") return "";
-      return w.charAt(0).toUpperCase() + w.slice(1);
-    };
     const created: GroupChat = {
       id: `group-${Date.now()}`,
-      name: members.map((m) => firstWord(m.name)).filter((w) => w !== "").join(" + "),
+      name: members.map((m) => m.label).filter((w) => w !== "").join(" + "),
       members,
     };
     setGroups((prev) => [...prev, created]);

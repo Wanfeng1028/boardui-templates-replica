@@ -14,7 +14,7 @@ export default function ChatStarterTemplatePage() {
   return (
     <>
       <DocumentTitle />
-      <AgentChat />
+      <AgentChat showSetupWhenUnreachable />
     </>
   );
 }
