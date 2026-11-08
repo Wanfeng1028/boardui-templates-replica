@@ -24,7 +24,7 @@ import {
   RiUserSearchLine,
   RiUserSharedLine,
 } from "@remixicon/react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Bar, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import {
@@ -328,6 +328,15 @@ export default function HrManagementTemplatePage() {
   const [viewEmployee, setViewEmployee] = useState<Employee | null>(null);
   const [removed, setRemoved] = useState<string[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  // One shared timer: two independent setTimeout(3500) calls let the
+  // earlier toast's timer wipe a newer toast (add then remove within
+  // 3.5s showed no toast at all). A new toast always restarts the clock.
+  const toastTimer = useRef<number | null>(null);
+  const showToast = (message: string) => {
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = window.setTimeout(() => setToast(null), 3500);
+  };
   const [hireOpen, setHireOpen] = useState(false);
   const [hireName, setHireName] = useState("");
   const [hireRole, setHireRole] = useState("");
@@ -401,8 +410,7 @@ export default function HrManagementTemplatePage() {
     setHireOpen(false);
     setHireName("");
     setHireRole("");
-    setToast(`${name} added to the employee table.`);
-    window.setTimeout(() => setToast(null), 3500);
+    showToast(`${name} added to the employee table.`);
   };
 
   return (
@@ -797,8 +805,7 @@ export default function HrManagementTemplatePage() {
                         aria-label={`Remove ${e.name}`}
                         onClick={() => {
                           setRemoved((prev) => [...prev, e.id]);
-                          setToast(`${e.name} removed from this view.`);
-                          window.setTimeout(() => setToast(null), 3500);
+                          showToast(`${e.name} removed from this view.`);
                         }}
                         className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full text-foreground-icon-secondary outline-none hover:bg-background-tertiary-default hover:text-text-error-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
                       >
