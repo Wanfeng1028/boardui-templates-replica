@@ -128,7 +128,7 @@ export function TestimonialsSection() {
             >
               <span
                 className={cx(
-                  "h-1.5 rounded-full transition-all duration-300 ease-out",
+                  "h-1.5 rounded-full transition-[width,background-color] duration-300 ease-out",
                   i === active
                     ? "w-4 bg-foreground-icon-secondary"
                     : "w-1.5 bg-foreground-icon-tertiary group-hover:bg-foreground-icon-secondary",
