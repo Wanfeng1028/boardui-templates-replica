@@ -24,7 +24,7 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.boardui.com"),
+  metadataBase: new URL("https://ui.gemmae.dev"),
   title: {
     template: "%s | BoardUI",
     default: "BoardUI - React Design System for Dashboards",

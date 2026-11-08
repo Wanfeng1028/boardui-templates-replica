@@ -21,13 +21,13 @@ import { HomeSections } from "@/components/application/landing/home-sections";
  */
 export const metadata: Metadata = {
   title: { absolute: "BoardUI - React Design System for Dashboards" },
-  alternates: { canonical: "https://www.boardui.com" },
+  alternates: { canonical: "https://ui.gemmae.dev" },
   openGraph: {
     title: "BoardUI - React Design System for Dashboards",
     description:
       "Build agentic products and data-rich dashboards with 103 React components (19 chart cards), 10 Pro templates, Tailwind CSS, and editable source code.",
     type: "website",
-    url: "https://www.boardui.com",
+    url: "https://ui.gemmae.dev",
     images: [
       {
         url: "/og_image.png",
