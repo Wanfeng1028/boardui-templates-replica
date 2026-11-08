@@ -1371,7 +1371,7 @@ export default function HrManagementTemplatePage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-background-primary-default px-4 py-2 text-body-medium text-text-primary shadow-dropdown" role="status">
+        <div className="fixed bottom-4 left-1/2 z-130 -translate-x-1/2 rounded-full bg-background-primary-default px-4 py-2 text-body-medium text-text-primary shadow-dropdown" role="status">
           {toast}
         </div>
       )}

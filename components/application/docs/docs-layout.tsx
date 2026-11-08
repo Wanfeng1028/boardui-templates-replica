@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
-import { RiDiscordFill, RiGithubFill, RiListUnordered, RiTwitterXFill } from "@remixicon/react";
+import { RiDiscordFill, RiGithubFill, RiListUnordered, RiMenuLine, RiTwitterXFill } from "@remixicon/react";
 
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
 import { SiteFooter } from "@/components/application/blog/blog-article-footer";
@@ -11,6 +11,8 @@ import { PrevNext } from "@/components/application/docs/prev-next";
 import { DOCS_NAV, LIBRARY_NAV, prevNextFor } from "@/components/application/docs/docs-nav";
 import { GetProLink, MarketingNav, QuickSearch } from "@/components/application/marketing/marketing-nav";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
+import { IconButton } from "@/components/base/buttons/icon-button";
+import { Drawer, DrawerBody, DrawerTrigger } from "@/components/base/drawer/drawer";
 import { cx } from "@/utils/cx";
 
 /**
@@ -98,15 +100,19 @@ function Badge({ children }: { children: string }) {
   );
 }
 
-function LibrarySidebar() {
+function LibrarySidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname() ?? "/";
   const path = pathname.replace(/\/+$/, "") || "/";
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const isOpen = (title: string) => openSections[title] !== false;
 
   return (
-    <aside className="sticky top-3 m-3 hidden h-[calc(100vh-24px)] w-[260px] shrink-0 flex-col gap-3 overflow-hidden rounded-3xl border border-border-button-white bg-background-secondary-default p-3 shadow-sidebar lg:flex">
-      <Link href="/" className="flex w-full items-center gap-2 px-1 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+    <>
+      <Link
+        href="/"
+        onClick={onNavigate}
+        className="flex w-full items-center gap-2 px-1 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/boardui_logo.png" alt="BoardUI" width={24} height={24} className="shrink-0" />
         <span className="text-title-3-semibold text-text-primary">BoardUI</span>
@@ -149,6 +155,7 @@ function LibrarySidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={onNavigate}
                       aria-current={active ? "page" : undefined}
                       className={cx(
                         "relative flex items-center gap-2 rounded-md py-1.5 pe-2.5 ps-8 text-body-medium transition-colors duration-150 ease",
@@ -168,16 +175,28 @@ function LibrarySidebar() {
           </div>
         ))}
       </nav>
+    </>
+  );
+}
+
+function LibrarySidebar() {
+  return (
+    <aside className="sticky top-3 m-3 hidden h-[calc(100vh-24px)] w-[260px] shrink-0 flex-col gap-3 overflow-hidden rounded-3xl border border-border-button-white bg-background-secondary-default p-3 shadow-sidebar lg:flex">
+      <LibrarySidebarContent />
     </aside>
   );
 }
 
-function DocsSidebar() {
+function DocsSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname() ?? "/";
   const path = pathname.replace(/\/+$/, "") || "/";
   return (
-    <aside className="hidden w-56 shrink-0 lg:flex lg:flex-col">
-      <Link href="/" className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+    <>
+      <Link
+        href="/"
+        onClick={onNavigate}
+        className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/brand/boardui_logo.png" alt="BoardUI" width={20} height={20} className="shrink-0" />
         <span className="text-title-3-semibold text-text-primary">BoardUI</span>
@@ -193,6 +212,7 @@ function DocsSidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={onNavigate}
                       aria-current={active ? "page" : undefined}
                       className={cx(
                         "block rounded-md px-2 py-1 text-body-medium transition-colors outline-none hover:bg-background-secondary-hover hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring",
@@ -211,6 +231,14 @@ function DocsSidebar() {
       <div className="mt-auto pt-8">
         <ThemeToggle />
       </div>
+    </>
+  );
+}
+
+function DocsSidebar() {
+  return (
+    <aside className="hidden w-56 shrink-0 lg:flex lg:flex-col">
+      <DocsSidebarContent />
     </aside>
   );
 }
@@ -351,7 +379,24 @@ function LibraryLayout({
           <main className="relative flex w-full min-w-0 max-w-[900px] flex-col gap-3 overflow-x-clip">
             <div className="flex flex-col gap-8">
               <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <LibraryBreadcrumb title={title ?? ""} />
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <DrawerTrigger>
+                    <IconButton
+                      icon={RiMenuLine}
+                      size="medium"
+                      aria-label="Open navigation"
+                      className="lg:hidden"
+                    />
+                    <Drawer placement="start" size="sm" aria-label="Component library">
+                      {({ close }) => (
+                        <DrawerBody>
+                          <LibrarySidebarContent onNavigate={close} />
+                        </DrawerBody>
+                      )}
+                    </Drawer>
+                  </DrawerTrigger>
+                  <LibraryBreadcrumb title={title ?? ""} />
+                </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <ThemeToggle collapsed />
                   <a
@@ -453,6 +498,23 @@ function DocsVariantLayout({
     <div className={cx("flex min-h-full flex-col overflow-x-clip bg-background-full", className)}>
       <DocumentTitle title={documentTitle} />
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-8 py-12">
+        <div className="mb-6 flex items-center gap-2 lg:hidden">
+          <DrawerTrigger>
+            <IconButton
+              icon={RiMenuLine}
+              size="medium"
+              aria-label="Open navigation"
+              className="lg:hidden"
+            />
+            <Drawer placement="start" size="sm" aria-label="Docs">
+              {({ close }) => (
+                <DrawerBody>
+                  <DocsSidebarContent onNavigate={close} />
+                </DrawerBody>
+              )}
+            </Drawer>
+          </DrawerTrigger>
+        </div>
         <div className="flex w-full flex-1 gap-12">
           <DocsSidebar />
           <article className="relative min-w-0 max-w-3xl flex-1 overflow-x-clip">

@@ -649,7 +649,7 @@ function QuickSearchOverlay({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center p-4 pt-[15vh]" role="dialog" aria-modal="true" aria-label="Quick Search">
+    <div className="fixed inset-0 z-100 flex items-start justify-center p-4 pt-[15vh]" role="dialog" aria-modal="true" aria-label="Quick Search">
       <button type="button" aria-label="Close search" onClick={onClose} className="absolute inset-0 cursor-pointer bg-black/40" />
       <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border-button-default bg-background-primary-default shadow-card">
         <div className="flex items-center gap-2 border-b border-separator-border px-3 py-2.5">
