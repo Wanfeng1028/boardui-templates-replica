@@ -146,17 +146,16 @@ const inputClass =
   "w-full rounded-xl border border-border-button-default bg-background-primary-default px-2.5 py-2 text-body-medium text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring";
 const labelClass = "text-caption-1-semibold text-text-tertiary uppercase tracking-[0.06em]";
 
+const STATUS_ICON = {
+  backlog: RiInboxArchiveLine,
+  todo: RiCheckboxBlankCircleLine,
+  progress: RiPieChart2Line,
+  review: RiEyeLine,
+  done: RiCheckboxCircleLine,
+} as const;
+
 function StatusIcon({ status, className }: { status: ColumnId; className?: string }) {
-  const Icon =
-    status === "backlog"
-      ? RiInboxArchiveLine
-      : status === "todo"
-        ? RiCheckboxBlankCircleLine
-        : status === "progress"
-          ? RiPieChart2Line
-          : status === "review"
-            ? RiEyeLine
-            : RiCheckboxCircleLine;
+  const Icon = STATUS_ICON[status];
   return <Icon aria-hidden className={cx("size-[18px] shrink-0 text-foreground-icon-secondary", className)} />;
 }
 
@@ -224,6 +223,19 @@ function RunDot(props: DotProps) {
   if (props.payload?.value === 0) return null;
   return <PulsingDot {...props} />;
 }
+
+const PRIORITY_CHIP_COLOR: Record<Priority, "blue" | "yellow" | "orange" | "rose"> = {
+  Low: "blue",
+  Medium: "yellow",
+  High: "orange",
+  Urgent: "rose",
+};
+const PRIORITY_CHIP_HOVER: Record<Priority, string> = {
+  Low: "hover:bg-ticket-detail-low-hover",
+  Medium: "hover:bg-ticket-detail-medium-hover",
+  High: "hover:bg-ticket-detail-high-hover",
+  Urgent: "hover:bg-ticket-detail-urgent-hover",
+};
 
 function TokensChartCard({ title = "Tokens", className, series, total, change, variant = "area", startLabel, endLabel, plotHeight = 200 }: TokensChartCardProps) {
   const gradientId = useId();
@@ -1087,16 +1099,10 @@ export default function ProjectBoardTemplatePage() {
                             triggerClassName={cx(sharedSelectTrigger, "hover:bg-transparent")}
                             renderValue={
                               <Chip
-                                color={selectedTicket.priority === "Low" ? "blue" : selectedTicket.priority === "Medium" ? "yellow" : selectedTicket.priority === "High" ? "orange" : "rose"}
+                                color={PRIORITY_CHIP_COLOR[selectedTicket.priority]}
                                 className={cx(
                                   "px-[7px] py-0.5 text-body-medium transition-colors duration-150",
-                                  selectedTicket.priority === "Low"
-                                    ? "hover:bg-ticket-detail-low-hover"
-                                    : selectedTicket.priority === "Medium"
-                                      ? "hover:bg-ticket-detail-medium-hover"
-                                      : selectedTicket.priority === "High"
-                                        ? "hover:bg-ticket-detail-high-hover"
-                                        : "hover:bg-ticket-detail-urgent-hover",
+                                  PRIORITY_CHIP_HOVER[selectedTicket.priority],
                                   selectedTicket.priority === "Low" && "bg-ticket-detail-low-background text-ticket-detail-low-text",
                                 )}
                               >
