@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react";
 
+import { ProLogo } from "@/components/foundations/brand/logo";
 import { SegmentedControl, SegmentedControlItem } from "@/components/base/segmented-control/segmented-control";
 import { cx } from "@/utils/cx";
 
@@ -111,36 +112,23 @@ export function ProLicenseCard({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default">
+      <div className="relative overflow-hidden rounded-[28px] border border-border-button-default bg-background-primary-default dark:bg-background-secondary-default">
         <span className="absolute top-5 end-5 rounded-full border border-border-button-default bg-background-secondary-default px-2 py-0.5 text-[10px] leading-4 font-semibold tracking-wide text-text-secondary uppercase sm:top-6 sm:end-6">
           Pro access
         </span>
-        <div className="relative min-w-0 space-y-2 p-5 pt-7 sm:p-6 sm:pe-24 sm:pt-7">
-          <img
-            src="/brand/boardui_pro.png"
-            alt=""
-            width={48}
-            height={48}
-            loading="lazy"
-            decoding="async"
-            className="theme-logo-light size-12 shrink-0 object-contain"
-          />
-          <img
-            src="/brand/boardui_pro_dark.png"
-            alt=""
-            width={48}
-            height={48}
-            loading="lazy"
-            decoding="async"
-            className="theme-logo-dark size-12 shrink-0 object-contain"
-          />
-          <h3 className="text-title-3-medium text-text-primary">
-            {name} is a Pro {kind}.
-          </h3>
-          <p className="max-w-2xl text-body-regular text-text-secondary">
-            Your BoardUI Pro license unlocks this {kind} and all of its source files. Activate your license
-            once, then install it directly into your project with the CLI.
-          </p>
+        <div className="relative flex items-start gap-4 overflow-hidden p-5 sm:p-6">
+          <div aria-hidden="true" className="relative shrink-0">
+            <ProLogo size={56} decorative />
+          </div>
+          <div className="relative min-w-0 space-y-2 pt-7 sm:pe-24 sm:pt-0">
+            <h3 className="text-title-3-medium text-text-primary">
+              {name} is a Pro {kind}.
+            </h3>
+            <p className="max-w-2xl text-body-regular text-text-secondary">
+              Your BoardUI Pro license unlocks this {kind} and all of its source files. Activate your license
+              once, then install it directly into your project with the CLI.
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-1 border-t border-separator-border bg-background-secondary-default p-1 dark:bg-background-primary-default">
           <Step

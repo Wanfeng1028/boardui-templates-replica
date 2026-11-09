@@ -137,7 +137,7 @@ export function TemplatePreview({
   const [bp, setBp] = useState<Breakpoint>("desktop");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div id="preview" className="flex scroll-mt-14 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-1 items-center justify-start">
           <SegmentedControl

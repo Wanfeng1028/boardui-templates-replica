@@ -9,6 +9,7 @@ import { DocumentTitle } from "@/components/application/app-shell/document-title
 import { SiteFooter } from "@/components/application/blog/blog-article-footer";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { DOCS_NAV, LIBRARY_NAV, prevNextFor } from "@/components/application/docs/docs-nav";
+import { SiteLanguageSelector } from "@/components/application/docs/site-language-selector";
 import { GetProLink, MarketingNav, QuickSearch } from "@/components/application/marketing/marketing-nav";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
@@ -326,6 +327,11 @@ function useToc(contentRef: React.RefObject<HTMLDivElement | null>, enabled: boo
       used.add(id);
       found.push({ id, label });
     });
+    // The template preview has no h2, but the original's TOC lists it
+    // first ("Preview", #preview). Prepend it when the anchor exists.
+    if (document.getElementById("preview")) {
+      found.unshift({ id: "preview", label: "Preview" });
+    }
     setItems(found);
     setCurrent(found[0]?.id ?? "");
   }, [contentRef, enabled]);
@@ -398,6 +404,7 @@ function LibraryLayout({
                   <LibraryBreadcrumb title={title ?? ""} />
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <SiteLanguageSelector />
                   <ThemeToggle collapsed />
                   <a
                     href="https://x.com/boardui"
@@ -464,7 +471,7 @@ function LibraryLayout({
                             "-ml-px border-s-2 py-1.5 ps-4 text-body-medium transition-colors duration-150 ease",
                             current === item.id
                               ? "border-text-primary text-text-primary"
-                              : "border-transparent text-text-secondary hover:text-text-primary",
+                              : "border-transparent text-text-tertiary hover:text-text-secondary",
                           )}
                         >
                           {item.label}

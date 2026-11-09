@@ -1,11 +1,8 @@
 "use client";
 
-import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
-
 import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { TemplatePreview } from "@/components/application/docs/template-preview";
-import { LinkButton } from "@/components/base/buttons/link-button";
 import { AiImageGenerationTemplate } from "@/app/templates/ai-image-generation/page";
 
 const AIG_PREVIEW_CODE = `import { AiChatShell } from "@/components/application/ai-chat/ai-chat-shell";
@@ -22,18 +19,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-title-3-semibold text-text-primary">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function TemplateCard({ href, title, description }: { href: string; title: string; description: string }) {
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-primary-default p-6">
-      <h3 className="text-title-3-semibold text-text-primary">{title}</h3>
-      <p className="text-body-regular text-text-secondary">{description}</p>
-      <LinkButton href={href} variant="primary" size="medium" trailingIcon={RiArrowRightLine}>
-        Open the template
-      </LinkButton>
-    </div>
   );
 }
 
@@ -74,18 +59,7 @@ export default function AiImageGenerationPage() {
           the feedback row with copy confirmation and toasts, the composer and status bar, the masonry gallery panel
           with hover actions, and every base component they depend on.
         </p>
-        <TemplateCard
-          href="/templates/ai-image-generation"
-          title="AI Image Generation template"
-          description="See the full template running on this site — prompt thread, live generation frame, and masonry gallery."
-        />
       </Section>
-
-      <div>
-        <LinkButton href="/components" variant="secondary" size="medium" leadingIcon={RiArrowLeftLine}>
-          Back to components
-        </LinkButton>
-      </div>
     </DocsLayout>
   );
 }
