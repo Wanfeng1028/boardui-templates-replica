@@ -20,7 +20,7 @@ import {
   RiFolderLine,
   RiFolderOpenLine,
   RiGitMergeLine,
-  RiLayoutGridLine,
+
   RiListCheck3,
   RiMenuLine,
   RiMic2Line,
@@ -47,9 +47,10 @@ import {
   SliderTrack as AriaSliderTrack,
 } from "react-aria-components";
 
+
 import { AllTemplatesButton } from "@/components/application/template-switcher/all-templates-button";
 import { DocumentTitle } from "@/components/application/app-shell/document-title";
-import { ProBanner } from "@/components/application/templates/pro-banner";
+
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
 import { SettingsModal } from "@/components/application/settings/settings-modal";
@@ -279,9 +280,9 @@ const subscribeNarrow = (onChange: () => void) => {
   return () => mq.removeEventListener("change", onChange);
 };
 
-export default function AiImageGenerationTemplatePage() {
+export function AiImageGenerationTemplate({ showTemplateSwitcher = false }: { showTemplateSwitcher?: boolean }) {
   const [navOpen, setNavOpen] = useState(false);
-  const [proDismissed, setProDismissed] = useState(false);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [repos, setRepos] = useState<RepoGroup[]>(REPOS);
@@ -405,6 +406,7 @@ export default function AiImageGenerationTemplatePage() {
   // (--template-preview-height set by TemplatePreview), and falls back to
   // the full viewport on the standalone route.
   return (
+    <>
     <div className="relative flex h-[var(--template-preview-height,100dvh)] w-full gap-4 overflow-hidden bg-background-full p-3">
       <DocumentTitle />
       <style>{`@keyframes agent-drawer-in{from{transform:translateX(110%)}to{transform:translateX(0)}}@keyframes agent-card-in{from{opacity:0;filter:blur(8px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}`}</style>
@@ -429,7 +431,6 @@ export default function AiImageGenerationTemplatePage() {
             <IconButton icon={navOpen ? RiCloseLine : RiMenuLine} size="small" aria-label="Open navigation" onClick={() => setNavOpen((o) => !o)} />
             <span className="truncate text-headline-medium text-text-primary">Image generation</span>
             <div className="ms-auto flex shrink-0 items-center gap-1">
-              <AllTemplatesButton size="small" />
               <IconButton icon={RiImageAiLine} size="small" aria-label="Open gallery" onClick={() => setGalleryOpen(true)} />
             </div>
           </header>
@@ -445,7 +446,6 @@ export default function AiImageGenerationTemplatePage() {
               <span aria-current="page" className="truncate text-body-medium text-text-primary">{activeThread.title}</span>
             </nav>
             <div className="ms-auto flex shrink-0 items-center gap-1">
-              <AllTemplatesButton size="small" />
               <IconButton icon={RiShareLine} size="small" aria-label="Share chat" onClick={shareChat} />
               <div className="relative">
                 <IconButton icon={RiMore2Fill} size="small" aria-label="More options" onClick={() => setMoreMenuOpen((o) => !o)} />
@@ -523,11 +523,7 @@ export default function AiImageGenerationTemplatePage() {
           />
         )}
       </div>
-      {/* Template Pro card, as on the original live page (bottomCard:
-          "This template is part of Pro" / "Buy once and install the full
-          source with the CLI." / Get Pro) — same shared ProBanner as the
-          multi-agent-chat template. */}
-      {!proDismissed && <ProBanner onDismiss={() => setProDismissed(true)} />}
+
       <SettingsModal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
@@ -535,7 +531,15 @@ export default function AiImageGenerationTemplatePage() {
         planArtSrc="/templates/settings-plan-art.png"
       />
     </div>
+    {showTemplateSwitcher && (
+      <AllTemplatesButton size="small" className="fixed right-4 bottom-28 z-50 shadow-lg xl:bottom-4" />
+    )}
+    </>
   );
+}
+
+export default function AiImageGenerationTemplatePage() {
+  return <AiImageGenerationTemplate showTemplateSwitcher />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -846,7 +850,7 @@ function FlipSeconds({ seconds }: { seconds: number }) {
         .map((d, i) => (
           <FlipDigit key={i} digit={d} />
         ))}
-      <span aria-hidden>s</span>
+      <span aria-hidden> s</span>
       <span className="sr-only">{seconds} seconds remaining</span>
     </span>
   );
@@ -1030,11 +1034,7 @@ function AgentSidebar({
 
         <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto [scrollbar-width:none]">
           <nav className="flex w-full shrink-0 flex-col gap-1">
-            {/* Template-switcher entry, kept as requested (first row). */}
-            <a href="/templates" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
-              <RiLayoutGridLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
-              <span className="text-body-medium whitespace-nowrap text-text-secondary">全部模板</span>
-            </a>
+
             <a href="#" aria-label="New agent" className="flex w-full items-center gap-2 rounded-2lg p-2 transition-colors duration-150 ease hover:bg-background-secondary-hover">
               <RiAddLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
               <span className="text-body-medium whitespace-nowrap text-text-secondary">New agent</span>

@@ -6,7 +6,7 @@ import { DocsLayout } from "@/components/application/docs/docs-layout";
 import { ProLicenseCard } from "@/components/application/docs/pro-license-card";
 import { TemplatePreview } from "@/components/application/docs/template-preview";
 import { LinkButton } from "@/components/base/buttons/link-button";
-import AiImageGenerationTemplatePage from "@/app/templates/ai-image-generation/page";
+import { AiImageGenerationTemplate } from "@/app/templates/ai-image-generation/page";
 
 const AIG_PREVIEW_CODE = `import { AiChatShell } from "@/components/application/ai-chat/ai-chat-shell";
 
@@ -50,7 +50,7 @@ export default function AiImageGenerationPage() {
       </p>
 
       <TemplatePreview title="AI image generation" slug="ai-image-generation" previewCode={AIG_PREVIEW_CODE}>
-        <AiImageGenerationTemplatePage />
+        <AiImageGenerationTemplate />
       </TemplatePreview>
 
       <Section title="Installation">

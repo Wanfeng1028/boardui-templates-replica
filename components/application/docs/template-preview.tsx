@@ -10,6 +10,7 @@ import {
   RiExternalLinkLine,
   RiEyeLine,
   RiFileCopyLine,
+  RiLayoutGridLine,
   RiSmartphoneLine,
   RiTabletLine,
 } from "@remixicon/react";
@@ -137,7 +138,7 @@ export function TemplatePreview({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-1 items-center justify-start">
           <SegmentedControl
             aria-label="Preview mode"
@@ -183,6 +184,13 @@ export function TemplatePreview({
         </div>
         <div className="flex flex-1 items-center justify-end gap-2">
           <Link
+            href="/templates"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-0.5 overflow-hidden rounded-2lg border border-border-button-default bg-background-primary-default p-2 text-body-medium whitespace-nowrap text-text-primary shadow-xs transition-colors duration-150 ease outline-none hover:border-border-button-hover hover:bg-background-primary-hover active:border-border-button-active active:bg-background-primary-active focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
+          >
+            <RiLayoutGridLine className="size-5 shrink-0" aria-hidden />
+            <span className="inline-flex items-center justify-center px-1 shrink-0">全部模板</span>
+          </Link>
+          <Link
             href={`/templates/${slug}`}
             target="_blank"
             rel="noreferrer"
@@ -200,7 +208,7 @@ export function TemplatePreview({
           <code>{previewCode}</code>
         </pre>
       ) : (
-        <div className="flex min-h-[327px] items-center justify-center rounded-3xl border border-border-component-detail-container p-8">
+        <div className="flex min-h-[327px] items-center justify-center rounded-3xl border border-border-component-detail-container p-2">
           <div className="flex h-[762px] w-full flex-col overflow-hidden rounded-2xl border border-separator-border bg-background-primary-default transition-[width] duration-300 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none">
             <div className="flex h-10 shrink-0 items-end border-b border-separator-border bg-background-secondary-default px-3">
               <div className="flex h-full shrink-0 items-center gap-1.5 pe-4" aria-hidden="true">

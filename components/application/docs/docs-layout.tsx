@@ -370,13 +370,13 @@ function LibraryLayout({
       <DocumentTitle title={documentTitle} />
       <LibrarySidebar />
       <div className="min-w-0 flex-1">
-        <div className="component-detail mx-auto flex w-full max-w-[1200px] justify-center gap-12 px-6 pt-10 pb-14 sm:px-10">
+        <div className="component-detail mx-auto flex w-full max-w-[1560px] justify-center gap-12 px-6 pt-10 pb-14 sm:px-10">
           {/* relative + overflow-x-clip: AppShell's <main> was `relative …
  * overflow-x-hidden`. Some demos (e.g. date-picker's Meeting scheduler
  * preview) are absolutely positioned with no positioned ancestor, so the
  * content column must be their containing block and clip them — otherwise
  * they escape onto the sidebar and widen the document at 390px. */}
-          <main className="relative flex w-full min-w-0 max-w-[900px] flex-col gap-3 overflow-x-clip">
+          <main className="relative flex w-full min-w-0 max-w-[1220px] flex-col gap-3 overflow-x-clip">
             <div className="flex flex-col gap-8">
               <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 flex-1 items-center gap-2">
