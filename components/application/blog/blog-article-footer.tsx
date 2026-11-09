@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightLine, RiDiscordFill, RiGithubFill, RiTwitterXFill } from "@remixicon/react";
 
 import { ButtonLink } from "@/components/base/buttons/button";
+import { LOCALES, chromeString, localizedHrefFor, sidebarLabel, type SiteLocale } from "@/components/application/docs/locale-chrome";
 
 /**
  * Shared tail for the two blog articles, mirroring boardui.com/blog/*:
@@ -218,20 +219,22 @@ const FOOTER_COLUMNS: { title: string; links: FooterLink[] }[] = [
 ];
 
 /** The site footer from boardui.com, as it appears under blog articles. */
-export function SiteFooter() {
+export function SiteFooter({ locale = "en" }: { locale?: SiteLocale }) {
   return (
     <footer className="mt-20 flex flex-col gap-10 border-t border-separator-border pt-10 pb-4">
       <div className="flex flex-col gap-6">
         <p className="max-w-md text-body-regular text-text-secondary">
-          BoardUI is a dashboard design system and UI kit for React + Tailwind CSS, with data tables, charts and
-          dashboard templates, designed in Figma.
+          {chromeString(
+            "BoardUI is a dashboard design system and UI kit for React + Tailwind CSS, with data tables, charts and dashboard templates, designed in Figma.",
+            locale,
+          )}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <a
             href="https://x.com/boardui"
             target="_blank"
             rel="noreferrer"
-            aria-label="Follow BoardUI on X"
+            aria-label={chromeString("Follow BoardUI on X", locale)}
             className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
           >
             <RiTwitterXFill className="size-5 shrink-0" aria-hidden />
@@ -240,7 +243,7 @@ export function SiteFooter() {
             href="https://discord.gg/azcHkw8T6F"
             target="_blank"
             rel="noreferrer"
-            aria-label="Join the BoardUI Discord"
+            aria-label={chromeString("Join the BoardUI Discord", locale)}
             className="relative inline-flex size-9 shrink-0 items-center justify-center overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default text-foreground-icon-secondary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
           >
             <RiDiscordFill className="size-5 shrink-0" aria-hidden />
@@ -249,7 +252,7 @@ export function SiteFooter() {
             href="https://github.com/BoardUI/boardui"
             target="_blank"
             rel="noreferrer"
-            aria-label="BoardUI on GitHub"
+            aria-label={chromeString("BoardUI on GitHub", locale)}
             className="relative inline-flex h-9 shrink-0 items-center justify-center gap-0.5 overflow-visible rounded-2lg border border-border-button-default bg-background-primary-default px-2 text-body-medium text-text-primary shadow-xs transition-[background-color,border-color,box-shadow,color] duration-150 ease outline-none select-none hover:bg-background-primary-hover hover:border-border-button-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2"
           >
             <RiGithubFill className="size-5 shrink-0" aria-hidden />
@@ -260,8 +263,13 @@ export function SiteFooter() {
             </span>
           </a>
         </div>
-        <ButtonLink href="/components/pro-installation" variant="secondary" size="medium" className="w-fit">
-          Get Pro
+        <ButtonLink
+          href={localizedHrefFor("/components/pro-installation", locale)}
+          variant="secondary"
+          size="medium"
+          className="w-fit"
+        >
+          {chromeString("Get Pro", locale)}
         </ButtonLink>
       </div>
       <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-6">
@@ -281,29 +289,31 @@ export function SiteFooter() {
               }
               className="text-caption-1-semibold tracking-wide text-text-tertiary uppercase"
             >
-              {column.title}
+              {sidebarLabel(column.title, locale)}
             </h2>
             <ul className="flex flex-col gap-2">
               {column.links.map((link) => (
                 <li key={link.label}>
                   {link.href ? (
                     <Link
-                      href={link.href}
+                      href={localizedHrefFor(link.href, locale)}
                       className="text-body-regular whitespace-nowrap text-text-secondary transition-colors hover:text-text-primary"
                     >
-                      {link.label}
+                      {sidebarLabel(link.label, locale)}
                     </Link>
                   ) : (
-                    <span className="text-body-regular whitespace-nowrap text-text-secondary">{link.label}</span>
+                    <span className="text-body-regular whitespace-nowrap text-text-secondary">
+                      {sidebarLabel(link.label, locale)}
+                    </span>
                   )}
                 </li>
               ))}
               {column.title === "Company" && (
                 <li>
                   <span className="inline-flex flex-wrap items-center gap-1.5 text-body-regular text-text-secondary">
-                    Affiliate
+                    {chromeString("Affiliate", locale)}
                     <span className="rounded-full bg-background-tertiary-default px-1.5 py-px text-caption-1-semibold text-text-secondary">
-                      Earn 40%
+                      {chromeString("Earn 40%", locale)}
                     </span>
                   </span>
                 </li>
@@ -313,9 +323,10 @@ export function SiteFooter() {
         ))}
       </nav>
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-separator-border pt-4">
-        <span className="text-body-regular text-text-secondary">English</span>
+        <span className="text-body-regular text-text-secondary">{LOCALES[locale].label}</span>
         <p className="text-body-regular text-text-secondary">
-          © 2026 Board UI · <span>Privacy</span> · <span>Terms</span> · <span>License</span>
+          © 2026 Board UI · <span>{chromeString("Privacy", locale)}</span> ·{" "}
+          <span>{chromeString("Terms", locale)}</span> · <span>{chromeString("License", locale)}</span>
         </p>
       </div>
     </footer>

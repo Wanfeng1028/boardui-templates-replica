@@ -14,16 +14,14 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import {
-  CHARTS,
   DISCORD_URL,
-  FAQ_ITEMS,
   FEATURE_ICONS,
   MCP_CURSOR_LINK,
   MCP_VSCODE_LINK,
-  SHOWCASE,
-  TEMPLATE_CARDS,
   TIERS,
 } from "./home-data";
+import { homeString, localizeHomeData, type HomeData } from "./home-locale";
+import type { SiteLocale } from "@/components/application/docs/site-language-config";
 import { ProLogoMark } from "./pro-logo-mark";
 import { TestimonialsSection } from "./testimonials";
 import { cx } from "@/utils/cx";
@@ -52,9 +50,9 @@ function ViewLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function ShowcaseSection() {
+function ShowcaseSection({ locale, showcase }: { locale: SiteLocale; showcase: HomeData["showcase"] }) {
   return (
-    <section className="flex flex-col gap-6" aria-label="Components">
+    <section className="flex flex-col gap-6" aria-label={homeString("Components", locale)}>
       <div className="flex flex-col items-center gap-4 text-center">
         {/* Install command chip, as on the original (its component name
             rotates — button-group, file-upload, … — this is the first). */}
@@ -62,29 +60,32 @@ function ShowcaseSection() {
           npm boardui@latest add button-group
         </code>
         <h2 className="max-w-2xl text-title-1-medium text-text-primary">
-          Install tons of interactive dashboard components
+          {homeString("Install tons of interactive dashboard components", locale)}
         </h2>
         <p className="max-w-2xl text-body-regular text-text-secondary">
-          Agentic components, buttons, checkboxes, calendar or a meeting scheduler, all you need is here.
+          {homeString(
+            "Agentic components, buttons, checkboxes, calendar or a meeting scheduler, all you need is here.",
+            locale,
+          )}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <ButtonLink href="/installation" variant="primary" size="medium">
-            Install for free
+            {homeString("Install for free", locale)}
           </ButtonLink>
           <ButtonLink href="/components" variant="secondary" size="medium" trailingIcon={RiArrowRightLine}>
-            Browse all components
+            {homeString("Browse all components", locale)}
           </ButtonLink>
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {SHOWCASE.map((item) => (
+        {showcase.map((item) => (
           <article
             key={item.name}
             className="flex flex-col gap-1.5 rounded-3xl border border-border-button-default bg-background-primary-default p-4"
           >
             <h3 className="text-body-medium text-text-primary">{item.name}</h3>
             <p className="flex-1 text-body-regular text-text-secondary">{item.blurb}</p>
-            <ViewLink href={item.href} label={`View ${item.name}`} />
+            <ViewLink href={item.href} label={homeString("View {0}", locale).replace("{0}", item.name)} />
           </article>
         ))}
       </div>
@@ -92,13 +93,17 @@ function ShowcaseSection() {
   );
 }
 
-function MultiAgentSection() {
+function MultiAgentSection({ locale }: { locale: SiteLocale }) {
   return (
     <section className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-      <h2 className="text-title-1-medium text-text-primary">Build your multi-agent interface in seconds.</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("Build your multi-agent interface in seconds.", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        Start with group chats, customizable agents, and smooth interactions already built. Connect your agents
-        and make it your own.
+        {homeString(
+          "Start with group chats, customizable agents, and smooth interactions already built. Connect your agents and make it your own.",
+          locale,
+        )}
       </p>
       <ButtonLink
         href="/templates/multi-agent-chat"
@@ -106,38 +111,48 @@ function MultiAgentSection() {
         size="medium"
         trailingIcon={RiArrowRightLine}
       >
-        Explore the template
+        {homeString("Explore the template", locale)}
       </ButtonLink>
     </section>
   );
 }
 
-function LoaderAndTemplatesSection() {
+function LoaderAndTemplatesSection({ locale }: { locale: SiteLocale }) {
   return (
-    <section className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-label="Composer loader and templates">
+    <section
+      className="grid grid-cols-1 gap-4 lg:grid-cols-2"
+      aria-label={homeString("Composer loader and templates", locale)}
+    >
       <article className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-primary-default p-6">
-        <h2 className="text-title-2-medium text-text-primary">A loading state worth staring at</h2>
+        <h2 className="text-title-2-medium text-text-primary">
+          {homeString("A loading state worth staring at", locale)}
+        </h2>
         <p className="text-body-regular text-text-secondary">
-          Composer Loader wraps your chat input in an orbiting light while the agent works, glass controls
-          included. Pick a color.
+          {homeString(
+            "Composer Loader wraps your chat input in an orbiting light while the agent works, glass controls included. Pick a color.",
+            locale,
+          )}
         </p>
-        <ViewLink href="/components/composer-loader" label="Get the component" />
+        <ViewLink href="/components/composer-loader" label={homeString("Get the component", locale)} />
         <p className="rounded-full bg-background-secondary-default px-3 py-1 text-caption-1-medium text-text-secondary">
-          Included with Pro
+          {homeString("Included with Pro", locale)}
         </p>
       </article>
       <article className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-primary-default p-6">
         <h2 className="text-title-2-medium text-text-primary">
-          Ready to go templates with BoardUI across domains
+          {homeString("Ready to go templates with BoardUI across domains", locale)}
         </h2>
         <p className="text-body-regular text-text-secondary">
-          Looking for an agentic chat, a marketing dashboard, or a healthcare interface? It&apos;s already here.
+          {homeString(
+            "Looking for an agentic chat, a marketing dashboard, or a healthcare interface? It's already here.",
+            locale,
+          )}
         </p>
         <ButtonLink href="/templates" variant="secondary" size="medium" trailingIcon={RiArrowRightLine}>
-          Browse all templates
+          {homeString("Browse all templates", locale)}
         </ButtonLink>
         <p className="rounded-full bg-background-secondary-default px-3 py-1 text-caption-1-medium text-text-secondary">
-          Included with Pro
+          {homeString("Included with Pro", locale)}
         </p>
       </article>
     </section>
@@ -152,27 +167,36 @@ const DEVICE_WIDTHS: Record<Device, string> = {
   mobile: "mx-auto w-full max-w-[390px]",
 };
 
-function TemplatesSection() {
+function TemplatesSection({
+  locale,
+  templateCards,
+}: {
+  locale: SiteLocale;
+  templateCards: HomeData["templateCards"];
+}) {
   const [device, setDevice] = useState<Device>("desktop");
   const [active, setActive] = useState(0);
-  const selected = TEMPLATE_CARDS[active];
+  const selected = templateCards[active];
   return (
-    <section className="flex flex-col gap-6" aria-label="Templates">
+    <section className="flex flex-col gap-6" aria-label={homeString("Templates", locale)}>
       <SectionHeading
-        title="Ready to go templates with BoardUI across domains"
-        blurb="Looking for an agentic chat, a marketing dashboard, or a healthcare interface? It's already here."
+        title={homeString("Ready to go templates with BoardUI across domains", locale)}
+        blurb={homeString(
+          "Looking for an agentic chat, a marketing dashboard, or a healthcare interface? It's already here.",
+          locale,
+        )}
       />
       <div className="flex flex-wrap items-center gap-3">
         <div
           role="group"
-          aria-label="Preview device"
+          aria-label={homeString("Preview device", locale)}
           className="flex items-center gap-1 rounded-full border border-border-button-default bg-background-primary-default p-1"
         >
           {(
             [
-              { id: "desktop", label: "Desktop", Icon: RiComputerLine },
-              { id: "tablet", label: "Tablet", Icon: RiDeviceLine },
-              { id: "mobile", label: "Mobile", Icon: RiSmartphoneLine },
+              { id: "desktop", label: homeString("Desktop", locale), Icon: RiComputerLine },
+              { id: "tablet", label: homeString("Tablet", locale), Icon: RiDeviceLine },
+              { id: "mobile", label: homeString("Mobile", locale), Icon: RiSmartphoneLine },
             ] as const
           ).map(({ id, label, Icon }) => (
             <button
@@ -193,12 +217,12 @@ function TemplatesSection() {
           ))}
         </div>
         <ButtonLink href="/templates" variant="secondary" size="medium" trailingIcon={RiArrowRightLine}>
-          Browse all templates
+          {homeString("Browse all templates", locale)}
         </ButtonLink>
       </div>
       <div className="flex flex-col gap-4 lg:flex-row">
         <ul className="grid shrink-0 grid-cols-2 gap-2 self-start sm:grid-cols-4 lg:w-64 lg:grid-cols-1">
-          {TEMPLATE_CARDS.map((card, i) => (
+          {templateCards.map((card, i) => (
             <li key={card.name}>
               <button
                 type="button"
@@ -220,7 +244,7 @@ function TemplatesSection() {
           <iframe
             key={selected.src}
             src={selected.src}
-            title={`${selected.name} template preview`}
+            title={`${selected.name} ${homeString("template preview", locale)}`}
             loading="lazy"
             tabIndex={-1}
             aria-hidden
@@ -230,40 +254,43 @@ function TemplatesSection() {
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <ButtonLink href={selected.href} variant="primary" size="medium" trailingIcon={RiArrowRightLine}>
-          Live preview
+          {homeString("Live preview", locale)}
         </ButtonLink>
         <p className="rounded-full bg-background-secondary-default px-3 py-1 text-caption-1-medium text-text-secondary">
-          Included with Pro
+          {homeString("Included with Pro", locale)}
         </p>
       </div>
     </section>
   );
 }
 
-function ChartsSection() {
+function ChartsSection({ locale, charts }: { locale: SiteLocale; charts: HomeData["charts"] }) {
   return (
-    <section className="flex flex-col gap-6" aria-label="Charts">
+    <section className="flex flex-col gap-6" aria-label={homeString("Charts", locale)}>
       <SectionHeading
-        title="Charts that make your data worth reading"
-        blurb="Radar, radial, funnel, Sankey and more - live Recharts cards with period switchers, hover focus and stat tiles, all on the same tokens."
+        title={homeString("Charts that make your data worth reading", locale)}
+        blurb={homeString(
+          "Radar, radial, funnel, Sankey and more - live Recharts cards with period switchers, hover focus and stat tiles, all on the same tokens.",
+          locale,
+        )}
       />
       <div className="flex flex-wrap gap-3">
         <ButtonLink href="/#pricing" variant="primary" size="medium">
-          Get every chart with Pro
+          {homeString("Get every chart with Pro", locale)}
         </ButtonLink>
         <ButtonLink href="/components" variant="secondary" size="medium" trailingIcon={RiArrowRightLine}>
-          Browse all charts
+          {homeString("Browse all charts", locale)}
         </ButtonLink>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {CHARTS.map((chart) => (
+        {charts.map((chart) => (
           <article
             key={chart.name}
             className="flex flex-col gap-1.5 rounded-3xl border border-border-button-default bg-background-primary-default p-4"
           >
             <h3 className="text-body-medium text-text-primary">{chart.name}</h3>
             <p className="flex-1 text-body-regular text-text-secondary">{chart.blurb}</p>
-            <ViewLink href={chart.href} label={`View ${chart.name}`} />
+            <ViewLink href={chart.href} label={homeString("View {0}", locale).replace("{0}", chart.name)} />
           </article>
         ))}
       </div>
@@ -271,16 +298,23 @@ function ChartsSection() {
   );
 }
 
-function PricingSection() {
+function PricingSection({ locale, tiers }: { locale: SiteLocale; tiers: HomeData["tiers"] }) {
   return (
-    <section id="pricing" className="flex scroll-mt-14 flex-col gap-6" aria-label="Pricing">
+    <section
+      id="pricing"
+      className="flex scroll-mt-14 flex-col gap-6"
+      aria-label={homeString("Pricing", locale)}
+    >
       <SectionHeading
-        title="Buy once. Build forever."
-        blurb="Keep the code forever and use it in unlimited projects. Choose Pro updates for one year or forever. No subscription or auto-renewal."
+        title={homeString("Buy once. Build forever.", locale)}
+        blurb={homeString(
+          "Keep the code forever and use it in unlimited projects. Choose Pro updates for one year or forever. No subscription or auto-renewal.",
+          locale,
+        )}
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {TIERS.map((tier) => {
-          const TitleIcon = tier.titleIcon;
+        {tiers.map((tier, tierIndex) => {
+          const TitleIcon = TIERS[tierIndex].titleIcon;
           return (
             <article
               key={tier.name}
@@ -319,8 +353,9 @@ function PricingSection() {
                 </span>
               </div>
               <ul className="flex flex-1 flex-col gap-2">
-                {tier.features.map((feature) => {
-                  const FeatureIcon = FEATURE_ICONS[feature];
+                {tier.features.map((feature, featureIndex) => {
+                  const englishFeature = TIERS[tierIndex].features[featureIndex];
+                  const FeatureIcon = FEATURE_ICONS[englishFeature];
                   return (
                     <li key={feature} className="flex items-start gap-2 text-body-regular text-text-secondary">
                       {FeatureIcon === "pro-mark" ? (
@@ -330,16 +365,16 @@ function PricingSection() {
                       ) : (
                         <RiCheckLine className="mt-0.5 size-4 shrink-0 text-foreground-icon-primary" aria-hidden />
                       )}
-                      {feature === "Discord access" ? (
+                      {englishFeature === "Discord access" ? (
                         <span>
-                          Discord access{" "}
+                          {feature}{" "}
                           <a
                             href={DISCORD_URL}
                             target="_blank"
                             rel="noreferrer"
                             className="text-text-tertiary underline"
                           >
-                            Join now
+                            {homeString("Join now", locale)}
                           </a>
                         </span>
                       ) : (
@@ -353,7 +388,7 @@ function PricingSection() {
                 href={tier.href}
                 variant={tier.featured ? "primary" : "secondary"}
                 size="medium"
-                leadingIcon={tier.ctaIcon}
+                leadingIcon={TIERS[tierIndex].ctaIcon}
               >
                 {tier.cta}
               </ButtonLink>
@@ -365,26 +400,35 @@ function PricingSection() {
   );
 }
 
-function McpSection() {
+function McpSection({ locale }: { locale: SiteLocale }) {
   return (
     <section className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-      <h2 className="text-title-1-medium text-text-primary">Install BoardUI with your agent through MCP</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("Install BoardUI with your agent through MCP", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        BoardUI speaks MCP. Connect your agent once and it browses all 103 components with real usage examples,
-        sets up your project, and writes the source files in. Pro unlocks in the same chat with your license key.
+        {homeString(
+          "BoardUI speaks MCP. Connect your agent once and it browses all 103 components with real usage examples, sets up your project, and writes the source files in. Pro unlocks in the same chat with your license key.",
+          locale,
+        )}
       </p>
       <blockquote className="rounded-2xl bg-background-primary-default px-4 py-3 text-body-medium text-text-primary">
-        &ldquo;Set up BoardUI and build a revenue dashboard with stat cards and an area chart.&rdquo;
+        &ldquo;
+        {homeString(
+          "Set up BoardUI and build a revenue dashboard with stat cards and an area chart.",
+          locale,
+        )}
+        &rdquo;
       </blockquote>
       <div className="flex flex-wrap gap-3">
         <ButtonLink href={MCP_CURSOR_LINK} variant="primary" size="medium">
-          Add to Cursor
+          {homeString("Add to Cursor", locale)}
         </ButtonLink>
         <ButtonLink href={MCP_VSCODE_LINK} variant="secondary" size="medium">
-          Add to VS Code
+          {homeString("Add to VS Code", locale)}
         </ButtonLink>
       </div>
-      <ul className="flex flex-wrap gap-2" aria-label="Also supported">
+      <ul className="flex flex-wrap gap-2" aria-label={homeString("Also supported", locale)}>
         {["Claude Code", "Codex"].map((name) => (
           <li
             key={name}
@@ -395,34 +439,43 @@ function McpSection() {
         ))}
       </ul>
       <Link href="/mcp" className="text-body-medium text-text-secondary underline hover:text-text-primary">
-        Full setup guide and example prompts
+        {homeString("Full setup guide and example prompts", locale)}
       </Link>
     </section>
   );
 }
 
-function GithubSection() {
+function GithubSection({ locale }: { locale: SiteLocale }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-title-1-medium text-text-primary">The free tier lives on GitHub</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("The free tier lives on GitHub", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        Every free component, the chat starter included, is one public repo under the MIT license. Clone it,
-        deploy it with your own model key, and star it if it saves you an afternoon.
+        {homeString(
+          "Every free component, the chat starter included, is one public repo under the MIT license. Clone it, deploy it with your own model key, and star it if it saves you an afternoon.",
+          locale,
+        )}
       </p>
     </section>
   );
 }
 
-function FaqSection() {
+function FaqSection({ locale, faqItems }: { locale: SiteLocale; faqItems: HomeData["faqItems"] }) {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-title-1-medium text-text-primary">Frequently asked questions</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("Frequently asked questions", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        Everything about licensing, installing and building with BoardUI. Anything else, ask us on Discord.
+        {homeString(
+          "Everything about licensing, installing and building with BoardUI. Anything else, ask us on Discord.",
+          locale,
+        )}
       </p>
       <div className="flex flex-col divide-y divide-separator-border rounded-3xl border border-border-button-default bg-background-primary-default px-5">
-        {FAQ_ITEMS.map((item, i) => {
+        {faqItems.map((item, i) => {
           const expanded = open === i;
           return (
             <div key={item.question}>
@@ -452,7 +505,7 @@ function FaqSection() {
         })}
       </div>
       <p className="text-body-medium text-text-primary">
-        Still have a question? We answer in the open, usually the same day.
+        {homeString("Still have a question? We answer in the open, usually the same day.", locale)}
       </p>
       <a
         href={DISCORD_URL}
@@ -460,13 +513,14 @@ function FaqSection() {
         rel="noreferrer"
         className="w-fit text-body-regular text-text-secondary underline hover:text-text-primary"
       >
-        Ask on Discord
+        {homeString("Ask on Discord", locale)}
       </a>
+
     </section>
   );
 }
 
-function SubscribeForm() {
+function SubscribeForm({ locale }: { locale: SiteLocale }) {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   // This replica has no newsletter backend (the original's 49 JS chunks
@@ -474,7 +528,7 @@ function SubscribeForm() {
   // never claims a signup happened: the post-submit note says so plainly.
   return done ? (
     <p className="text-body-medium text-text-primary">
-      Demo form — no newsletter backend here, so nothing was subscribed.
+      {homeString("Demo form — no newsletter backend here, so nothing was subscribed.", locale)}
     </p>
   ) : (
     <form
@@ -490,70 +544,84 @@ function SubscribeForm() {
         value={email}
         onChange={(value) => setEmail(value)}
         placeholder="you@example.com"
-        aria-label="Email address"
+        aria-label={homeString("Email address", locale)}
         className="min-w-0 flex-1"
       />
       <button
         type="submit"
         className="h-11 shrink-0 cursor-pointer rounded-full bg-accent-500 px-5 text-body-medium text-white transition-colors hover:bg-accent-600"
       >
-        Subscribe
+        {homeString("Subscribe", locale)}
       </button>
     </form>
   );
 }
 
-function NewsletterSection() {
+function NewsletterSection({ locale }: { locale: SiteLocale }) {
   return (
     <section className="flex flex-col items-start gap-3 rounded-3xl border border-border-button-default bg-background-secondary-default p-6">
-      <h2 className="text-title-1-medium text-text-primary">Get new components in your inbox</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("Get new components in your inbox", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        One short email when a component, block or template ships. No digests, no drip sequences, and you can
-        leave any time.
+        {homeString(
+          "One short email when a component, block or template ships. No digests, no drip sequences, and you can leave any time.",
+          locale,
+        )}
       </p>
-      <SubscribeForm />
+      <SubscribeForm locale={locale} />
       <Link href="/blog" className="text-body-medium text-text-secondary underline hover:text-text-primary">
-        See all five
+        {homeString("See all five", locale)}
       </Link>
     </section>
   );
 }
 
-function FinalCtaSection() {
+function FinalCtaSection({ locale }: { locale: SiteLocale }) {
   return (
     <section className="flex flex-col items-start gap-3">
-      <h2 className="text-title-1-medium text-text-primary">Start building agentic interfaces with BoardUI</h2>
+      <h2 className="text-title-1-medium text-text-primary">
+        {homeString("Start building agentic interfaces with BoardUI", locale)}
+      </h2>
       <p className="max-w-2xl text-body-regular text-text-secondary">
-        Five agent blocks, a full AI chat template, and the dashboard furniture around them. Install what you
-        need with one command and own the code.
+        {homeString(
+          "Five agent blocks, a full AI chat template, and the dashboard furniture around them. Install what you need with one command and own the code.",
+          locale,
+        )}
       </p>
       <div className="flex flex-wrap gap-3">
         <ButtonLink href="/components" variant="primary" size="medium" trailingIcon={RiArrowRightLine}>
-          Browse components
+          {homeString("Browse components", locale)}
         </ButtonLink>
         <ButtonLink href="/templates/ai-chat" variant="secondary" size="medium">
-          See the AI Chat template
+          {homeString("See the AI Chat template", locale)}
         </ButtonLink>
       </div>
     </section>
   );
 }
 
-export function HomeSections() {
+export function HomeSections({
+  locale = "en",
+  data = localizeHomeData("en"),
+}: {
+  locale?: SiteLocale;
+  data?: HomeData;
+}) {
   return (
     <div className="mx-auto flex w-full max-w-[1276px] flex-col gap-20 px-3 py-16 sm:px-6">
-      <ShowcaseSection />
-      <MultiAgentSection />
-      <LoaderAndTemplatesSection />
-      <TemplatesSection />
-      <ChartsSection />
-      <PricingSection />
+      <ShowcaseSection locale={locale} showcase={data.showcase} />
+      <MultiAgentSection locale={locale} />
+      <LoaderAndTemplatesSection locale={locale} />
+      <TemplatesSection locale={locale} templateCards={data.templateCards} />
+      <ChartsSection locale={locale} charts={data.charts} />
+      <PricingSection locale={locale} tiers={data.tiers} />
       <TestimonialsSection />
-      <McpSection />
-      <GithubSection />
-      <FaqSection />
-      <NewsletterSection />
-      <FinalCtaSection />
+      <McpSection locale={locale} />
+      <GithubSection locale={locale} />
+      <FaqSection locale={locale} faqItems={data.faqItems} />
+      <NewsletterSection locale={locale} />
+      <FinalCtaSection locale={locale} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RiArrowLeftLine, RiArrowRightLine } from "@remixicon/react";
 
 import { cx } from "@/utils/cx";
+import { chromeString, type SiteLocale } from "@/components/application/docs/locale-chrome";
 
 export type PrevNextLink = {
   href: string;
@@ -17,13 +18,25 @@ const LINK_CLASS =
  * Both links are optional: a page with no previous (or next) renders only
  * the one that exists.
  */
-export function PrevNext({ prev, next }: { prev?: PrevNextLink; next?: PrevNextLink }) {
+export function PrevNext({
+  prev,
+  next,
+  locale = "en",
+}: {
+  prev?: PrevNextLink;
+  next?: PrevNextLink;
+  locale?: SiteLocale;
+}) {
   if (!prev && !next) return null;
   return (
     <div className="mt-14 flex flex-col gap-6">
       <nav aria-label="Docs pages" className="flex items-center justify-between gap-2">
         {prev ? (
-          <Link href={prev.href} aria-label={`Previous: ${prev.label}`} className={LINK_CLASS}>
+          <Link
+            href={prev.href}
+            aria-label={`${chromeString("Previous", locale)}: ${prev.label}`}
+            className={LINK_CLASS}
+          >
             <span className="flex items-center gap-1.5 text-body-medium text-text-primary">
               <RiArrowLeftLine className="size-[18px] shrink-0 rtl:-scale-x-100" aria-hidden />
               {prev.label}
@@ -38,7 +51,7 @@ export function PrevNext({ prev, next }: { prev?: PrevNextLink; next?: PrevNextL
         {next ? (
           <Link
             href={next.href}
-            aria-label={`Next: ${next.label}`}
+            aria-label={`${chromeString("Next", locale)}: ${next.label}`}
             className={cx(LINK_CLASS, "items-end")}
           >
             <span className="flex flex-row-reverse items-center gap-1.5 text-body-medium text-text-primary">

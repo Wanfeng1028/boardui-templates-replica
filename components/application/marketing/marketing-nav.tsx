@@ -14,6 +14,15 @@ import { Kbd } from "@/components/base/kbd/kbd";
 import { ProLogo } from "@/components/foundations/brand/logo";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
 import { LIBRARY_NAV, MARKETING_LINKS } from "@/components/application/docs/docs-nav";
+import {
+  chromeString,
+  localizeNavItem,
+  localizedHrefFor,
+  type SiteLocale,
+} from "@/components/application/docs/locale-chrome";
+
+
+
 import { cx } from "@/utils/cx";
 
 /**
@@ -101,7 +110,7 @@ const SEARCH_ITEMS: SearchItem[] = [
  * row in the library sidebar) plus the search dialog it opens. ⌘K / Ctrl+K
  * opens it from anywhere; Esc closes; Enter goes to the highlighted hit.
  */
-export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
+export function QuickSearch({ variant, locale = "en" }: { variant: "pill" | "sidebar"; locale?: SiteLocale }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -146,7 +155,7 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
         <Glass rounded="rounded-full" className="hidden w-[220px] xl:flex">
           <button
             type="button"
-            aria-label="Quick Search"
+            aria-label={chromeString("Quick Search", locale)}
             aria-haspopup="dialog"
             aria-expanded={open}
             onClick={() => setOpen(true)}
@@ -154,7 +163,7 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
           >
             <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2">
               <RiSearchLine className="size-5 shrink-0 text-black/35 dark:text-white/35" aria-hidden />
-              <span className="truncate text-body-regular text-black/50 dark:text-white/50">Quick Search</span>
+              <span className="truncate text-body-regular text-black/50 dark:text-white/50">{chromeString("Quick Search", locale)}</span>
             </span>
             <span className="relative z-10 -translate-x-[2px] -translate-y-px">
               <kbd className="inline-flex items-center justify-center rounded-full bg-black/10 px-1 py-0.5 font-sans text-caption-1-semibold tracking-normal whitespace-nowrap text-black/50 dark:bg-white/10 dark:text-white/50">
@@ -166,7 +175,7 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
       ) : (
         <button
           type="button"
-          aria-label="Quick Search"
+          aria-label={chromeString("Quick Search", locale)}
           aria-haspopup="dialog"
           aria-expanded={open}
           onClick={() => setOpen(true)}
@@ -174,7 +183,7 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
             <RiSearchLine className="size-5 shrink-0 text-foreground-icon-secondary" aria-hidden />
-            <span className="text-body-medium whitespace-nowrap text-text-secondary">Quick Search</span>
+            <span className="text-body-medium whitespace-nowrap text-text-secondary">{chromeString("Quick Search", locale)}</span>
           </span>
           <Kbd>⌘K</Kbd>
         </button>
@@ -187,7 +196,7 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
         >
           <div
             role="dialog"
-            aria-label="Quick Search"
+            aria-label={chromeString("Quick Search", locale)}
             className="w-full max-w-lg overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default shadow-lg"
             onClick={(event) => event.stopPropagation()}
           >
@@ -215,8 +224,8 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
                     go(results[active].href);
                   }
                 }}
-                placeholder="Search components, docs, templates…"
-                aria-label="Search"
+                placeholder={chromeString("Search components, docs, templates…", locale)}
+                aria-label={chromeString("Search", locale)}
                 className="min-w-0 flex-1 bg-transparent text-body-medium text-text-primary outline-none placeholder:text-text-tertiary"
               />
               <Kbd>ESC</Kbd>
@@ -267,15 +276,15 @@ export function QuickSearch({ variant }: { variant: "pill" | "sidebar" }) {
 }
 
 /** Get Pro — the original's button opens a pricing dialog; this replica links to its /pricing page. */
-export function GetProLink({ className }: { className?: string }) {
+export function GetProLink({ className, locale = "en" }: { className?: string; locale?: SiteLocale }) {
   return (
     <Glass rounded="rounded-2lg" className={cx("inline-flex", className)}>
       <Link
-        href="/pricing"
+        href={localizedHrefFor("/pricing", locale)}
         className="relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-0.5 rounded-2lg border border-transparent bg-transparent px-2 py-1 text-body-medium text-text-primary shadow-none transition-colors duration-150 ease outline-none select-none hover:border-transparent hover:bg-transparent focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 sm:h-9 sm:py-2"
       >
         <ProLogo size={20} decorative />
-        <span className="inline-flex shrink-0 items-center justify-center px-1">Get Pro</span>
+        <span className="inline-flex shrink-0 items-center justify-center px-1">{chromeString("Get Pro", locale)}</span>
       </Link>
     </Glass>
   );
@@ -312,14 +321,14 @@ function SocialLink({
  * logo 32px + wordmark, nav gap 26px, Quick Search pill, X / Discord /
  * GitHub, Get Pro, theme control (segmented above sm, single button below).
  */
-export function MarketingNav() {
+export function MarketingNav({ locale = "en" }: { locale?: SiteLocale }) {
   return (
     <header className="w-full">
       <div className="mx-auto flex min-h-[68px] w-full max-w-[1276px] items-center justify-between gap-x-4 gap-y-2 px-3 py-3 sm:min-h-[72px] sm:flex-wrap sm:px-6 xl:flex-nowrap xl:px-0">
         <div className="flex min-w-0 items-center gap-8">
           <Link
             aria-label="BoardUI"
-            href="/"
+            href={localizedHrefFor("/", locale)}
             className="flex shrink-0 items-center gap-[11px] outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -327,24 +336,27 @@ export function MarketingNav() {
             <span className="hidden text-body-semibold text-text-primary sm:inline min-[360px]:inline">BoardUI</span>
           </Link>
           <nav className="hidden items-center gap-[26px] text-body-medium text-text-secondary lg:flex" aria-label="Site">
-            {MARKETING_LINKS.map((link) => (
-              <Link
-                key={link.href + link.label}
-                href={link.href}
-                className="transition-colors duration-150 ease outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {MARKETING_LINKS.map((link) => {
+              const localized = localizeNavItem(link, locale);
+              return (
+                <Link
+                  key={localized.href + localized.label}
+                  href={localized.href}
+                  className="transition-colors duration-150 ease outline-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
+                >
+                  {localized.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <QuickSearch variant="pill" />
+          <QuickSearch variant="pill" locale={locale} />
           <div className="flex items-center gap-2">
-            <SocialLink href="https://x.com/boardui" label="Follow BoardUI on X">
+            <SocialLink href="https://x.com/boardui" label={chromeString("Follow BoardUI on X", locale)}>
               <RiTwitterXFill aria-hidden />
             </SocialLink>
-            <SocialLink href="https://discord.gg/azcHkw8T6F" label="Join the BoardUI Discord">
+            <SocialLink href="https://discord.gg/azcHkw8T6F" label={chromeString("Join the BoardUI Discord", locale)}>
               <RiDiscordFill aria-hidden />
             </SocialLink>
           </div>
@@ -353,14 +365,14 @@ export function MarketingNav() {
               href="https://github.com/BoardUI/boardui"
               target="_blank"
               rel="noreferrer"
-              aria-label="BoardUI on GitHub"
+              aria-label={chromeString("BoardUI on GitHub", locale)}
               className="relative z-10 inline-flex h-8 items-center justify-center gap-0.5 rounded-2lg border border-transparent bg-transparent p-2 text-body-medium text-text-primary shadow-none transition-colors duration-150 ease outline-none select-none hover:border-transparent hover:bg-transparent focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-2 sm:h-9 sm:py-2"
             >
               <RiGithubFill className="size-5 shrink-0" aria-hidden />
               <span className="inline-flex shrink-0 items-center justify-center px-1" />
             </a>
           </Glass>
-          <GetProLink />
+          <GetProLink locale={locale} />
           <Glass rounded="rounded-full" className="sm:hidden">
             <span className="relative z-10 block">
               <ThemeToggle collapsed />

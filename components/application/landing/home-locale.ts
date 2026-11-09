@@ -1,0 +1,224 @@
+import type { SiteLocale } from "@/components/application/docs/site-locales";
+import { localizedHrefFor } from "@/components/application/docs/locale-chrome";
+import {
+  CHARTS,
+  FAQ_ITEMS,
+  HERO_PREVIEW_TABS,
+  SHOWCASE,
+  TEMPLATE_CARDS,
+  TIERS,
+  type ChartItem,
+  type FaqItem,
+  type HeroPreviewTab,
+  type ShowcaseItem,
+  type TemplateCard,
+  type Tier,
+} from "./home-data";
+
+/**
+ * Homepage strings the original translates (source: boardui.com's own i18n
+ * catalogue, extracted from the original homepage). Only strings that differ
+ * from English are listed; anything absent renders in English. FAQ answers,
+ * testimonial quotes, proper nouns and tech names are NOT translated by the
+ * original and are intentionally absent here.
+ */
+export const HOME_STRINGS: Record<string, Partial<Record<Exclude<SiteLocale, "en">, string>>> = {
+  "1 Year of Updates": { "zh-hans": "一年更新", ja: "1年間の更新", ar: "سنة واحدة من التحديثات", "pt-br": "1 ano de atualizações" },
+  "Agent progress": { "zh-hans": "智能体任务进度", ja: "エージェントの進捗", ar: "تقدم الوكيل", "pt-br": "Progresso do agente" },
+  "Analytics dashboard": { "zh-hans": "分析仪表盘", ja: "アナリティクスダッシュボード", ar: "لوحة تحكم التحليلات", "pt-br": "Dashboard de análise" },
+  "Bars on one axis, a cased line on the other - volume and rate read together on one canvas.": { "zh-hans": "一个轴上有条形图，另一轴上有一条框线 - 交易量和利率在一张画布上一起读取。", ja: "一方の軸線上のバー、他のケース付き線 - ボリュームと率は、1つのキャンバスで一緒に読みます。", ar: "أشرطة على محور وخط محاط على المحور الآخر - يُقرأ الحجم والمعدل معاً على لوحة واحدة.", "pt-br": "Barras num eixo, uma linha de caixa no outro - volume e taxa lidas juntas em uma tela." },
+  "Buy and install now": { "zh-hans": "立即购买并安装", ja: "今すぐ購入してインストール", ar: "اشترِ وثبِّت الآن", "pt-br": "Comprar e instalar agora" },
+  "Choose your plan": { "zh-hans": "选择方案", ja: "プランを選ぶ", ar: "اختر خطتك", "pt-br": "Escolha seu plano" },
+  "Composer loader": { "zh-hans": "输入框加载状态", ja: "コンポーザーローダー", ar: "محمّل محرّر الرسائل", "pt-br": "Carregamento do compositor" },
+  "Contributor profile": { "zh-hans": "贡献者资料", ja: "貢献者プロフィール", ar: "ملف المساهم", "pt-br": "Perfil de contribuidor" },
+  "Discord access": { "zh-hans": "Discord 社区访问", ja: "Discordアクセス", ar: "الوصول إلى Discord", "pt-br": "Acesso ao Discord" },
+  "Drag-and-drop uploads with validation and progress states.": { "zh-hans": "支持验证与进度状态的拖放上传。", ja: "検証と進捗表示を備えた、ドラッグ＆ドロップでのファイルアップロード。", ar: "رفع الملفات بالسحب والإفلات مع التحقق وحالات التقدم.", "pt-br": "Upload por arrastar e soltar com validação e estados de progresso." },
+  "Every Pro component": { "zh-hans": "全部 Pro 组件", ja: "すべてのProコンポーネント", ar: "كل مكوّن Pro", "pt-br": "Todos os componentes Pro" },
+  "Filter, sort and paginate complex data in a responsive table.": { "zh-hans": "在响应式表格中筛选、排序并分页展示复杂数据。", ja: "レスポンシブなテーブルで、複雑なデータを絞り込み、並べ替え、ページ分割できます。", ar: "تصفية البيانات المعقدة وفرزها وتقسيمها إلى صفحات في جدول متجاوب.", "pt-br": "Filtre, ordene e pagine dados complexos em uma tabela responsiva." },
+  "Founding Engineer at": { "zh-hans": "创始工程师", ja: "創業エンジニア・", ar: "مهندس مؤسس في", "pt-br": "Engenheiro fundador em" },
+  "Fundamental components": { "zh-hans": "基础组件", ja: "基礎コンポーネント", ar: "المكوّنات الأساسية", "pt-br": "Componentes essenciais" },
+  "Head of Product at": { "zh-hans": "产品主管", ja: "プロダクト責任者・", ar: "رئيس المنتج في", "pt-br": "Chefe de Produtos em" },
+  "How do I install a component?": { "zh-hans": "如何安装组件？", ja: "コンポーネントのインストール方法は？", ar: "كيف أقوم بتثبيت مكوّن؟", "pt-br": "Como instalo um componente?" },
+  "Image generation with an animated countdown and reveal.": { "zh-hans": "具有动画倒计时和显示的图像生成。", ja: "アニメーションカウントダウンでイメージ生成し、明らかにします。", ar: "توليد الصور مع عدّ تنازلي متحرك وكشف تدريجي.", "pt-br": "Geração de imagens com contagem regressiva e revelação animadas." },
+  "Keep the code forever": { "zh-hans": "永久保留代码", ja: "コードを永久に所有", ar: "احتفظ بالشيفرة إلى الأبد", "pt-br": "O código é seu para sempre" },
+  "Looking for an agentic chat, a marketing dashboard, or a healthcare interface? It's already here.": { "zh-hans": "正在寻找智能体聊天、营销仪表盘或医疗保健界面？它已经在这里了。", ja: "エージェントチャット、マーケティングダッシュボード、医療向けUI。必要なテンプレートがすでに揃っています。", ar: "هل تبحث عن دردشة وكيلة، أو لوحة تحكم تسويقية، أو واجهة رعاية صحية؟ إنها موجودة هنا بالفعل.", "pt-br": "Precisa de um chat com agentes, um dashboard de marketing ou uma interface de saúde? Já está aqui." },
+  "Mobile": { "zh-hans": "手机", ja: "モバイル", ar: "الجوال", "pt-br": "Celular" },
+  "Open template": { "zh-hans": "打开模板", ja: "テンプレートを開く", ar: "فتح القالب", "pt-br": "Abrir template" },
+  "Pro updates for 1 year": { "zh-hans": "一年 Pro 更新", ja: "Proの更新を1年間提供", ar: "تحديثات Pro لمدة سنة", "pt-br": "Atualizações Pro por 1 ano" },
+  "Radar chart": { "zh-hans": "雷达图", ja: "レーダーチャート", ar: "مخطط الرادار", "pt-br": "Gráfico de radar" },
+  "React and Tailwind CSS, with interactive components built on React Aria for keyboard and screen-reader behaviour. Everything is typed, and the design tokens are plain CSS variables you can retheme.": { "zh-hans": "基于 React 和 Tailwind CSS，交互组件使用 React Aria 实现键盘操作与屏幕阅读器支持。代码具有完整的类型定义，设计变量使用原生 CSS 变量，方便自定义主题。", ja: "ReactとTailwind CSSを使い、操作可能なコンポーネントはReact Ariaでキーボードとスクリーンリーダーに対応しています。すべて型定義を備え、デザイントークンは自由にテーマを変更できるCSS変数です。", ar: "React وTailwind CSS، مع مكوّنات تفاعلية مبنية على React Aria لسلوك لوحة المفاتيح وقارئات الشاشة. كل شيء مكتوب بأنواع محددة، ورموز التصميم عبارة عن متغيرات CSS عادية يمكنك إعادة تصميمها.", "pt-br": "React e Tailwind CSS, com componentes interativos baseados em React Aria para navegação por teclado e leitores de tela. Tudo é tipado, e os tokens de design são variáveis CSS que você pode adaptar ao seu tema." },
+  "Sign in, sign up and verification with provider buttons.": { "zh-hans": "包含第三方登录按钮的登录、注册与验证组件。", ja: "外部サービスのボタンを備えた、サインイン・新規登録・認証の画面。", ar: "تسجيل الدخول وإنشاء الحساب والتحقق مع أزرار المزودين.", "pt-br": "Login, cadastro e verificação com botões de provedores." },
+  "Stage bars": { "zh-hans": "舞台酒吧", ja: "ステージバー", ar: "أشرطة المراحل", "pt-br": "Barras por etapa" },
+  "Super cool and beautiful components. I used them and can only recommend.": { "zh-hans": "超级酷又漂亮的组件。我用过它们，只能推荐。", ja: "とてもかっこよく、美しいコンポーネントです。実際に使ってみて、自信を持っておすすめできます。", ar: "مكونات رائعة وجميلة جدًا. استخدمتها ولا يسعني إلا أن أوصي بها.", "pt-br": "Super legal e belo componentes. Eu os usei e só posso recomendar." },
+  "The searches an agent ran and the sources it opened, streaming in.": { "zh-hans": "实时展示智能体执行的搜索与访问的来源。", ja: "エージェントの検索内容と開いた情報源を、リアルタイムで表示します。", ar: "عمليات البحث التي أجراها العميل والمصادر التي فتحها، تتدفق بشكل مستمر.", "pt-br": "Buscas do agente e fontes consultadas, exibidas em tempo real." },
+  "Web search": { "zh-hans": "网页搜索", ja: "ウェブ検索", ar: "البحث على الويب", "pt-br": "Busca na web" },
+  "Yes, in unlimited projects. 1 Year of Updates and Lifetime Access cover a single developer; Unlimited for Startups covers five. What you build with it is yours, including the work you ship for clients.": { "zh-hans": "可以，项目数量不限。一年更新和终身访问方案授权给一名开发者；初创团队版授权给五名开发者。您构建的产品归您所有，包括交付给客户的项目。", ja: "はい。プロジェクト数は無制限です。1年間の更新と永久アクセスは開発者1名、スタートアップ向けプランは5名を対象とします。クライアント向けに納品するものも含め、制作物はあなたのものです。", ar: "نعم، في مشاريع غير محدودة. تغطي خطة «سنة واحدة من التحديثات» وخطة «الوصول مدى الحياة» مطوّرًا واحدًا؛ أما خطة «غير محدود للشركات الناشئة» فتغطي خمسة مطوّرين. ما تبنيه بها يعود لك، بما في ذلك الأعمال التي تسلّمها للعملاء.", "pt-br": "Sim, em projetos ilimitados. Os planos 1 ano de atualizações e Acesso vitalício cobrem um desenvolvedor; Ilimitado para startups cobre cinco. Tudo que você criar é seu, incluindo projetos entregues a clientes." },
+  "all the basics": { "zh-hans": "包含全部基础功能", ja: "すべての基本機能", ar: "كل الأساسيات", "pt-br": "todos os recursos essenciais" },
+  "€49 launch discount": { "zh-hans": "上线优惠 €49", ja: "発売記念 €49割引", ar: "خصم الإطلاق بـ 49€", "pt-br": "€49 de desconto de lançamento" },
+  "3,000+ icon library": { "zh-hans": "3,000 多个图标", ja: "3,000以上のアイコンライブラリ", ar: "مكتبة تضم أكثر من 3,000 أيقونة", "pt-br": "Biblioteca com mais de 3.000 ícones" },
+  "Agent thinking": { "zh-hans": "智能体思考状态", ja: "エージェントの思考", ar: "تفكير الوكيل", "pt-br": "Agente pensando" },
+  "Area chart": { "zh-hans": "面积图", ja: "エリアチャート", ar: "مخطط المساحة", "pt-br": "Gráfico de área" },
+  "Basic blocks and templates": { "zh-hans": "基础组合组件与模板", ja: "基本的なブロックとテンプレート", ar: "الكتل والقوالب الأساسية", "pt-br": "Blocos e templates básicos" },
+  "Buy once. Build forever.": { "zh-hans": "一次购买，永久构建。", ja: "買い切りで、ずっと使える。", ar: "اشترِ مرة واحدة. ابنِ بلا حدود.", "pt-br": "Compre uma vez. Crie sem limites." },
+  "Co-Founder at": { "zh-hans": "联合创始人", ja: "共同創業者・", ar: "شريك مؤسس في", "pt-br": "Co-fundador em" },
+  "Concentric rings over the chart track with each name set along its own arc - hover a ring and the rest fall back while the headline and its tile follow.": { "zh-hans": "图表轨道上的同心圆环，每个名称都沿着自己的弧线设置 - 悬停一个圆环，其余的圆环会后退，而标题及其图块会跟随。", ja: "チャートトラック上の同心リングは、各名前が各弧に沿って設定されています - リングと残りの部分は、見出しとそのタイルが続く間戻ります。", ar: "حلقات متحدة المركز فوق مسار الرسم البياني مع اسم كل حلقة على قوسها الخاص - حوّم على حلقة لتتراجع البقية بينما يتبعها العنوان وبطاقته.", "pt-br": "Anel concêntrico sobre a faixa gráfica com cada nome definido ao longo de seu próprio arco - pairar um anel eo resto cair para trás, enquanto o título e sua telha seguir." },
+  "Dark mode variables": { "zh-hans": "深色模式变量", ja: "ダークモード変数", ar: "متغيرات الوضع الداكن", "pt-br": "Variáveis para modo escuro" },
+  "Do I own the code?": { "zh-hans": "代码归我所有吗？", ja: "コードを所有できますか？", ar: "هل أمتلك الشيفرة؟", "pt-br": "O código é meu?" },
+  "Earnings chart": { "zh-hans": "盈利图表", ja: "獲得チャート", ar: "مخطط الأرباح", "pt-br": "Gráfico de ganhos" },
+  "File tiles landing one by one above the prompt, each with its upload ring.": { "zh-hans": "文件卡片逐一落在输入框上方，每张卡片都有上传进度圆环。", ja: "プロンプトの上にファイルのタイルが順番に現れ、それぞれのアップロード進捗をリングで表示します。", ar: "بلاطات الملفات تهبط واحدة تلو الأخرى فوق مربع الإدخال، كل منها مع حلقة رفعها.", "pt-br": "Cards de arquivos aparecem um a um acima do prompt, cada um com seu indicador de upload." },
+  "Finance": { "zh-hans": "财务", ja: "ファイナンス", ar: "الشؤون المالية", "pt-br": "Finanças" },
+  "Free": { "zh-hans": "免费", ja: "無料", ar: "المجاني", "pt-br": "Grátis" },
+  "Funnel chart": { "zh-hans": "漏斗图", ja: "ファネルチャート", ar: "مخطط القمع", "pt-br": "Gráfico de funil" },
+  "Health widgets with live charts, activity rings and alerts.": { "zh-hans": "包含实时图表、活动圆环与提醒的健康组件。", ja: "ライブチャート、アクティビティリング、アラートを備えた健康ウィジェット。", ar: "أدوات الرعاية الصحية مع مخططات مباشرة وحلقات نشاط وتنبيهات.", "pt-br": "Widgets de saúde com gráficos interativos, anéis de atividade e alertas." },
+  "I don't have a designer on the team, and with BoardUI nobody can tell. Shipped in a weekend what would have taken me a month.": { "zh-hans": "我的团队中没有设计师，而且对于 BoardUI 没有人能告诉我。周末就发货了，本来要花一个月的时间。", ja: "チームにデザイナーはいませんが、BoardUIを使えば誰にもそう見えません。1か月かかるはずだったものを、週末だけでリリースできました。", ar: "ليس في فريقي مصمم، لكن مع BoardUI لا يلاحظ أحد ذلك. أطلقت خلال عطلة نهاية أسبوع ما كان سيستغرق مني شهرًا.", "pt-br": "Eu não tenho um designer na equipe, e com a BoardUI ninguém pode dizer. Enviado em um fim de semana o que teria me levado um mês." },
+  "Install now": { "zh-hans": "立即安装", ja: "今すぐインストール", ar: "ثبِّت الآن", "pt-br": "Instalar agora" },
+  "Keep the code forever and use it in unlimited projects. Choose Pro updates for one year or forever. No subscription or auto-renewal.": { "zh-hans": "永久保留代码，项目数量不限。可选择一年或终身 Pro 更新，无需订阅，也不会自动续费。", ja: "ソースコードは永久に所有でき、プロジェクト数も無制限。Proの更新は1年間または永久から選べます。サブスクリプションや自動更新はありません。", ar: "احتفظ بالشيفرة إلى الأبد واستخدمها في مشاريع غير محدودة. اختر تحديثات Pro لمدة عام أو إلى الأبد. لا اشتراك ولا تجديد تلقائي.", "pt-br": "O código é seu para sempre, para usar em projetos ilimitados. Escolha atualizações Pro por um ano ou para sempre. Sem assinatura nem renovação automática." },
+  "MCP support for AI agents": { "zh-hans": "面向 AI 智能体的 MCP 支持", ja: "AIエージェント向けMCP対応", ar: "دعم MCP للوكلاء الذكاء الاصطناعي", "pt-br": "Suporte a MCP para agentes de IA" },
+  "Month calendar with events and scheduling controls.": { "zh-hans": "包含事件与日程操作的月历。", ja: "イベントと予定管理の操作を備えた月間カレンダー。", ar: "تقويم شهري مع الأحداث وعناصر التحكم في الجدولة.", "pt-br": "Calendário mensal com eventos e controles de agendamento." },
+  "Out of the box. Components reference semantic tokens rather than fixed colours, so a single theme class flips the whole system, including anything you build on top of it with the same tokens.": { "zh-hans": "开箱即用。组件引用语义变量，而非固定颜色。切换一个主题类即可改变整个系统，包括使用相同变量构建的自定义内容。", ja: "標準で対応しています。コンポーネントは固定色ではなく意味に応じたトークンを参照するため、テーマクラスを1つ切り替えるだけで全体を変更できます。同じトークンで構築した独自のUIにも適用されます。", ar: "جاهز للاستخدام فوراً. تستند المكوّنات إلى رموز دلالية بدلاً من ألوان ثابتة، لذا يقلب صنف ثيم واحد النظام بأكمله، بما في ذلك كل ما تبنيه فوقه بنفس الرموز.", "pt-br": "Sim, desde o início. Os componentes usam tokens semânticos em vez de cores fixas. Uma única classe de tema muda todo o sistema, incluindo o que você criar com os mesmos tokens." },
+  "Pro updates forever": { "zh-hans": "终身 Pro 更新", ja: "Proの更新を永久に提供", ar: "تحديثات Pro مدى الحياة", "pt-br": "Atualizações Pro para sempre" },
+  "Radar comparison": { "zh-hans": "雷达对比", ja: "レーダー比較", ar: "مقارنة الرادار", "pt-br": "Comparação de radares" },
+  "Ready to go templates with BoardUI across domains": { "zh-hans": "跨域使用 BoardUI 的现成模板", ja: "ドメイン全体でBoardUIでテンプレートに行く準備ができました", ar: "قوالب جاهزة للاستخدام مع BoardUI عبر مختلف المجالات", "pt-br": "Templates BoardUI prontos para diferentes áreas" },
+  "Single-user license": { "zh-hans": "单人许可证", ja: "1ユーザーライセンス", ar: "ترخيص مستخدم واحد", "pt-br": "Licença para 1 pessoa" },
+  "Start for free": { "zh-hans": "免费开始", ja: "無料で始める", ar: "ابدأ مجاناً", "pt-br": "Comece grátis" },
+  "Tapered stages with conversion pills, curved or sharp, and stat tiles under every column.": { "zh-hans": "带有转换胶囊的锥形阶段，无论是弯曲的还是尖锐的，以及每列下方的统计瓷砖。", ja: "転換のカプセル、曲げられたまたは鋭くおよびすべてのコラムの下のstatのタイルが付いている先を細くされた段階。", ar: "مراحل متدرجة مع أقراص التحويل، منحنية أو حادة، وبلاطات إحصائية أسفل كل عمود.", "pt-br": "Etapas cronometradas com pílulas de conversão, curvas ou nítidas, e azulejos de estatísticas sob cada coluna." },
+  "Thinking, searching and writing indicators for a working agent.": { "zh-hans": "显示智能体的思考、搜索与写作状态。", ja: "エージェントの思考・検索・回答作成の状態を表示。", ar: "مؤشرات التفكير والبحث والكتابة لوكيل قيد العمل.", "pt-br": "Indicadores de raciocínio, busca e escrita para um agente em atividade." },
+  "What is BoardUI built on?": { "zh-hans": "BoardUI 基于哪些技术？", ja: "BoardUIはどの技術で作られていますか？", ar: "على ماذا بُني BoardUI؟", "pt-br": "Quais tecnologias o BoardUI usa?" },
+  "Yes. Because the CLI copies real source files into your repository rather than linking a dependency, the components are yours to read, edit and refactor. You are never blocked waiting on us to expose a prop.": { "zh-hans": "是的。CLI 会将实际源文件复制到您的代码仓库，而不是作为依赖链接进来。您可以自由阅读、编辑和重构组件，无需等待我们开放某个属性。", ja: "はい。CLIが実際のソースファイルをリポジトリにコピーするため、自由に読んで、編集して、リファクタリングできます。必要なプロパティの追加を、私たちの対応待ちにする必要もありません。", ar: "نعم. لأن CLI ينسخ ملفات المصدر الفعلية إلى مستودعك بدلًا من ربط تبعية، فإن المكوّنات ملكك للقراءة والتعديل وإعادة الهيكلة. لن تُحبَس في انتظارنا لكشف خاصية معينة.", "pt-br": "Sim. A CLI copia os arquivos de código-fonte para o seu repositório, em vez de adicionar uma dependência. Você pode ler, editar e refatorar os componentes livremente, sem precisar esperar que a gente disponibilize uma prop." },
+  "no card required": { "zh-hans": "无需信用卡", ja: "カード登録不要", ar: "لا حاجة لبطاقة", "pt-br": "sem cartão de crédito" },
+  "5-user license": { "zh-hans": "五人许可证", "ja": "5ユーザーライセンス", "ar": "ترخيص 5 مستخدمين", "pt-br": "Licença para 5 pessoas" },
+  "Agentic chat": { "zh-hans": "智能体聊天", "ja": "エージェントのチャット", "ar": "محادثة الوكيل", "pt-br": "Chat com agentes" },
+  "Auth card": { "zh-hans": "身份验证卡片", "ja": "認証カード", "ar": "بطاقة المصادقة", "pt-br": "Card de autenticação" },
+  "Booking flow for dates, times, language and meeting details.": { "zh-hans": "涵盖日期、时间、语言和会议详情的预约流程。", "ja": "日付、時間、言語、会議の詳細を選ぶ予約フロー。", "ar": "تدفق الحجز للتواريخ والأوقات واللغة وتفاصيل الاجتماع.", "pt-br": "Fluxo de agendamento com datas, horários, idioma e detalhes da reunião." },
+  "Can I use it in client and commercial projects?": { "zh-hans": "可以用于客户项目和商业项目吗？", "ja": "クライアントの案件や商用プロジェクトで使えますか？", "ar": "هل يمكنني استخدامه في مشاريع العملاء والمشاريع التجارية؟", "pt-br": "Posso usar em projetos comerciais e de clientes?" },
+  "Combo chart": { "zh-hans": "组合图", "ja": "複合チャート", "ar": "مخطط مركّب", "pt-br": "Gráfico combinado" },
+  "Context window usage with a token breakdown and plan limits.": { "zh-hans": "展示上下文窗口用量、Token 分类与方案额度。", "ja": "トークンの内訳とプランの上限を含む、コンテキストウィンドウの使用状況。", "ar": "استخدام نافذة السياق مع تفصيل الرموز وحدود الخطة.", "pt-br": "Uso da janela de contexto com detalhamento de tokens e limites do plano." },
+  "Data table": { "zh-hans": "数据表格", "ja": "データテーブル", "ar": "جدول البيانات", "pt-br": "Tabela de dados" },
+  "Do you offer refunds?": { "zh-hans": "可以退款吗？", "ja": "返金はできますか？", "ar": "هل تقدّمون استردادًا للمبالغ؟", "pt-br": "Vocês oferecem reembolso?" },
+  "Email address": { "zh-hans": "电子邮件地址", "ja": "メールアドレス", "ar": "عنوان البريد الإلكتروني", "pt-br": "Endereço de e-mail" },
+  "File upload": { "zh-hans": "文件上传", "ja": "ファイルアップロード", "ar": "رفع الملفات", "pt-br": "Upload de arquivos" },
+  "Flows tinted by their source with share labels on the sinks and hover isolation.": { "zh-hans": "流按源着色，并在接收器上共享标签并悬停隔离。", "ja": "シンクとホバー分離の共有ラベルでソースによってスズされたフロー。", "ar": "تدفقات ملوّنة حسب مصدرها مع تسميات الحصص على المصارف وعزل عند التمرير.", "pt-br": "Fluxos coloridos por sua fonte com etiquetas de compartilhamento nas pias e isolamento pairando." },
+  "Free component updates": { "zh-hans": "免费组件更新", "ja": "無料コンポーネントの更新", "ar": "تحديثات المكوّنات المجانية", "pt-br": "Atualizações dos componentes gratuitos" },
+  "Get the component": { "zh-hans": "获取组件", "ja": "コンポーネントを入手", "ar": "احصل على المكوّن", "pt-br": "Obter o componente" },
+  "Healthcare": { "zh-hans": "医疗保健", "ja": "ヘルスケア", "ar": "الرعاية الصحية", "pt-br": "Cuidados de saúde" },
+  "Image generation": { "zh-hans": "图像生成", "ja": "イメージ生成", "ar": "توليد الصور", "pt-br": "Geração de imagens" },
+  "Installation via CLI": { "zh-hans": "通过 CLI 安装", "ja": "CLIでのインストール", "ar": "التثبيت عبر CLI", "pt-br": "Instalação via CLI" },
+  "Lifetime Access": { "zh-hans": "终身访问", "ja": "永久アクセス", "ar": "وصول مدى الحياة", "pt-br": "Acesso vitalício" },
+  "Medical Report": { "zh-hans": "医疗报告", "ja": "医療報告", "ar": "التقرير الطبي", "pt-br": "Relatório médico" },
+  "Most component libraries stop right where agent interfaces start. BoardUI is the first one where I didn't have to build the hard parts myself.": { "zh-hans": "大多数组件库就停在智能体接口开始的地方。 BoardUI 是第一个我不必自己构建困难部分的项目。", "ja": "多くのコンポーネントライブラリは、エージェントUIに必要な部分にまでは対応していません。難しい部分を自作せずに済んだのは、BoardUIが初めてです。", "ar": "تتوقف معظم مكتبات المكونات عند النقطة التي تبدأ فيها واجهات الوكلاء. BoardUI هو الأول الذي لم أضطر معه إلى بناء الأجزاء الصعبة بنفسي.", "pt-br": "A maioria das bibliotecas de componentes para onde as interfaces de agentes começam. BoardUI é a primeira em que eu mesmo não tive que construir as partes difíceis." },
+  "Outline-only series over the same grid with a live legend for side-by-side reads.": { "zh-hans": "同一网格上的仅大纲系列，带有实时图例，可供并排阅读。", "ja": "サイドバイサイド読み取り用のライブレジェンドで同じグリッド上のアウトラインのみシリーズ。", "ar": "سلسلة مخططات بالمخطط فقط على نفس الشبكة مع وسيلة إيضاح مباشرة للقراءة المتجانبة.", "pt-br": "Série de esboço apenas sobre a mesma grade com uma lenda ao vivo para leituras lado a lado." },
+  "Profile": { "zh-hans": "个人资料", "ja": "プロフィール", "ar": "الملف الشخصي", "pt-br": "Perfil" },
+  "Radar, radial, funnel, Sankey and more - live Recharts cards with period switchers, hover focus and stat tiles, all on the same tokens.": { "zh-hans": "雷达、径向、漏斗、Sankey 等 - 带有周期切换器、悬停焦点和统计图块的实时 Recharts 卡，全部都在相同的标记上。", "ja": "レーダー、ラジアル、ファネル、サンキーなどのRechartsカード。期間切り替え、ホバー時の強調、統計タイルを備え、すべて同じトークンを使っています。", "ar": "الرادار والشعاعي والقمعي وSankey والمزيد - بطاقات Recharts حية مع مبدّلات الفترات وتركيز التمرير وبلاطات الإحصاء، كلها على نفس رموز التصميم.", "pt-br": "Radar, radial, funil, Sankey e muito mais. Cards interativos com Recharts, seletores de período, destaque ao passar o cursor e indicadores, todos com os mesmos tokens." },
+  "Rounded bars over a track with a period switcher, count-up headline and hover outline.": { "zh-hans": "轨道上的圆形条带周期切换器、计数标题和悬停轮廓。", "ja": "ラウンドバーをトラックの上に置き、期間のスイッチャー、カウントアップヘッドライン、ホバーアウトライン。", "ar": "أشرطة مستديرة فوق مسار مع محوّل فترة زمنية وعنوان عدّاد تصاعدي وإطار عند التمرير.", "pt-br": "Barras arredondadas sobre uma faixa com um interruptor de período, título de contagem-up e contorno de hover." },
+  "Speedometer": { "zh-hans": "车速表", "ja": "速度計", "ar": "عداد السرعة", "pt-br": "Velocímetro" },
+  "Starter": { "zh-hans": "入门版", "ja": "スターター", "ar": "البداية", "pt-br": "Inicial" },
+  "The fundamentals of BoardUI, free. Perfect for indie developers.": { "zh-hans": "免费使用 BoardUI 的基础功能，适合独立开发者。", "ja": "BoardUIの基本を無料で。個人開発者にぴったりです。", "ar": "أساسيات BoardUI، مجاناً. مثالية للمطورين المستقلين.", "pt-br": "Os recursos essenciais do BoardUI, grátis. Perfeito para desenvolvedores independentes." },
+  "Unlimited for Startups": { "zh-hans": "初创团队版", "ja": "スタートアップ向け", "ar": "غير محدود للشركات الناشئة", "pt-br": "Ilimitado para startups" },
+  "What is the difference between 1 Year of Updates and Lifetime Access?": { "zh-hans": "一年更新与终身访问有什么区别？", "ja": "1年間の更新と永久アクセスの違いは？", "ar": "ما الفرق بين سنة واحدة من التحديثات والوصول مدى الحياة؟", "pt-br": "Qual é a diferença entre 1 ano de atualizações e Acesso vitalício?" },
+  "Yes. Every plan is bought once and yours forever, with no subscription and no auto-renewal. Lifetime Access and Unlimited for Startups include every future update to the components, blocks and templates you have access to; 1 Year of Updates includes them for one year from purchase.": { "zh-hans": "是的。所有方案均为一次性购买，已获得的代码可永久使用，无需订阅，也不会自动续费。终身访问和初创团队版包含所授权组件、组合组件与模板的全部后续更新；一年更新方案则包含购买后一年内的更新。", "ja": "はい。すべて買い切りで、サブスクリプションや自動更新はありません。永久アクセスとスタートアップ向けプランでは、対象のコンポーネント、ブロック、テンプレートの今後の更新をすべて利用できます。1年間の更新プランでは、購入から1年間利用できます。", "ar": "نعم. كل خطة تُشترى مرة واحدة وتبقى ملكك إلى الأبد، دون اشتراك أو تجديد تلقائي. تشمل خطتا «الوصول مدى الحياة» و«غير محدود للشركات الناشئة» جميع التحديثات المستقبلية للمكوّنات والكتل والقوالب التي تصل إليها؛ أما خطة «سنة واحدة من التحديثات» فتشملها لمدة سنة من تاريخ الشراء.", "pt-br": "Sim. Todos os planos têm pagamento único, sem assinatura nem renovação automática. Acesso vitalício e Ilimitado para startups incluem todas as atualizações futuras dos componentes, blocos e templates disponíveis no plano. O plano 1 ano de atualizações inclui essas atualizações por um ano a partir da compra." },
+  "paid once": { "zh-hans": "一次性付款", "ja": "買い切り", "ar": "دفعة واحدة", "pt-br": "pagamento único" },
+  "Agent limits": { "zh-hans": "智能体额度", "ja": "エージェントの使用制限", "ar": "حدود الوكيل", "pt-br": "Limites do agente" },
+  "An iridescent light orbiting the composer while the agent works.": { "zh-hans": "智能体工作时，虹彩光带环绕输入框。", "ja": "エージェントの作業中に、虹色の光がコンポーザーの周囲を巡ります。", "ar": "ضوء قزحي يدور حول المحرر بينما يعمل الوكيل.", "pt-br": "Uma luz iridescente ao redor do compositor enquanto o agente trabalha." },
+  "Bar, line and stacked charts with live data.": { "zh-hans": "展示实时数据的条形图、折线图与堆叠图。", "ja": "ライブデータを使った棒・折れ線・積み上げチャート。", "ar": "مخططات شريطية وخطية ومكدّسة مع بيانات مباشرة.", "pt-br": "Gráficos de barras, linhas e séries empilhadas com dados interativos." },
+  "Business Analyst at": { "zh-hans": "业务分析师", "ja": "ビジネスアナリスト・", "ar": "محلل أعمال في", "pt-br": "Analista de Negócios em" },
+  "Charts that make your data worth reading": { "zh-hans": "使您的数据值得阅读的图表", "ja": "データをわかりやすく伝えるチャート", "ar": "مخططات بيانية تجعل بياناتك تستحق القراءة", "pt-br": "Gráficos que dão vida aos seus dados" },
+  "Composer attachments": { "zh-hans": "输入框附件", "ja": "コンポーザーの添付ファイル", "ar": "مرفقات محرّر الرسائل", "pt-br": "Anexos do compositor" },
+  "Contributor activity, token stats and streak insights at a glance.": { "zh-hans": "一览贡献者活动、Token 统计与连续活跃记录。", "ja": "貢献者の活動、トークンの統計、連続活動の状況をひと目で確認。", "ar": "نشاط المساهم وإحصاءات الرموز ورؤى التسلسل في لمحة واحدة.", "pt-br": "Atividade do contribuidor, estatísticas de tokens e sequência de contribuições em uma só visão." },
+  "Design tokens based on Tailwind CSS": { "zh-hans": "基于 Tailwind CSS 的设计变量", "ja": "Tailwind CSSに基づくデザイントークン", "ar": "رموز التصميم مبنية على Tailwind CSS", "pt-br": "Tokens de design baseados no Tailwind CSS" },
+  "Does it support dark mode?": { "zh-hans": "支持深色模式吗？", "ja": "ダークモードに対応していますか？", "ar": "هل يدعم الوضع الداكن؟", "pt-br": "Tem suporte a modo escuro?" },
+  "Every Pro block & template": { "zh-hans": "全部 Pro 组合组件与模板", "ja": "すべてのProブロックとテンプレート", "ar": "كل كتلة وقالب Pro", "pt-br": "Todos os blocos e templates Pro" },
+  "Filled polygon on the chart tokens - the count-up headline follows the axis you hover, and a stat tile per axis sits below.": { "zh-hans": "图表变量上的填充多边形 - 计数标题跟随您悬停的轴，每个轴的统计图块位于下方。", "ja": "チャートトークンにポリゴンを埋める - カウントアップヘッドラインは、ホバーの軸線を追従し、軸ごとのスタットタイルは下に置かれます。", "ar": "مضلع مملوء على رموز المخطط - العنوان التصاعدي يتبع المحور الذي تحوم فوقه، وبلاطة إحصائية لكل محور تظهر أدناه.", "pt-br": "Polígono preenchido nas fichas de gráficos - o título de contagem-up segue o eixo que você paira, e uma telha de estatísticas por eixo fica abaixo." },
+  "Founder at": { "zh-hans": "创始人于", "ja": "創業者・", "ar": "مؤسس", "pt-br": "Fundador em" },
+  "Free user license": { "zh-hans": "免费使用许可", "ja": "無料ユーザーライセンス", "ar": "ترخيص مستخدم مجاني", "pt-br": "Licença gratuita" },
+  "Half gauge of stacked segments with the primary share in the centre and tiles below.": { "zh-hans": "半规格的堆叠段，主要部分位于中心，瓷砖位于下方。", "ja": "中心およびタイルのプライマリ共有が付いている積み重ねられた区分の半分のゲージ。", "ar": "نصف مقياس من شرائح متراكمة مع الحصة الرئيسية في المنتصف وبلاطات أسفله.", "pt-br": "Meio bitola de segmentos empilhados com a participação principal no centro e azulejos abaixo." },
+  "Home": { "zh-hans": "主页", "ja": "ホーム", "ar": "الرئيسية", "pt-br": "Principal" },
+  "Image generation loader": { "zh-hans": "图像生成加载状态", "ja": "画像生成ローダー", "ar": "محمّل توليد الصور", "pt-br": "Carregamento da geração de imagens" },
+  "Is BoardUI Pro a one-time payment?": { "zh-hans": "BoardUI Pro 是一次性付款吗？", "ja": "BoardUI Proは買い切りですか？", "ar": "هل BoardUI Pro دفعة لمرة واحدة؟", "pt-br": "O BoardUI Pro tem pagamento único?" },
+  "Live multi-step progress and completion states.": { "zh-hans": "实时展示多步骤进度与完成状态。", "ja": "複数ステップの進捗と完了状態をリアルタイムで表示。", "ar": "حالات تقدم متعدد الخطوات واكتمال مباشرة.", "pt-br": "Progresso em tempo real com várias etapas e estados de conclusão." },
+  "Meeting schedule": { "zh-hans": "会议安排", "ja": "会議スケジュール", "ar": "جدول الاجتماعات", "pt-br": "Agendamento de reuniões" },
+  "Navigation with search, badges and account controls.": { "zh-hans": "包含搜索、徽标与账户操作的导航。", "ja": "検索、バッジ、アカウント操作を備えたナビゲーション。", "ar": "شريط تنقل مع بحث وشارات وعناصر تحكم في الحساب.", "pt-br": "Navegação com busca, selos e controles da conta." },
+  "Playful widgets": { "zh-hans": "富有趣味的组件", "ja": "プレイフルウィジェット", "ar": "أدوات تفاعلية", "pt-br": "Widgets brincalhões" },
+  "Project board": { "zh-hans": "项目看板", "ja": "プロジェクトボード", "ar": "لوحة المشروع", "pt-br": "Quadro de projetos" },
+  "Radial chart": { "zh-hans": "径向图", "ja": "ラジアルチャート", "ar": "مخطط شعاعي", "pt-br": "Gráfico radial" },
+  "Sankey chart": { "zh-hans": "桑基图", "ja": "サンキーチャート", "ar": "مخطط سانكي", "pt-br": "Gráfico de Sankey" },
+  "Stacked series with gradient fills - hover a month and the headline, legend and tiles follow.": { "zh-hans": "具有渐变填充的堆叠系列 - 悬停一个月，标题、图例和图块随之出现。", "ja": "グラデーションフィックスで積み重ねられたシリーズ - 月と見出し、伝説とタイルに従うホバー。", "ar": "سلسلة متراكمة بتعبئات متدرجة - مرّر فوق شهر وسيتبعه العنوان الرئيسي والأسطورة والبلاطات.", "pt-br": "Série empilhada com preenchimentos gradientes - pairar um mês e seguir o título, legenda e azulejos." },
+  "Starter is free and covers the fundamentals: the base components, basic blocks and templates, design tokens and dark mode variables. Pro adds the full component set, every Pro block and template, and the complete icon library.": { "zh-hans": "入门版免费提供基础组件、基础组合组件与模板、设计变量和深色模式变量。Pro 则包含完整的组件库、全部 Pro 组合组件与模板，以及完整的图标库。", "ja": "スターターは無料で、基本コンポーネント、基本的なブロックとテンプレート、デザイントークン、ダークモードの変数を利用できます。Proでは、全コンポーネント、すべてのProブロックとテンプレート、完全なアイコンライブラリが追加されます。", "ar": "الإصدار المجاني يغطي الأساسيات: المكوّنات الأساسية والكتل والقوالب الأساسية ورموز التصميم ومتغيرات الوضع الداكن. يضيف Pro مجموعة المكوّنات الكاملة وكل كتل وقوالب Pro ومكتبة الأيقونات الشاملة.", "pt-br": "O plano Inicial é grátis e inclui os recursos essenciais: componentes básicos, blocos e templates básicos, tokens de design e variáveis para modo escuro. O Pro inclui o conjunto completo de componentes, todos os blocos e templates Pro e a biblioteca completa de ícones." },
+  "The funnel as pill rows with name, value and share, plus a grid of stat tiles.": { "zh-hans": "漏斗是胶囊行，包含名称、价值和份额，以及统计图块网格。", "ja": "名前、値、共有、および統計タイルの格子が付いているカプセルの列として漏斗。", "ar": "القمع كصفوف حبات مع الاسم والقيمة والحصة، بالإضافة إلى شبكة من بلاطات الإحصاءات.", "pt-br": "O funil como comprimido filtra com nome, valor e partilha, mais uma grade de azulejos stat." },
+  "Use it in unlimited projects": { "zh-hans": "项目数量不限", "ja": "プロジェクト数は無制限", "ar": "استخدمه في مشاريع غير محدودة", "pt-br": "Use em projetos ilimitados" },
+  "What is the difference between Starter and Pro?": { "zh-hans": "入门版和 Pro 有什么区别？", "ja": "スターターとProの違いは？", "ar": "ما الفرق بين Starter وPro؟", "pt-br": "Qual é a diferença entre o plano Inicial e o Pro?" },
+  "all in Pro": { "zh-hans": "包含全部 Pro 功能", "ja": "Proのすべて", "ar": "كل شيء في Pro", "pt-br": "tudo do Pro" },
+  "yours forever": { "zh-hans": "永久使用", "ja": "永久に所有", "ar": "ملكك إلى الأبد", "pt-br": "seu para sempre" },
+  "BoardUI Pro is out": { "zh-hans": "BoardUI Pro 已正式上线", ja: "BoardUI Proが登場", ar: "BoardUI Pro متاح الآن", "pt-br": "BoardUI Pro já está disponível" },
+  "React Design System": { "zh-hans": "React 设计系统", ja: "Reactデザインシステム", ar: "نظام تصميم React", "pt-br": "Sistema de design React" },
+  "for Agentic Interfaces": { "zh-hans": "为智能体界面而打造", ja: "エージェントUI向け", ar: "لواجهات الوكلاء الذكية", "pt-br": "para interfaces de agentes" },
+  "BoardUI is a React design system with 103 unique components, including 19 data charts, plus 10 Pro templates and 400+ design tokens, designed in Figma.": { "zh-hans": "BoardUI 是一个在 Figma 中设计的 React 设计系统，包含 103 个独立组件，其中有 19 个数据图表，另有 10 个 Pro 模板和 400 多个设计变量。", ja: "BoardUIは、Figmaで設計されたReactデザインシステムです。19種類のデータチャートを含む103種類のコンポーネント、10種類のProテンプレート、400以上のデザイントークンを備えています。", ar: "BoardUI نظام تصميم لـ React يضم 103 مكوّنًا فريدًا، منها 19 مخططًا بيانيًا، بالإضافة إلى 10 قوالب Pro وأكثر من 400 رمز تصميم، مصمّمة في Figma.", "pt-br": "BoardUI é um sistema de design React com 103 componentes únicos, incluindo 19 gráficos de dados, além de 10 templates Pro e mais de 400 tokens de design, criado no Figma." },
+  "NEW": { "zh-hans": "全新", ja: "新着", ar: "جديد", "pt-br": "Novo" },
+};
+
+/** Translate one homepage string; falls back to the English key. */
+export function homeString(key: string, locale: SiteLocale): string {
+  if (locale === "en") return key;
+  return HOME_STRINGS[key]?.[locale] ?? key;
+}
+
+export type HomeData = {
+  heroPreviewTabs: HeroPreviewTab[];
+  showcase: ShowcaseItem[];
+  templateCards: TemplateCard[];
+  charts: ChartItem[];
+  tiers: Omit<Tier, "titleIcon" | "ctaIcon">[];
+  faqItems: FaqItem[];
+};
+
+/**
+ * Localize the homepage data for a locale. Names, blurbs, tier copy and FAQ
+ * questions go through the homepage dictionary (only strings the original
+ * translates are in it; the rest fall back to English). Links go through
+ * localizedHrefFor, so unbuilt routes keep their English href and never 404.
+ * FAQ answers stay English: the original does not translate them. Prices
+ * (Free / €149 …) are passed through the dictionary too, so a translated
+ * price renders when the original has one.
+ */
+export function localizeHomeData(locale: SiteLocale): HomeData {
+  const t = (s: string) => homeString(s, locale);
+  return {
+    heroPreviewTabs: HERO_PREVIEW_TABS.map((tab) => ({
+      ...tab,
+      label: t(tab.label),
+      href: localizedHrefFor(tab.href, locale),
+      src: localizedHrefFor(tab.src, locale),
+    })),
+    showcase: SHOWCASE.map((item) => ({
+      ...item,
+      name: t(item.name),
+      blurb: t(item.blurb),
+      href: localizedHrefFor(item.href, locale),
+    })),
+    templateCards: TEMPLATE_CARDS.map((card) => ({
+      ...card,
+      name: t(card.name),
+      href: localizedHrefFor(card.href, locale),
+      src: localizedHrefFor(card.src, locale),
+    })),
+    charts: CHARTS.map((chart) => ({
+      ...chart,
+      name: t(chart.name),
+      blurb: t(chart.blurb),
+      href: localizedHrefFor(chart.href, locale),
+    })),
+    tiers: TIERS.map((tier) => ({
+      name: t(tier.name),
+      priceWas: tier.priceWas,
+      featured: tier.featured,
+      badge: tier.badge ? t(tier.badge) : undefined,
+      blurb: t(tier.blurb),
+      price: t(tier.price),
+      priceNote: t(tier.priceNote),
+      priceSubnote: t(tier.priceSubnote),
+      cta: t(tier.cta),
+      href: localizedHrefFor(tier.href, locale),
+      features: tier.features.map((feature) => t(feature)),
+    })),
+    faqItems: FAQ_ITEMS.map((item) => ({ ...item, question: t(item.question) })),
+  };
+}

@@ -9,6 +9,16 @@ import { DocumentTitle } from "@/components/application/app-shell/document-title
 import { SiteFooter } from "@/components/application/blog/blog-article-footer";
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { DOCS_NAV, LIBRARY_NAV, prevNextFor } from "@/components/application/docs/docs-nav";
+import {
+  chromeString,
+  localizeNavItem,
+  localizeNavSections,
+  localizedHrefFor,
+  stripLocalePrefix,
+} from "@/components/application/docs/locale-chrome";
+import type { SiteLocale } from "@/components/application/docs/site-language-config";
+
+
 import { SiteLanguageSelector } from "@/components/application/docs/site-language-selector";
 import { GetProLink, MarketingNav, QuickSearch } from "@/components/application/marketing/marketing-nav";
 import { ThemeToggle } from "@/components/application/theme/theme-toggle";
@@ -61,6 +71,8 @@ export type DocsLayoutProps = {
   documentTitle?: string;
   hideHeading?: boolean;
   variant?: "library" | "docs" | "marketing";
+  /** Locale of this page. Defaults to "en"; locale pages pass their own locale so the chrome (sidebar, breadcrumb, TOC, footer) renders translated. */
+  locale?: SiteLocale;
   /** Docs eyebrow above the h1, e.g. "Docs · Get started" (introduction only — the original's CLI page has none). */
   eyebrow?: string;
   /** Library prev/next. Pages that already render their own <PrevNext /> pass true to keep a single copy. */
@@ -101,16 +113,18 @@ function Badge({ children }: { children: string }) {
   );
 }
 
-function LibrarySidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function LibrarySidebarContent({ onNavigate, locale = "en" }: { onNavigate?: () => void; locale?: SiteLocale }) {
   const pathname = usePathname() ?? "/";
   const path = pathname.replace(/\/+$/, "") || "/";
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const isOpen = (title: string) => openSections[title] !== false;
+  const nav = localizeNavSections(LIBRARY_NAV, locale);
+
 
   return (
     <>
       <Link
-        href="/"
+        href={localizedHrefFor("/", locale)}
         onClick={onNavigate}
         className="flex w-full items-center gap-2 px-1 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
       >
@@ -124,9 +138,9 @@ function LibrarySidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         className="-mr-1 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pe-1 [scrollbar-width:thin]"
       >
         <p className="sr-only" aria-live="polite">
-          <span className="contents">106</span> items shown
+          {chromeString("{0} items shown", locale).replace("{0}", "106")}
         </p>
-        {LIBRARY_NAV.map((section) => (
+        {nav.map((section) => (
           <div key={section.title} className="flex flex-col gap-0.5">
             <button
               type="button"
@@ -167,7 +181,9 @@ function LibrarySidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     >
                       <TreeElbow />
                       <span className="min-w-0 truncate">{item.label}</span>
-                      {item.isNew ? <Badge>New</Badge> : null}
+                      {item.isNew ? <Badge>{chromeString("New", locale)}</Badge> : null}
+
+
                       {item.isPro ? <Badge>Pro</Badge> : null}
                     </Link>
                   );
@@ -180,21 +196,22 @@ function LibrarySidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function LibrarySidebar() {
+function LibrarySidebar({ locale = "en" }: { locale?: SiteLocale }) {
   return (
     <aside className="sticky top-3 m-3 hidden h-[calc(100vh-24px)] w-[260px] shrink-0 flex-col gap-3 overflow-hidden rounded-3xl border border-border-button-white bg-background-secondary-default p-3 shadow-sidebar lg:flex">
-      <LibrarySidebarContent />
+      <LibrarySidebarContent locale={locale} />
     </aside>
   );
 }
 
-function DocsSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function DocsSidebarContent({ onNavigate, locale = "en" }: { onNavigate?: () => void; locale?: SiteLocale }) {
   const pathname = usePathname() ?? "/";
   const path = pathname.replace(/\/+$/, "") || "/";
+  const nav = localizeNavSections(DOCS_NAV, locale);
   return (
     <>
       <Link
-        href="/"
+        href={localizedHrefFor("/", locale)}
         onClick={onNavigate}
         className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring"
       >
@@ -203,7 +220,7 @@ function DocsSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <span className="text-title-3-semibold text-text-primary">BoardUI</span>
       </Link>
       <nav className="mt-8 flex flex-col gap-8" aria-label="Docs">
-        {DOCS_NAV.map((section) => (
+        {nav.map((section) => (
           <div key={section.title} className="flex flex-col gap-2">
             <span className="text-caption-1-semibold tracking-wide text-text-tertiary uppercase">{section.title}</span>
             <ul className="flex flex-col gap-0.5">
@@ -236,21 +253,23 @@ function DocsSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function DocsSidebar() {
+function DocsSidebar({ locale = "en" }: { locale?: SiteLocale }) {
   return (
     <aside className="hidden w-56 shrink-0 lg:flex lg:flex-col">
-      <DocsSidebarContent />
+      <DocsSidebarContent locale={locale} />
     </aside>
   );
 }
 
-function LibraryBreadcrumb({ title }: { title: string }) {
+function LibraryBreadcrumb({ title, locale = "en" }: { title: string; locale?: SiteLocale }) {
   const pathname = usePathname() ?? "/";
   const path = pathname.replace(/\/+$/, "") || "/";
   const isIndex = path === "/components";
   // The original links the parent crumb to /components in both cases —
   // "Docs" on /installation etc. is its own quirk, kept verbatim.
   const parentLabel = /^\/(installation|mcp|skill|rtl|getting-started)/.test(path) ? "Docs" : "Components";
+  const localizedParentLabel = chromeString(parentLabel, locale);
+  const localizedParentHref = localizedHrefFor("/components", locale);
   return (
     <nav
       aria-label="Documentation"
@@ -259,12 +278,12 @@ function LibraryBreadcrumb({ title }: { title: string }) {
       <ol className="flex items-center gap-2.5 px-1">
         <li className="flex items-center">
           <Link
-            href="/"
+            href={localizedHrefFor("/", locale)}
             className="-mx-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-caption-1-medium whitespace-nowrap text-text-tertiary transition-colors duration-150 ease outline-none hover:bg-background-primary-hover hover:text-text-secondary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/boardui_logo.png" alt="BoardUI" width={16} height={16} className="shrink-0" />
-            Board UI
+            {locale === "en" ? "Board UI" : "BoardUI"}
           </Link>
         </li>
         {isIndex ? null : (
@@ -274,10 +293,10 @@ function LibraryBreadcrumb({ title }: { title: string }) {
             </svg>
             <li className="flex items-center">
               <Link
-                href="/components"
+                href={localizedParentHref}
                 className="-mx-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-caption-1-medium whitespace-nowrap text-text-tertiary transition-colors duration-150 ease outline-none hover:bg-background-primary-hover hover:text-text-secondary focus-visible:ring-2 focus-visible:ring-border-focus-ring"
               >
-                {parentLabel}
+                {localizedParentLabel}
               </Link>
             </li>
           </>
@@ -365,16 +384,25 @@ function LibraryLayout({
   documentTitle,
   hideHeading,
   hidePrevNext,
+  locale = "en",
 }: Omit<DocsLayoutProps, "variant" | "eyebrow" | "footer">) {
   const pathname = usePathname() ?? "/";
   const contentRef = useRef<HTMLDivElement>(null);
   const { items: toc, current } = useToc(contentRef, true);
-  const { prev, next } = hidePrevNext ? {} : prevNextFor(pathname);
+  const { prev, next } = hidePrevNext
+    ? {}
+    : (() => {
+        const { prev: p, next: n } = prevNextFor(stripLocalePrefix(pathname));
+        return {
+          prev: p ? localizeNavItem(p, locale) : undefined,
+          next: n ? localizeNavItem(n, locale) : undefined,
+        };
+      })();
 
   return (
     <div className={cx("flex min-h-screen w-full overflow-x-clip bg-background-full", className)}>
       <DocumentTitle title={documentTitle} />
-      <LibrarySidebar />
+      <LibrarySidebar locale={locale} />
       <div className="min-w-0 flex-1">
         <div className="component-detail mx-auto flex w-full max-w-[1560px] justify-center gap-12 px-6 pt-10 pb-14 sm:px-10">
           {/* relative + overflow-x-clip: AppShell's <main> was `relative …
@@ -396,12 +424,12 @@ function LibraryLayout({
                     <Drawer placement="start" size="sm" aria-label="Component library">
                       {({ close }) => (
                         <DrawerBody>
-                          <LibrarySidebarContent onNavigate={close} />
+                          <LibrarySidebarContent onNavigate={close} locale={locale} />
                         </DrawerBody>
                       )}
                     </Drawer>
                   </DrawerTrigger>
-                  <LibraryBreadcrumb title={title ?? ""} />
+                  <LibraryBreadcrumb title={title ?? ""} locale={locale} />
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <SiteLanguageSelector />
@@ -438,7 +466,7 @@ function LibraryLayout({
                       </span>
                     </span>
                   </a>
-                  <GetProLink />
+                  <GetProLink locale={locale} />
                 </div>
               </div>
               <header className="flex flex-col gap-3">
@@ -456,10 +484,10 @@ function LibraryLayout({
           {toc.length > 0 ? (
             <aside className="hidden w-[220px] shrink-0 xl:block">
               <div className="sticky top-10 translate-y-0.5">
-                <nav aria-label="On this page" className="flex flex-col gap-3">
+                <nav aria-label={chromeString("On this page", locale)} className="flex flex-col gap-3">
                   <p className="flex items-center gap-2 text-body-medium text-text-primary">
                     <RiListUnordered className="size-4 text-text-secondary" aria-hidden />
-                    On this page
+                    {chromeString("On this page", locale)}
                   </p>
                   <ul className="flex flex-col border-s border-border-button-default">
                     {toc.map((item) => (
@@ -485,7 +513,7 @@ function LibraryLayout({
           ) : null}
         </div>
         <div className="mx-auto w-full max-w-[1200px] px-6 pb-14 sm:px-10">
-          <SiteFooter />
+          <SiteFooter locale={locale} />
         </div>
       </div>
     </div>
@@ -500,6 +528,7 @@ function DocsVariantLayout({
   documentTitle,
   eyebrow,
   hideHeading,
+  locale = "en",
 }: Omit<DocsLayoutProps, "variant" | "hidePrevNext" | "footer">) {
   return (
     <div className={cx("flex min-h-full flex-col overflow-x-clip bg-background-full", className)}>
@@ -516,14 +545,14 @@ function DocsVariantLayout({
             <Drawer placement="start" size="sm" aria-label="Docs">
               {({ close }) => (
                 <DrawerBody>
-                  <DocsSidebarContent onNavigate={close} />
+                  <DocsSidebarContent onNavigate={close} locale={locale} />
                 </DrawerBody>
               )}
             </Drawer>
           </DrawerTrigger>
         </div>
         <div className="flex w-full flex-1 gap-12">
-          <DocsSidebar />
+          <DocsSidebar locale={locale} />
           <article className="relative min-w-0 max-w-3xl flex-1 overflow-x-clip">
             <div className="flex flex-col gap-6">
               {eyebrow ? (
@@ -536,7 +565,7 @@ function DocsVariantLayout({
             </div>
           </article>
         </div>
-        <SiteFooter />
+        <SiteFooter locale={locale} />
       </div>
     </div>
   );
@@ -550,11 +579,12 @@ function MarketingVariantLayout({
   documentTitle,
   hideHeading,
   footer = true,
+  locale = "en",
 }: Omit<DocsLayoutProps, "variant" | "eyebrow" | "hidePrevNext">) {
   return (
     <div className={cx("flex min-h-screen flex-col overflow-x-clip bg-background-full", className)}>
       <DocumentTitle title={documentTitle} />
-      <MarketingNav />
+      <MarketingNav locale={locale} />
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-10 px-6 py-12 sm:gap-14 sm:py-16">
         {!hideHeading && (heading ?? title) ? (
           <h1 className="text-title-1-medium text-text-primary">{heading ?? title}</h1>
@@ -563,7 +593,7 @@ function MarketingVariantLayout({
       </main>
       {footer ? (
         <div className="mx-auto w-full max-w-[1200px] px-6">
-          <SiteFooter />
+          <SiteFooter locale={locale} />
         </div>
       ) : null}
     </div>

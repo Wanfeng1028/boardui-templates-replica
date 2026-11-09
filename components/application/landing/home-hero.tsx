@@ -19,19 +19,21 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { HeroRays } from "@/components/application/landing/hero-rays/hero-rays";
 import { HERO_RAYS_DEFAULTS } from "@/components/application/landing/hero-rays/hero-rays-config";
-import { HERO_PREVIEW_TABS, TECH_BADGES } from "./home-data";
+import { TECH_BADGES } from "./home-data";
+import { homeString, localizeHomeData, type HomeData } from "./home-locale";
+import type { SiteLocale } from "@/components/application/docs/site-language-config";
 import { cx } from "@/utils/cx";
 
 const TAB_ICONS: Record<string, RemixiconComponentType> = {
-  Home: RiDashboardLine,
-  "Project board": RiKanbanView2,
-  Marketing: RiMegaphoneLine,
-  Calendar: RiCalendarLine,
-  Finance: RiBankLine,
-  "Medical Report": RiAsterisk,
-  "AI Chat": RiChatAiLine,
-  "AI Image Generation": RiImageAiLine,
-  Profile: RiUserSmileLine,
+  "/templates/dashboard": RiDashboardLine,
+  "/templates/project-board": RiKanbanView2,
+  "/templates/marketing": RiMegaphoneLine,
+  "/templates/calendar": RiCalendarLine,
+  "/templates/finance": RiBankLine,
+  "/templates/medical-profile": RiAsterisk,
+  "/templates/ai-chat": RiChatAiLine,
+  "/templates/ai-image-generation": RiImageAiLine,
+  "/templates/ai-profile": RiUserSmileLine,
 };
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -46,7 +48,13 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
  * off so it never traps page scroll; the active tab's "Open template"
  * link goes to the live page.
  */
-export function HomeHero() {
+export function HomeHero({
+  locale = "en",
+  data = localizeHomeData("en"),
+}: {
+  locale?: SiteLocale;
+  data?: HomeData;
+}) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [active, setActive] = useState(0);
 
@@ -54,10 +62,11 @@ export function HomeHero() {
     setReduceMotion(window.matchMedia(REDUCED_MOTION_QUERY).matches);
   }, []);
 
-  const tab = HERO_PREVIEW_TABS[active];
+  const heroPreviewTabs = data.heroPreviewTabs;
+  const tab = heroPreviewTabs[active];
 
   return (
-    <section aria-label="BoardUI introduction" className="relative overflow-clip">
+    <section aria-label={homeString("BoardUI introduction", locale)} className="relative overflow-clip">
       <div
         aria-hidden
         style={{ "--hero-shader-height": "1060px" } as CSSProperties}
@@ -71,26 +80,31 @@ export function HomeHero() {
           href="#pricing"
           className="flex items-center gap-2 rounded-full border border-border-button-default bg-background-secondary-default py-1 ps-1 pe-3 text-caption-1-semibold text-text-primary outline-none transition-colors hover:bg-background-tertiary-default focus-visible:ring-2 focus-visible:ring-border-focus-ring"
         >
-          <span className="rounded-full bg-accent-500 px-1.5 py-px text-caption-1-semibold text-white">NEW</span>
-          BoardUI Pro is out
+          <span className="rounded-full bg-accent-500 px-1.5 py-px text-caption-1-semibold text-white">{homeString("NEW", locale)}</span>
+          {homeString("BoardUI Pro is out", locale)}
         </Link>
         <h1 className="mt-5 text-[32px] leading-[38px] font-medium tracking-[-0.02em] text-text-primary sm:text-[48px] sm:leading-[56px]">
-          <span className="block">React Design System</span>
-          <span className="block">for Agentic Interfaces</span>
+          <span className="block">{homeString("React Design System", locale)}</span>
+          <span className="block">{homeString("for Agentic Interfaces", locale)}</span>
         </h1>
         <p className="mt-4 max-w-2xl text-body-regular text-pretty text-text-secondary">
-          BoardUI is a React design system with 103 unique components, including 19 data charts, plus 10 Pro
-          templates and 400+ design tokens, designed in Figma.
+          {homeString(
+            "BoardUI is a React design system with 103 unique components, including 19 data charts, plus 10 Pro templates and 400+ design tokens, designed in Figma.",
+            locale,
+          )}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-start gap-3 sm:justify-center">
           <ButtonLink href="#pricing" variant="primary" size="medium">
-            Choose your plan
+            {homeString("Choose your plan", locale)}
           </ButtonLink>
           <ButtonLink href="/installation" variant="secondary" size="medium">
-            Start for free
+            {homeString("Start for free", locale)}
           </ButtonLink>
         </div>
-        <ul className="mt-6 flex flex-wrap items-center justify-start gap-2 sm:justify-center" aria-label="Supported versions">
+        <ul
+          className="mt-6 flex flex-wrap items-center justify-start gap-2 sm:justify-center"
+          aria-label={homeString("Supported versions", locale)}
+        >
           {TECH_BADGES.map((badge) => (
             <li
               key={badge}
@@ -106,11 +120,11 @@ export function HomeHero() {
         <div className="overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default">
           <div
             role="tablist"
-            aria-label="Template preview"
+            aria-label={homeString("Template preview", locale)}
             className="flex gap-1 overflow-x-auto border-b border-separator-border p-2"
           >
-            {HERO_PREVIEW_TABS.map((item, i) => {
-              const Icon = TAB_ICONS[item.label] ?? RiDashboardLine;
+            {heroPreviewTabs.map((item, i) => {
+              const Icon = TAB_ICONS[item.href] ?? RiDashboardLine;
               const selected = i === active;
               return (
                 <button
@@ -144,18 +158,18 @@ export function HomeHero() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-separator-border px-4 py-3">
             <p className="text-body-regular text-text-secondary">
-              {tab.label} template — live preview
+              {tab.label} {homeString("template — live preview", locale)}
             </p>
             <span className="flex flex-wrap items-center gap-3">
               <Link
                 href={tab.href}
                 className="group inline-flex items-center gap-1 text-body-medium text-text-secondary transition-colors hover:text-text-primary"
               >
-                Open template
+                {homeString("Open template", locale)}
                 <RiArrowRightLine className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
               </Link>
               <ButtonLink href="/templates" variant="secondary" size="small" leadingIcon={RiDashboardLine}>
-                Browse all templates
+                {homeString("Browse all templates", locale)}
               </ButtonLink>
             </span>
           </div>
