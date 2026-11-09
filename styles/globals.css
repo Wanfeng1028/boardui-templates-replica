@@ -325,6 +325,21 @@ input[type="search"]::-webkit-search-cancel-button {
   }
 }
 
+@keyframes bui-metal-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bui-metal-sweep {
+  will-change: transform;
+  animation: 9s linear infinite bui-metal-sweep;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bui-metal-sweep {
+    animation: none;
+  }
+}
+
 /* Split-flap ("Solari" board) digit, used by the image-generation countdown.
  * Two leaves hinged on the card's centre seam:
  *   flap-fall  the outgoing digit's TOP half swings down over the incoming
