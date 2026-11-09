@@ -644,8 +644,16 @@ export default function ProjectBoardTemplatePage() {
       columnClassName="max-w-none"
       // The original's page content is a flex-1 min-h-0 column stretched to
       // the viewport height; without this the board strip collapses to content
-      // height (~658px at 1920x998) instead of the original's ~871px.
-      contentClassName="min-h-0 flex-1"
+      // height (~658px at 1920x998) instead of the original's 882px.
+      // pb-2.5: the replica main ends at y=986 (root p-3) while the
+      // original's content ends at y=976 (main sm:pb-[22px]); 986-976=10px
+      // of bottom padding puts the strip bottom exactly on the original's.
+      contentClassName="min-h-0 flex-1 pb-2.5"
+      // The original's header is `shrink-0 sm:gap-0` on this page only
+      // (marketing's original header has no sm:gap-0); the 8px gap-2 is why
+      // this page's board starts 8px too low. Page-only override, the shared
+      // shell default is untouched.
+      headerClassName="shrink-0 sm:gap-0"
       actions={
         <>
           <NotificationBell />
