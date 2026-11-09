@@ -48,6 +48,7 @@ export function TemplateShell({
   children,
   className,
   columnClassName,
+  contentClassName,
   hideAllTemplatesButton = false,
   hideBreadcrumb = false,
   hideHeading = false,
@@ -66,6 +67,8 @@ export function TemplateShell({
   className?: string;
   /** Overrides the 1300px content column. */
   columnClassName?: string;
+  /** Extra classes merged into the content wrapper below the header. Lets one page stretch its content to the viewport height without changing the shared default. */
+  contentClassName?: string;
   /** Hide the "全部模板" button — only the /templates index itself sets this. */
   hideAllTemplatesButton?: boolean;
   /** Hide the breadcrumb trail — pages whose original has no breadcrumb. */
@@ -157,7 +160,7 @@ export function TemplateShell({
               </div>
             </div>
           </header>
-          <div className="flex w-full flex-col gap-4 pb-4">{children}</div>
+          <div className={cx("flex w-full flex-col gap-4 pb-4", contentClassName)}>{children}</div>
         </div>
       </main>
     </div>

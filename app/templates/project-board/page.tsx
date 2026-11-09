@@ -642,6 +642,10 @@ export default function ProjectBoardTemplatePage() {
       // original fits, so this page opts out of the cap (page-only override,
       // the shared shell default is untouched).
       columnClassName="max-w-none"
+      // The original's page content is a flex-1 min-h-0 column stretched to
+      // the viewport height; without this the board strip collapses to content
+      // height (~658px at 1920x998) instead of the original's ~871px.
+      contentClassName="min-h-0 flex-1"
       actions={
         <>
           <NotificationBell />
