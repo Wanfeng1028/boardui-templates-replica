@@ -53,8 +53,9 @@ import { DocumentTitle } from "@/components/application/app-shell/document-title
 
 import { ComposerLoader } from "@/components/application/composer-loader/composer-loader";
 import { AgentThinking } from "@/components/application/agent-thinking/agent-thinking";
+import { LiquidGlassChip, LiquidGlassSurface, LIQUID_GLASS_RESET } from "@/components/application/liquid-glass/liquid-glass";
 import { SettingsModal } from "@/components/application/settings/settings-modal";
-import { ThemeToggle } from "@/components/application/theme/theme-toggle";
+import { ThemeToggle, useThemeMode } from "@/components/application/theme/theme-toggle";
 import { IconButton } from "@/components/base/buttons/icon-button";
 import { RadioDot } from "@/components/base/radio/radio";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
@@ -1186,6 +1187,114 @@ function ProgressRing({ progress }: { progress: number }) {
   );
 }
 
+const GLASS_PILL_STYLE = `
+.bui-glass-pill > button,
+.bui-glass-pill button[aria-label="Voice input"] {
+  transition:
+    background-color 480ms ease,
+    border-color 480ms ease,
+    box-shadow 480ms ease !important;
+}
+.bui-glass-on .bui-glass-pill > button,
+.bui-glass-on .bui-glass-pill button[aria-label="Voice input"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+`;
+
+const GLASS_CONTROLS_STYLE = `
+.bui-glass-controls .lg-host button {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+/* The landing chips read as glass because they sit on a colourful shader.
+   The composer is a flat near-white pill, so there is nothing to refract and
+   the default 6% tint just shows the grey through. Declaring the tint on the
+   layer itself beats the surface's inherited inline value, and keeps the
+   hover variable working. */
+.bui-glass-controls .lg-tint {
+  --lg-tint: rgba(255, 255, 255, 0.88);
+  --lg-tint-hover: rgba(255, 255, 255, 1);
+}
+.dark .bui-glass-controls .lg-tint {
+  --lg-tint: rgba(255, 255, 255, 0.1);
+  --lg-tint-hover: rgba(255, 255, 255, 0.16);
+}
+`;
+
+function GlassComposer({ glass, children }: { glass: boolean; children: ReactNode }) {
+  const isLight = useThemeMode() === "light";
+  const ref = useRef<HTMLDivElement>(null);
+  const [rects, setRects] = useState<Array<{ left: number; top: number; width: number; height: number; radius: number }>>([]);
+  const [scale, setScale] = useState(1);
+
+  const offsetOf = (el: HTMLElement, root: HTMLElement): { left: number; top: number } => {
+    let left = 0;
+    let top = 0;
+    let node: HTMLElement | null = el;
+    while (node && node !== root) {
+      left += node.offsetLeft;
+      top += node.offsetTop;
+      node = node.offsetParent as HTMLElement | null;
+    }
+    return { left, top };
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      setScale(el.getBoundingClientRect().width / Math.max(1, el.offsetWidth));
+      const buttons = Array.from(el.querySelectorAll("button"));
+      const add = buttons.find((b) => b.getAttribute("aria-label") === "Add attachment");
+      const voice = buttons.find((b) => b.getAttribute("aria-label") === "Voice input");
+      const model = buttons.find((b) => !b.getAttribute("aria-label"));
+      setRects([add, model, voice].filter((b): b is HTMLButtonElement => Boolean(b)).map((b) => ({ ...offsetOf(b, el), width: b.offsetWidth, height: b.offsetHeight, radius: b === model ? 12 : b.offsetHeight / 2 })));
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    for (const b of Array.from(el.querySelectorAll("button"))) {
+      observer.observe(b);
+    }
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div ref={ref} className={cx("relative", glass && "bui-glass-on")}>
+      <style>{GLASS_PILL_STYLE}</style>
+      <span aria-hidden className="pointer-events-none absolute inset-0">
+        {rects.map((r, i) => (
+          <span
+            key={i}
+            className="absolute"
+            style={{
+              left: r.left,
+              top: r.top,
+              width: r.width,
+              height: r.height,
+              borderRadius: r.radius,
+              opacity: glass ? 1 : 0,
+              transition: "opacity 480ms ease",
+            }}
+          >
+            <LiquidGlassSurface
+              radius={r.radius >= r.height / 2 ? "full" : r.radius}
+              refract={0.02 >= Math.abs(scale - 1)}
+              className="rounded-[inherit]"
+              {...(scale > 1.05 ? { frost: Math.round(6 * scale) } : {})}
+              {...(isLight ? { tintOpacity: 0.12 } : {})}
+            />
+          </span>
+        ))}
+      </span>
+      {children}
+    </div>
+  );
+}
+
 function LocalComposer({
   value, onValueChange, onSubmit, busy, model, onModelChange, effort, onEffortChange,
   project, onProjectChange, voiceOn, onVoiceToggle, files, onFiles, onRemoveFile, inputRef,
@@ -1233,10 +1342,15 @@ function LocalComposer({
         </div>
       )}
       <ComposerLoader active={busy}>
-        <div className="relative">
-          <div className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-full p-2", busy ? "bg-transparent" : "bg-background-primary-default shadow-xs")}>
+        <GlassComposer glass>
+          <div className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-full p-2", "bui-glass-controls bui-glass-pill relative bg-transparent shadow-none dark:bg-transparent")}>
+            <style>{GLASS_CONTROLS_STYLE}</style>
             <input ref={fileRef} type="file" multiple className="hidden" aria-label="Choose files to attach" onChange={(e) => { const names = Array.from(e.target.files ?? []).map((f) => f.name); if (names.length > 0) onFiles(names); e.target.value = ""; }} />
-            <AddMenu onPickFiles={() => fileRef.current?.click()} />
+            <LiquidGlassChip radius="full" className="rounded-full">
+              <span className={cx("inline-flex", LIQUID_GLASS_RESET)}>
+                <AddMenu onPickFiles={() => fileRef.current?.click()} />
+              </span>
+            </LiquidGlassChip>
 
             <label className="sr-only" htmlFor="agent-composer-input">Message</label>
             <input
@@ -1253,7 +1367,11 @@ function LocalComposer({
             />
 
             <div className="relative shrink-0">
-              <ModelMenu model={model} onModelChange={onModelChange} effort={effort} onEffortChange={onEffortChange} />
+              <LiquidGlassChip radius={12}>
+                <span className={cx("inline-flex", LIQUID_GLASS_RESET)}>
+                  <ModelMenu model={model} onModelChange={onModelChange} effort={effort} onEffortChange={onEffortChange} />
+                </span>
+              </LiquidGlassChip>
             </div>
 
             <div className="flex shrink-0 items-center gap-2 ps-1.5">
@@ -1292,7 +1410,7 @@ function LocalComposer({
               </button>
             </div>
           </div>
-        </div>
+        </GlassComposer>
       </ComposerLoader>
 
       {/* Status row below the pill (original position). */}
