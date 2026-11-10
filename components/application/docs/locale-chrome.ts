@@ -720,7 +720,7 @@ export function chromeString(key: string, locale: SiteLocale): string {
 }
 
 /** Unlocalized paths that already have a translated version. The locale chrome links to the locale route only for these; everything else keeps its English href so navigation never 404s. Extend as follow-up rounds add translated pages. */
-export const BUILT_LOCALE_ROUTES: ReadonlySet<string> = new Set(["/", "/docs/introduction"]);
+export const BUILT_LOCALE_ROUTES: ReadonlySet<string> = new Set(["/", "/docs/introduction", "/getting-started", "/installation", "/docs/cli", "/mcp", "/skill", "/rtl"]);
 
 /** Localize an href for a locale page: prefix it only when that route has a translated version, otherwise keep the English href. A "#hash" suffix is preserved. */
 export function localizedHrefFor(href: string, locale: SiteLocale): string {

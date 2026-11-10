@@ -109,7 +109,7 @@ function PkgCommand({ npm, pnpm, yarn }: { npm: string; pnpm: string; yarn: stri
   );
 }
 
-const VITE_CONFIG_CODE = `// vite.config.ts
+export const VITE_CONFIG_CODE = `// vite.config.ts
 import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -122,14 +122,14 @@ export default defineConfig({
   },
 });`;
 
-const VITE_TSCONFIG_CODE = `{
+export const VITE_TSCONFIG_CODE = `{
   "compilerOptions": {
     "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   }
 }`;
 
-const VITE_MAIN_CODE = `import { StrictMode } from "react";
+export const VITE_MAIN_CODE = `import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/globals.css";
 import App from "./App.tsx";
@@ -140,7 +140,7 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );`;
 
-const RR_TSCONFIG_CODE = `// tsconfig.json — add "@/*" next to the template's "~/*" alias
+export const RR_TSCONFIG_CODE = `// tsconfig.json — add "@/*" next to the template's "~/*" alias
 {
   "compilerOptions": {
     "paths": {
@@ -150,10 +150,10 @@ const RR_TSCONFIG_CODE = `// tsconfig.json — add "@/*" next to the template's 
   }
 }`;
 
-const RR_ROOT_CODE = `// app/root.tsx
+export const RR_ROOT_CODE = `// app/root.tsx
 import "@/styles/globals.css"; // replaces the default "./app.css" import`;
 
-const ASTRO_TSCONFIG_CODE = `// tsconfig.json
+export const ASTRO_TSCONFIG_CODE = `// tsconfig.json
 {
   "compilerOptions": {
     "baseUrl": ".",
@@ -161,18 +161,18 @@ const ASTRO_TSCONFIG_CODE = `// tsconfig.json
   }
 }`;
 
-const ASTRO_LAYOUT_CODE = `---
+export const ASTRO_LAYOUT_CODE = `---
 // src/layouts/Layout.astro
 import "@/styles/globals.css";
 ---`;
 
-const ASTRO_USAGE_CODE = `---
+export const ASTRO_USAGE_CODE = `---
 // src/pages/index.astro
 import { Button } from "@/components/base/buttons/button";
 ---
 <Button client:load>Get started</Button>`;
 
-const LAYOUT_CODE = `// app/layout.tsx
+export const LAYOUT_CODE = `// app/layout.tsx
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
 // replaces the default "./globals.css" import
@@ -193,7 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }`;
 
-const BOARDUI_JSON_CODE = `{
+export const BOARDUI_JSON_CODE = `{
   "paths": {
     "components": "src/components",
     "utils": "src/utils",
@@ -210,17 +210,17 @@ const BOARDUI_JSON_CODE = `{
   }
 }`;
 
-const CONSUMING_GLOBALS_CODE = `/* apps/web/app/globals.css — repeat in apps/admin/app/globals.css */
+export const CONSUMING_GLOBALS_CODE = `/* apps/web/app/globals.css — repeat in apps/admin/app/globals.css */
 @import "@workspace/ui/styles/globals.css";
 @source "../../../packages/ui/src";`;
 
-const ADD_COMPONENT_CODE = `import { Button } from "@/components/base/buttons/button";
+export const ADD_COMPONENT_CODE = `import { Button } from "@/components/base/buttons/button";
 
 export default function Page() {
   return <Button>Get started</Button>;
 }`;
 
-const DARK_LAYOUT_CODE = `// app/layout.tsx
+export const DARK_LAYOUT_CODE = `// app/layout.tsx
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "@/styles/globals.css"; // replaces the default "./globals.css" import
@@ -249,7 +249,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }`;
 
-const ACCENT_CODE = `/* BoardUI accent - pink.
+export const ACCENT_CODE = `/* BoardUI accent - pink.
  * Paste anywhere after importing styles/theme.css. */
 :root {
   --color-accent-50:   oklch(97.1% 0.014 343.198);
@@ -265,7 +265,7 @@ const ACCENT_CODE = `/* BoardUI accent - pink.
   --color-accent-950:  oklch(28.4% 0.109 3.907);
 }`;
 
-const THEME_CSS = `/* ---------------------------------------------------------------------------
+export const THEME_CSS = `/* ---------------------------------------------------------------------------
  * BoardUI theme tokens
  *
  * Layered as Tailwind v4 expects:
@@ -1224,7 +1224,7 @@ const THEME_CSS = `/* ----------------------------------------------------------
 }
 `;
 
-const TYPOGRAPHY_CSS = `/* ---------------------------------------------------------------------------
+export const TYPOGRAPHY_CSS = `/* ---------------------------------------------------------------------------
  * BoardUI typography
  *
  * Type ramp from Figma → text styles. Each style registers a Tailwind v4
@@ -1483,7 +1483,7 @@ const TYPOGRAPHY_CSS = `/* -----------------------------------------------------
 }
 `;
 
-const GLOBALS_CSS = `@import "tailwindcss";
+export const GLOBALS_CSS = `@import "tailwindcss";
 @import "./theme.css";
 @import "./typography.css";
 
@@ -2399,7 +2399,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 `;
 
-const CX_TS = `import { extendTailwindMerge } from "tailwind-merge";
+export const CX_TS = `import { extendTailwindMerge } from "tailwind-merge";
 
 /**
  * Text-style classes from styles/typography.css.

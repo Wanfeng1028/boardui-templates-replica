@@ -120,7 +120,7 @@ export function HomeHero({
         <div className="overflow-hidden rounded-3xl border border-border-button-default bg-background-primary-default">
           <div
             role="tablist"
-            aria-label={homeString("Template preview", locale)}
+            aria-label={homeString("Template previews", locale)}
             className="flex gap-1 overflow-x-auto border-b border-separator-border p-2"
           >
             {heroPreviewTabs.map((item, i) => {
