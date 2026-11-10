@@ -142,8 +142,8 @@ export default function SkillPage() {
 
           <PrevNext
             locale="pt-br"
-            prev={{ href: "/mcp", label: "Servidor MCP", sub: "Agentes instalam para você" }}
-            next={{ href: "/rtl", label: "Suporte a RTL" }}
+            prev={{ href: "/mcp", label: "Servidor MCP", sub: "Agentes instalam para você", enLabel: "MCP Server" }}
+            next={{ href: "/rtl", label: "Suporte a RTL", enLabel: "RTL Support" }}
           />
         </div>
       </DocsLayout>

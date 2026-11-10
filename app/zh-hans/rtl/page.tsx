@@ -253,8 +253,8 @@ export default function RtlPage() {
 
           <PrevNext
             locale="zh-hans"
-            prev={{ href: "/skill", label: "智能体技能", sub: "为您的智能体人提供的知识" }}
-            next={{ href: "/components/color", label: "颜色", sub: "语义颜色变量" }}
+            prev={{ href: "/skill", label: "智能体技能", sub: "为您的智能体人提供的知识", enLabel: "Agent Skills" }}
+            next={{ href: "/components/color", label: "颜色", sub: "语义颜色变量", enLabel: "Color" }}
           />
         </div>
       </DocsLayout>

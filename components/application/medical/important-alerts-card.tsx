@@ -2,6 +2,8 @@
 
 import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
 
+import { chromeString, formatAlertDate, weekRangeLabel, type SiteLocale } from "@/components/application/docs/locale-chrome";
+
 import { useState } from "react";
 import {
   RiAsterisk,
@@ -31,7 +33,7 @@ import { cx } from "@/utils/cx";
 
 type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
 
-type Alert = { icon: IconComponent; iconBg: string; title: string; description: string; date: string };
+type Alert = { icon: IconComponent; iconBg: string; title: string; description: string; date: { month: number; day: number } };
 
 const ALERTS: Alert[] = [
   {
@@ -40,42 +42,42 @@ const ALERTS: Alert[] = [
     title: "High Heart rate",
     description:
       "Your heart rate rose above 120 BPM while you seemed to be inactive for 10 minutes starting at 8:59 AM, 12 June.",
-    date: "June, 12",
+    date: { month: 5, day: 12 },
   },
   {
     icon: RiAsterisk,
     iconBg: "bg-amber-400",
     title: "Medical ID",
     description: "Your emergency contact and allergy information was updated in your Medical ID.",
-    date: "June, 9",
+    date: { month: 5, day: 9 },
   },
   {
     icon: RiTestTubeFill,
     iconBg: "bg-emerald-500",
     title: "Lab results ready",
     description: "Your latest blood panel ordered by Dr. Mattheus Clarkson is back — cholesterol and glucose are within the normal range.",
-    date: "June, 9",
+    date: { month: 5, day: 9 },
   },
   {
     icon: RiCapsuleFill,
     iconBg: "bg-blue-400",
     title: "Medication reminder",
     description: "You missed your 9:00 AM dose of Metoprolol. Take it as soon as possible unless your next dose is near.",
-    date: "June, 8",
+    date: { month: 5, day: 8 },
   },
   {
     icon: RiMoonClearFill,
     iconBg: "bg-purple-400",
     title: "Irregular sleep",
     description: "Your bedtime shifted by more than 2 hours on 3 of the last 7 nights, which can affect your sleep score.",
-    date: "June, 6",
+    date: { month: 5, day: 6 },
   },
   {
     icon: RiLungsFill,
     iconBg: "bg-teal-400",
     title: "Low blood oxygen",
     description: "Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.",
-    date: "June, 5",
+    date: { month: 5, day: 5 },
   },
 ];
 
@@ -83,7 +85,7 @@ const ALERTS: Alert[] = [
  *  feed below only lists the most recent ones, not the full history. */
 const ALERTS_THIS_WEEK_COUNT = 12;
 
-export function ImportantAlertsCard({ className }: { className?: string } = {}) {
+export function ImportantAlertsCard({ className, locale = "en" }: { className?: string; locale?: SiteLocale } = {}) {
   const localize = useTemplateCopy();
   const [scrolled, setScrolled] = useState(false);
 
@@ -100,15 +102,15 @@ export function ImportantAlertsCard({ className }: { className?: string } = {}) 
     >
       <div className="flex w-full items-start justify-between gap-2 px-1.5 pt-1.5">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p className="text-body-medium text-text-secondary">Important alerts</p>
+          <p className="text-body-medium text-text-secondary">{chromeString("Important alerts", locale)}</p>
           <div className="flex items-baseline gap-1">
             <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">
               {ALERTS_THIS_WEEK_COUNT}
             </p>
-            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">this week</span>
+            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">{chromeString("this week", locale)}</span>
           </div>
         </div>
-        <WeekRangePill label="29 Jun - 5 Jul" />
+        <WeekRangePill label={weekRangeLabel(locale)} />
       </div>
 
       <div className="relative min-h-0 w-full flex-1">
@@ -125,11 +127,11 @@ export function ImportantAlertsCard({ className }: { className?: string } = {}) 
                 <alert.icon className="size-[18px] text-white" aria-hidden />
               </span>
               <div className="flex flex-col gap-0.5">
-                <p className="text-body-medium whitespace-nowrap text-text-primary">{alert.title}</p>
-                <p className="text-body-2-regular text-text-secondary">{alert.description}</p>
+                <p className="text-body-medium whitespace-nowrap text-text-primary">{chromeString(alert.title, locale)}</p>
+                <p className="text-body-2-regular text-text-secondary">{chromeString(alert.description, locale)}</p>
               </div>
               <span className="absolute top-2.5 end-2.5 rounded-md bg-background-secondary-default px-1.5 py-px text-body-medium whitespace-nowrap text-text-secondary">
-                {alert.date}
+                {formatAlertDate(alert.date.month, alert.date.day, locale)}
               </span>
             </div>
           ))}

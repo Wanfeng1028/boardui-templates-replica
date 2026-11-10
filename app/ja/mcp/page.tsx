@@ -400,8 +400,8 @@ export default function McpPage() {
 
         <PrevNext
           locale="ja"
-          prev={{ href: "/installation", label: "インストール", sub: "フレームワークセットアップガイド" }}
-          next={{ href: "/skill", label: "エージェントスキル", sub: "あなたの代理店のための知識" }}
+          prev={{ href: "/installation", label: "インストール", sub: "フレームワークセットアップガイド", enLabel: "Installation" }}
+          next={{ href: "/skill", label: "エージェントスキル", sub: "あなたの代理店のための知識", enLabel: "Agent Skills" }}
         />
       </div>
     </DocsLayout>

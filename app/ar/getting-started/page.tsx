@@ -60,7 +60,7 @@ npx boardui@latest add button select date-picker
 
 BoardUI يدعم MCP: وصّل وكيلك مرة واحدة وسيتصفح جميع 103 مكوّنات مع أمثلة استخدام حقيقية، وإعداد مشروعك، وكتابة ملفات المصدر. يُفتح Pro في نفس المحادثة بمفتاح الترخيص الخاص بك.
 
-## المجاني والمدفوع
+## المجاني وBoardUI Pro
 
 المجاني — 73 مكوّنًا وكتلة، مرخّصة بترخيص MIT. BoardUI Pro — شراء لمرة واحدة يفتح 30 مكوّنًا وكتلة Pro وجميع 10 قوالب صفحات كاملة، مع تحديثات مدى الحياة.
 
@@ -251,7 +251,7 @@ function Hero() {
           وأكثر من 400 رمز تصميم، مصمّمة في Figma.
         </p>
       </div>
-      <GettingStartedShowcase />
+      <GettingStartedShowcase locale="ar" />
     </div>
   );
 }
@@ -412,7 +412,7 @@ export default function GettingStartedPage() {
           ربط وكيلك
         </ButtonLink>
       </Section>
-<Section id="free-and-pro" title="المجاني والمدفوع">
+<Section id="free-and-pro" title="المجاني وBoardUI Pro">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-5 dark:border-separator-border dark:bg-background-secondary-default">
             <div className="mb-1.5">
@@ -519,7 +519,7 @@ export default function GettingStartedPage() {
       </p>
 
       <PrevNext
-        next={{ href: "/installation", label: "التثبيت", sub: "أدلة إعداد الإطار" }}
+        next={{ href: "/installation", label: "التثبيت", sub: "أدلة إعداد الإطار", enLabel: "Installation" }}
         locale="ar"
       />
     </DocsLayout>

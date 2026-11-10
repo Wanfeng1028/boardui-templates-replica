@@ -164,8 +164,8 @@ export default function SkillPage() {
 
           <PrevNext
             locale="zh-hans"
-            prev={{ href: "/mcp", label: "MCP 服务器", sub: "智能体为您安装" }}
-            next={{ href: "/rtl", label: "RTL 支持" }}
+            prev={{ href: "/mcp", label: "MCP 服务器", sub: "智能体为您安装", enLabel: "MCP Server" }}
+            next={{ href: "/rtl", label: "RTL 支持", enLabel: "RTL Support" }}
           />
         </div>
       </DocsLayout>

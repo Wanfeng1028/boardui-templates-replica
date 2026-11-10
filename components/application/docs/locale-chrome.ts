@@ -686,6 +686,13 @@ export const CHROME_STRINGS: Record<string, Partial<Record<Exclude<SiteLocale, "
   "Docs pages": { "zh-hans": "文档页面", ja: "ドキュメントページ", ar: "صفحات التوثيق", "pt-br": "Páginas de documentos" },
   "Previous": { "zh-hans": "上一步", ja: "前へ", ar: "السابق", "pt-br": "Anterior" },
   "Next": { "zh-hans": "下一步", ja: "次へ", ar: "التالي", "pt-br": "Próximo" },
+  "Next: {0}": { "zh-hans": "下一页：{0}", ja: "次へ：{0}", ar: "التالي: {0}", "pt-br": "Próximo: {0}" },
+  "Previous: {0}": { "zh-hans": "上一篇：{0}", ja: "前へ：{0}", ar: "السابق: {0}", "pt-br": "Anterior: {0}" },
+  "Tour the system": { "zh-hans": "游览系统", ja: "システム見学", ar: "جولة في النظام", "pt-br": "Visitar o sistema" },
+  "Framework setup guides": { "zh-hans": "框架设置指南", ja: "フレームワークセットアップガイド", ar: "أدلة إعداد الإطار", "pt-br": "Guias de configuração de framework" },
+  "Agents install for you": { "zh-hans": "智能体为您安装", ja: "エージェントがインストールを代行", ar: "الوكلاء يقومون بالتثبيت نيابةً عنك", "pt-br": "Agentes instalam para você" },
+  "Knowledge for your agent": { "zh-hans": "为您的智能体人提供的知识", ja: "あなたの代理店のための知識", ar: "معرفة لوكيلك الذكي", "pt-br": "Conhecimento para o seu agente" },
+  "Semantic color tokens": { "zh-hans": "语义颜色变量", ja: "セマンティックカラートークン", ar: "رموز الألوان الدلالية", "pt-br": "Tokens de cores semânticas" },
   "Open navigation": { "zh-hans": "打开导航", ja: "オープンナビゲーション", ar: "فتح التنقل", "pt-br": "Abrir navegação" },
   "Component library": { "zh-hans": "元件库", ja: "コンポーネントライブラリ", ar: "مكتبة المكوّنات", "pt-br": "Biblioteca de componentes" },
   "Docs": { "zh-hans": "文档", ja: "ドキュメント", ar: "التوثيق", "pt-br": "Documentação" },
@@ -712,11 +719,120 @@ export const CHROME_STRINGS: Record<string, Partial<Record<Exclude<SiteLocale, "
   "Follow BoardUI on X": { "zh-hans": "在 X 上关注 BoardUI", ja: "XでBoardUIをフォロー", ar: "تابع BoardUI على X", "pt-br": "Siga o BoardUI no X" },
   "Join the BoardUI Discord": { "zh-hans": "加入 BoardUI Discord 社区", ja: "BoardUIのDiscordに参加", ar: "انضم إلى BoardUI Discord", "pt-br": "Entre no Discord do BoardUI" },
   "BoardUI on GitHub": { "zh-hans": "GitHub 上的 BoardUI", ja: "GitHubのBoardUI", ar: "BoardUI على GitHub", "pt-br": "BoardUI no GitHub" },
+  "29 Jun - 5 Jul": { "pt-br": "29 jun - 5 jul" },
+  "Mertcan Esmergül": { "zh-hans": "梅尔特坎·埃斯梅尔居尔", ja: "メルトカン・エスメルゲル", ar: "ميرتجان إسمرغول" },
+  "Add profile photo": { "zh-hans": "添加个人资料照片", ja: "プロフィール写真を追加", ar: "إضافة صورة شخصية", "pt-br": "Adicionar foto do perfil" },
+  "Date of Birth": { "zh-hans": "出生日期", ja: "生年月日", ar: "تاريخ الميلاد", "pt-br": "Data de nascimento" },
+  "Gender": { "zh-hans": "性别", ja: "性別", ar: "الجنس", "pt-br": "Sexo" },
+  "Male": { "zh-hans": "男", ja: "男性", ar: "ذكر", "pt-br": "Masculino" },
+  "Blood Type": { "zh-hans": "血型", ja: "血液型", ar: "فصيلة الدم", "pt-br": "Tipo de Sangue" },
+  "GP Doctor": { "zh-hans": "全科医生", ja: "かかりつけ医", ar: "الطبيب العام", "pt-br": "Médico GP" },
+  "Mattheus Clarkson": { "zh-hans": "马修斯·克拉克森", ja: "マテウス・クラークソン", ar: "ماتيوس كلاركسون" },
+  "Important alerts": { "zh-hans": "重要提醒", ja: "重要なアラート", ar: "تنبيهات مهمة", "pt-br": "Alertas importantes" },
+  "this week": { "zh-hans": "这周", ja: "今週の予定", ar: "هذا الأسبوع", "pt-br": "esta semana" },
+  "High Heart rate": { "zh-hans": "高心率", ja: "高い心拍数", ar: "ارتفاع معدل ضربات القلب", "pt-br": "Frequência cardíaca elevada" },
+  "Your heart rate rose above 120 BPM while you seemed to be inactive for 10 minutes starting at 8:59 AM, 12 June.": { "zh-hans": "从 6 月 12 日上午 8:59 开始，您似乎有 10 分钟没有活动，但心率升至 120 BPM 以上。", ja: "心拍数が120BPMを上回るので、6月8:59から6月12日にかけて10分は非アクティブに見えます。", ar: "ارتفع معدل ضربات قلبك فوق 120 ضربة في الدقيقة أثناء عدم نشاطك لمدة 10 دقائق، بدءًا من الساعة 8:59 صباحًا في 12 يونيو.", "pt-br": "A sua frequência cardíaca subiu acima de 120 BPM enquanto você parecia estar inativo por 10 minutos a partir das 8:59 AM, 12 de junho." },
+  "Medical ID": { "zh-hans": "医疗ID", ja: "医療ID", ar: "الهوية الطبية", "pt-br": "ID médico" },
+  "Your emergency contact and allergy information was updated in your Medical ID.": { "zh-hans": "您的医疗 ID 中已更新您的紧急联系人和过敏信息。", ja: "医療用IDに緊急連絡先とアレルギー情報が更新されました。", ar: "تم تحديث جهة اتصال الطوارئ ومعلومات الحساسية في هويتك الطبية.", "pt-br": "A sua informação de contato de emergência e alergia foi atualizada no seu ID Médico." },
+  "Lab results ready": { "zh-hans": "实验室结果已准备好", ja: "実験室の結果は準備が整いました", ar: "نتائج التحاليل جاهزة", "pt-br": "Resultados do laboratório prontos" },
+  "Your latest blood panel ordered by Dr. Mattheus Clarkson is back — cholesterol and glucose are within the normal range.": { "zh-hans": "马修斯·克拉克森 (Mattheus Clarkson) 医生为您安排的最新血液检查回来了 — 胆固醇和血糖均在正常范围内。", ja: "マテウス・クラークソン博士が注文した最新の血液パネルが戻ってきます - コレステロールとグルコースは正常な範囲内にあります。", ar: "ظهرت نتائج تحليل الدم الأخير الذي طلبه الدكتور ماتيوس كلاركسون؛ الكوليسترول والجلوكوز ضمن المعدل الطبيعي.", "pt-br": "O seu último exame de sangue encomendado pelo Dr. Mattheus Clarkson está de volta — o colesterol e a glicose estão dentro do intervalo normal." },
+  "Medication reminder": { "zh-hans": "服药提醒", ja: "薬用リマインダー", ar: "تذكير بالدواء", "pt-br": "Aviso de medicação" },
+  "You missed your 9:00 AM dose of Metoprolol. Take it as soon as possible unless your next dose is near.": { "zh-hans": "您错过了上午 9:00 服用的美托洛尔剂量。除非您的下一次服药时间临近，否则请尽快服用。", ja: "あなたはMetoprololのあなたの9:00 AMの線量を逃しました。あなたの次の線量が近くなければできるだけ早くそれを取って下さい。", ar: "فاتتك جرعة الميتوبرولول الساعة 9:00 صباحًا. تناولها في أقرب وقت ما لم يقترب موعد الجرعة التالية.", "pt-br": "Perdeu a dose de Metoprolol às 9h. Tome-a o mais depressa possível, a menos que a próxima dose esteja próxima." },
+  "Irregular sleep": { "zh-hans": "睡眠不规律", ja: "不規則な眠り", ar: "نوم غير منتظم", "pt-br": "Dormência irregular" },
+  "Your bedtime shifted by more than 2 hours on 3 of the last 7 nights, which can affect your sleep score.": { "zh-hans": "过去 7 晚中有 3 晚您的就寝时间变化超过 2 小时，这可能会影响您的睡眠得分。", ja: "あなたの就寝時間は、あなたの睡眠スコアに影響を与えることができる最後の7夜3で2時間以上シフトしました。", ar: "تغير وقت نومك بأكثر من ساعتين في 3 ليالٍ من آخر 7 ليالٍ، مما قد يؤثر على درجة نومك.", "pt-br": "Sua hora de dormir mudou mais de 2 horas em 3 das últimas 7 noites, o que pode afetar sua pontuação de sono." },
+  "Low blood oxygen": { "zh-hans": "低血氧", ja: "低い血酸素", ar: "انخفاض الأكسجين في الدم", "pt-br": "Oxigênio de baixo sangue" },
+  "Your blood oxygen dipped to 93% for a short period during sleep on the night of 4 June.": { "zh-hans": "6 月 4 日晚上，您在睡眠期间的血氧含量曾短暂下降至 93%。", ja: "6月4日の夜に眠りに短い期間で93%に浸るあなたの血の酸素。", ar: "انخفض مستوى الأكسجين في دمك إلى 93٪ لفترة قصيرة أثناء النوم ليلة 4 يونيو.", "pt-br": "O oxigênio do seu sangue mergulhou para 93% durante um curto período durante o sono na noite de 4 de Junho." },
+  "Steps": { "zh-hans": "步数", ja: "歩数", ar: "الخطوات", "pt-br": "Passos" },
+  "total steps": { "zh-hans": "总步数", ja: "総ステップ", ar: "إجمالي الخطوات", "pt-br": "passos totais" },
+  "Monday": { "zh-hans": "星期一", ja: "月曜日", ar: "الاثنين", "pt-br": "Segunda-feira" },
+  "Tuesday": { "zh-hans": "星期二", ja: "火曜日", ar: "الثلاثاء", "pt-br": "Terça-feira" },
+  "Wednesday": { "zh-hans": "星期三", ja: "水曜日", ar: "الأربعاء", "pt-br": "Quarta-feira" },
+  "Thursday": { "zh-hans": "星期四", ja: "木曜日", ar: "الخميس", "pt-br": "Quinta-feira" },
+  "Friday": { "zh-hans": "周五", ja: "金曜日", ar: "الجمعة", "pt-br": "Sexta-feira" },
+  "Saturday": { "zh-hans": "星期六", ja: "土曜日", ar: "السبت", "pt-br": "Sábado" },
+  "Sunday": { "zh-hans": "周日", ja: "日曜日", ar: "الأحد", "pt-br": "Domingo" },
+  "Mon": { "zh-hans": "周一", ja: "月", ar: "الاثنين", "pt-br": "Seg" },
+  "Tue": { "zh-hans": "周二", ja: "火", ar: "الثلاثاء", "pt-br": "Ter" },
+  "Wed": { "zh-hans": "周三", ja: "水", ar: "الأربعاء", "pt-br": "Qua" },
+  "Thu": { "zh-hans": "周四", ja: "木", ar: "الخميس", "pt-br": "Qui" },
+  "Fri": { "zh-hans": "周五", ja: "金", ar: "الجمعة", "pt-br": "Sex" },
+  "Sat": { "zh-hans": "周六", ja: "土", ar: "السبت", "pt-br": "Sáb" },
+  "Sun": { "zh-hans": "周日", ja: "日", ar: "الأحد", "pt-br": "Dom" },
+  "Sleep score": { "zh-hans": "睡眠评分", ja: "睡眠スコア", ar: "درجة النوم", "pt-br": "Pontuação de sono" },
+  "Excellent": { "zh-hans": "优秀", ja: "とても良い", ar: "ممتاز", "pt-br": "Excelente." },
+  "Duration": { "zh-hans": "持续时间", ja: "時間", ar: "المدة", "pt-br": "Duração" },
+  "Bedtime": { "zh-hans": "就寝时间", ja: "就寝時間", ar: "وقت النوم", "pt-br": "Hora de dormir" },
+  "Interruptions": { "zh-hans": "打扰", ja: "中断", ar: "الانقطاعات", "pt-br": "Interrupções" },
+  "20m earlier": { "zh-hans": "提前20m", ja: "20分早め", ar: "أبكر بـ20 دقيقة", "pt-br": "20m mais cedo" },
+  "5m wake up": { "zh-hans": "5m醒来", ja: "5分の覚醒", ar: "5 دقائق استيقاظ", "pt-br": "5m acordar" },
+  "Most active days": { "zh-hans": "最活跃的日子", ja: "活動量の多い日", ar: "الأيام الأكثر نشاطًا", "pt-br": "Dias mais ativos" },
+  "Activity": { "zh-hans": "活动", ja: "活動内容", ar: "النشاط", "pt-br": "Atividade" },
+  "Move": { "zh-hans": "移动", ja: "ふるまい", ar: "الحركة", "pt-br": "Mover" },
+  "Exercise": { "zh-hans": "锻炼", ja: "トレーニング", ar: "التمرين", "pt-br": "Exercício" },
+  "Running": { "zh-hans": "跑步", ja: "ランニング", ar: "الجري", "pt-br": "Em execução" },
+  "BoardUI widgets showcase": { "zh-hans": "BoardUI 小部件展示", ja: "BoardUIウィジェットショーケース", ar: "عرض أدوات BoardUI", "pt-br": "Galeria de widgets BoardUI" },
+  "January": { "zh-hans": "1月", ja: "1月", ar: "يناير", "pt-br": "Janeiro" },
+  "February": { "zh-hans": "2月", ja: "2月", ar: "فبراير", "pt-br": "Fevereiro" },
+  "March": { "zh-hans": "3月", ja: "3月", ar: "مارس", "pt-br": "Março" },
+  "April": { "zh-hans": "4月", ja: "4月", ar: "أبريل", "pt-br": "Abril" },
+  "May": { "zh-hans": "5月", ja: "5月", ar: "مايو", "pt-br": "Maio" },
+  "June": { "zh-hans": "6月", ja: "6月", ar: "يونيو", "pt-br": "Junho" },
+  "July": { "zh-hans": "7月", ja: "7月", ar: "يوليو", "pt-br": "Julho" },
+  "August": { "zh-hans": "8月", ja: "8月", ar: "أغسطس", "pt-br": "Agosto" },
+  "September": { "zh-hans": "9月", ja: "9月", ar: "سبتمبر", "pt-br": "Setembro" },
+  "October": { "zh-hans": "10月", ja: "10月", ar: "أكتوبر", "pt-br": "Outubro" },
+  "November": { "zh-hans": "11月", ja: "11月", ar: "نوفمبر", "pt-br": "Novembro" },
+  "December": { "zh-hans": "12月", ja: "12月", ar: "ديسمبر", "pt-br": "Dezembro" },
+  "Jan": { "zh-hans": "1月", ja: "1月", ar: "يناير" },
+  "Feb": { "zh-hans": "2月", ja: "2月", ar: "فبراير", "pt-br": "Fev" },
+  "Mar": { "zh-hans": "3月", ja: "3月", ar: "مارس" },
+  "Apr": { "zh-hans": "4月", ja: "4月", ar: "أبريل", "pt-br": "Abr" },
+  "Jun": { "zh-hans": "6月", ja: "6月", ar: "يونيو" },
+  "Jul": { "zh-hans": "7月", ja: "7月", ar: "يوليو" },
+  "Aug": { "zh-hans": "8月", ja: "8月", ar: "أغسطس", "pt-br": "Ago" },
+  "Sep": { "zh-hans": "9月", ja: "9月", ar: "سبتمبر", "pt-br": "Set" },
+  "Oct": { "zh-hans": "10月", ja: "10月", ar: "أكتوبر", "pt-br": "Out" },
+  "Nov": { "zh-hans": "11月", ja: "11月", ar: "نوفمبر" },
+  "Dec": { "zh-hans": "12月", ja: "12月", ar: "ديسمبر", "pt-br": "Dez" },
+  "Move, exercise, and running activity progress": { "zh-hans": "移动、锻炼和跑步活动进度", ja: "移動、運動、および実行中の活動の進行", ar: "تقدم نشاط الحركة والتمرين والجري", "pt-br": "Progresso da atividade de movimento, exercício e execução" },
 };
 
 export function chromeString(key: string, locale: SiteLocale): string {
   if (locale === "en") return key;
   return CHROME_STRINGS[key]?.[locale] ?? key;
+}
+
+/** Intl locale tag for a site locale. Arabic must use the Gregorian calendar with Latin digits ("ar-u-ca-gregory-nu-latn"): the bare "ar" tag defaults to the Islamic calendar. */
+export function intlLocaleTag(locale: SiteLocale): string {
+  switch (locale) {
+    case "zh-hans": return "zh-CN";
+    case "ja": return "ja-JP";
+    case "ar": return "ar-u-ca-gregory-nu-latn";
+    case "pt-br": return "pt-BR";
+    default: return "en-US";
+  }
+}
+
+/** Birth date "28 July, 1997": English keeps the literal; other locales format 28 Jul 1997 via Intl (verified against the original's renders: zh "1997年7月28日", ja "1997年7月28日", ar "28 يوليو 1997", pt-br "28 de jul. de 1997"). */
+export function formatBirthDate(locale: SiteLocale): string {
+  if (locale === "en") return "28 July, 1997";
+  return new Intl.DateTimeFormat(intlLocaleTag(locale), { day: "numeric", month: "short", year: "numeric" }).format(new Date(1997, 6, 28));
+}
+
+const MONTH_NAMES_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** Alert date (month index, day): English keeps the original's "June, 12" form; other locales format via Intl {day, month} (zh "6月12日", ja "6月12日", ar "12 يونيو", pt-br "12 de jun."). */
+export function formatAlertDate(month: number, day: number, locale: SiteLocale): string {
+  if (locale === "en") return `${MONTH_NAMES_EN[month]}, ${day}`;
+  return new Intl.DateTimeFormat(intlLocaleTag(locale), { day: "numeric", month: "short" }).format(new Date(2026, month, day));
+}
+
+/** Week pill "29 Jun - 5 Jul": pt-br comes from the original's dict ("29 jun - 5 jul"); zh/ja/ar are numeric M/D or D/M via Intl (zh "6/29 - 7/5", ja "6/29 - 7/5", ar "29/6 - 5/7"); en is the literal. */
+export function weekRangeLabel(locale: SiteLocale): string {
+  if (locale === "en") return "29 Jun - 5 Jul";
+  if (locale === "pt-br") return chromeString("29 Jun - 5 Jul", locale);
+  const fmt = new Intl.DateTimeFormat(intlLocaleTag(locale), { month: "numeric", day: "numeric" });
+  return `${fmt.format(new Date(2026, 5, 29))} - ${fmt.format(new Date(2026, 6, 5))}`;
 }
 
 /** Unlocalized paths that already have a translated version. The locale chrome links to the locale route only for these; everything else keeps its English href so navigation never 404s. Extend as follow-up rounds add translated pages. */

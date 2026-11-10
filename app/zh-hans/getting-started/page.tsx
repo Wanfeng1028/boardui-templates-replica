@@ -60,7 +60,7 @@ npx boardui@latest add button select date-picker
 
 BoardUI 支持 MCP：连接一次，您的智能体即可浏览全部 103 个组件及其真实用法示例、配置项目并写入源文件。使用许可证密钥，还可在同一对话中解锁 Pro。
 
-## 免费版与 Pro
+## 免费版与 BoardUI Pro
 
 免费 — 73 个组件与组合组件，采用 MIT 许可证。BoardUI Pro — 一次性购买即可解锁 30 个 Pro 组件与组合组件以及全部 10 个完整页面模板，并获得终身更新。
 
@@ -250,7 +250,7 @@ function Hero() {
           BoardUI 是一个 React 设计系统 103 独特的组件，包括 19 数据图表，加上 10 专业模板和 400 多个设计变量，在 Figma 中设计。
         </p>
       </div>
-      <GettingStartedShowcase />
+      <GettingStartedShowcase locale="zh-hans" />
     </div>
   );
 }
@@ -408,7 +408,7 @@ export default function GettingStartedPage() {
           连接您的智能体
         </ButtonLink>
       </Section>
-<Section id="free-and-pro" title="免费版与 Pro">
+<Section id="free-and-pro" title="免费版与 BoardUI Pro">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-5 dark:border-separator-border dark:bg-background-secondary-default">
             <div className="mb-1.5">
@@ -507,7 +507,7 @@ export default function GettingStartedPage() {
         我们会在社区公开回复，通常当天就能得到答复。
       </p>
 
-      <PrevNext next={{ href: "/installation", label: "安装", sub: "框架设置指南" }} locale="zh-hans" />
+      <PrevNext next={{ href: "/installation", label: "安装", sub: "框架设置指南", enLabel: "Installation" }} locale="zh-hans" />
     </DocsLayout>
   </LocaleHtml>
   );

@@ -270,8 +270,8 @@ components/foundations/direction/direction.tsx
 
         <PrevNext
           locale="ar"
-          prev={{ href: "/skill", label: "مهارات الوكيل", sub: "معرفة لوكيلك الذكي" }}
-          next={{ href: "/components/color", label: "اللون", sub: "رموز الألوان الدلالية" }}
+          prev={{ href: "/skill", label: "مهارات الوكيل", sub: "معرفة لوكيلك الذكي", enLabel: "Agent Skills" }}
+          next={{ href: "/components/color", label: "اللون", sub: "رموز الألوان الدلالية", enLabel: "Color" }}
         />
       </div>
     </DocsLayout>

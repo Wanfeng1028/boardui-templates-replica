@@ -8,6 +8,8 @@ export type PrevNextLink = {
   href: string;
   label: string;
   sub?: string;
+  /** English target name for the aria-label: the original keeps the target untranslated there ("Next: Installation"). */
+  enLabel?: string;
 };
 
 const LINK_CLASS =
@@ -30,11 +32,11 @@ export function PrevNext({
   if (!prev && !next) return null;
   return (
     <div className="mt-14 flex flex-col gap-6">
-      <nav aria-label="Docs pages" className="flex items-center justify-between gap-2">
+      <nav aria-label={chromeString("Docs pages", locale)} className="flex items-center justify-between gap-2">
         {prev ? (
           <Link
             href={prev.href}
-            aria-label={`${chromeString("Previous", locale)}: ${prev.label}`}
+            aria-label={chromeString("Previous: {0}", locale).replace("{0}", prev.enLabel ?? prev.label)}
             className={LINK_CLASS}
           >
             <span className="flex items-center gap-1.5 text-body-medium text-text-primary">
@@ -51,7 +53,7 @@ export function PrevNext({
         {next ? (
           <Link
             href={next.href}
-            aria-label={`${chromeString("Next", locale)}: ${next.label}`}
+            aria-label={chromeString("Next: {0}", locale).replace("{0}", next.enLabel ?? next.label)}
             className={cx(LINK_CLASS, "items-end")}
           >
             <span className="flex flex-row-reverse items-center gap-1.5 text-body-medium text-text-primary">

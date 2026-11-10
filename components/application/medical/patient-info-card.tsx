@@ -2,6 +2,8 @@
 
 import { useTemplateCopy } from "@/components/foundations/template-copy/template-copy";
 
+import { chromeString, formatBirthDate, type SiteLocale } from "@/components/application/docs/locale-chrome";
+
 import { RiAddLine, RiAsterisk, RiDropLine, RiMenLine, RiStethoscopeLine } from "@remixicon/react";
 import type { ComponentType } from "react";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -22,23 +24,28 @@ type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean
 
 type Detail = { icon: IconComponent; label: string; value: string };
 
-const DETAILS: Detail[] = [
-  { icon: RiAsterisk, label: "Date of Birth", value: "28 July, 1997" },
-  { icon: RiMenLine, label: "Gender", value: "Male" },
-  { icon: RiDropLine, label: "Blood Type", value: "A rh+" },
-  { icon: RiStethoscopeLine, label: "GP Doctor", value: "Mattheus Clarkson" },
-];
+function details(locale: SiteLocale): Detail[] {
+  return [
+    { icon: RiAsterisk, label: chromeString("Date of Birth", locale), value: formatBirthDate(locale) },
+    { icon: RiMenLine, label: chromeString("Gender", locale), value: chromeString("Male", locale) },
+    { icon: RiDropLine, label: chromeString("Blood Type", locale), value: "A rh+" },
+    { icon: RiStethoscopeLine, label: chromeString("GP Doctor", locale), value: chromeString("Mattheus Clarkson", locale) },
+  ];
+}
 
 export function PatientInfoCard({
   className,
   onAddPhoto,
   photoSrc,
+  locale = "en",
 }: {
   className?: string;
   /** Called when the "Add profile photo" button is pressed. */
   onAddPhoto?: () => void;
   /** Photo URL shown in the avatar when set (falls back to initials). */
   photoSrc?: string;
+  /** Locale for the card copy; defaults to English (the medical template). */
+  locale?: SiteLocale;
 } = {}) {
   const localize = useTemplateCopy();
   return localize((
@@ -55,14 +62,14 @@ export function PatientInfoCard({
           size="xs"
           iconOnly
           leadingIcon={RiAddLine}
-          aria-label="Add profile photo"
+          aria-label={chromeString("Add profile photo", locale)}
           onClick={onAddPhoto}
           className="absolute -top-0.5 -end-0.5 rounded-full"
         />
       </div>
-      <p className="text-title-2-medium whitespace-nowrap text-text-primary">Mertcan Esmergül</p>
+      <p className="text-title-2-medium whitespace-nowrap text-text-primary">{chromeString("Mertcan Esmergül", locale)}</p>
       <div className="flex w-full flex-1 flex-col gap-2.5">
-        {DETAILS.map((detail) => (
+        {details(locale).map((detail) => (
           <div
             key={detail.label}
             className="flex w-full items-center justify-between rounded-2lg bg-background-inner-default px-2.5 py-2"

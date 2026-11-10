@@ -13,22 +13,37 @@
  * the gap is reported, not papered over with a different target.
  */
 
-export type LibraryNavItem = { href: string; label: string; isNew?: boolean; isPro?: boolean; sub?: string };
+import type { ComponentType } from "react";
+import {
+  RiArrowLeftRightLine,
+  RiArtboardLine,
+  RiBookAiLine,
+  RiFontSize,
+  RiInstallLine,
+  RiLayoutLine,
+  RiPaletteLine,
+  RiPlugLine,
+  RiRocketLine,
+} from "@remixicon/react";
+
+type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+
+export type LibraryNavItem = { href: string; label: string; isNew?: boolean; isPro?: boolean; sub?: string; icon?: IconComponent };
 export type LibraryNavSection = { title: string; items: LibraryNavItem[] };
 
 export const LIBRARY_NAV: LibraryNavSection[] = [
   { title: "Getting started", items: [
-    { href: "/getting-started", label: "Let's begin" },
-    { href: "/installation", label: "Installation" },
-    { href: "/mcp", label: "MCP Server" },
-    { href: "/skill", label: "Agent Skills", isNew: true },
-    { href: "/rtl", label: "RTL Support", isNew: true },
+    { href: "/getting-started", label: "Let's begin", icon: RiRocketLine },
+    { href: "/installation", label: "Installation", icon: RiInstallLine },
+    { href: "/mcp", label: "MCP Server", icon: RiPlugLine },
+    { href: "/skill", label: "Agent Skills", isNew: true, icon: RiBookAiLine },
+    { href: "/rtl", label: "RTL Support", isNew: true, icon: RiArrowLeftRightLine },
   ] },
   { title: "Foundations", items: [
-    { href: "/components/color", label: "Color" },
-    { href: "/components/typography", label: "Typography" },
-    { href: "/components", label: "Components" },
-    { href: "/components#templates", label: "Templates" },
+    { href: "/components/color", label: "Color", icon: RiPaletteLine },
+    { href: "/components/typography", label: "Typography", icon: RiFontSize },
+    { href: "/components", label: "Components", icon: RiArtboardLine },
+    { href: "/components#templates", label: "Templates", icon: RiLayoutLine },
   ] },
   { title: "Base", items: [
     { href: "/components/accordion", label: "Accordion", isNew: true },

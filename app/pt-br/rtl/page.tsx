@@ -279,8 +279,8 @@ export default function RtlPage() {
 
           <PrevNext
             locale="pt-br"
-            prev={{ href: "/skill", label: "Skills para agentes", sub: "Conhecimento para o seu agente" }}
-            next={{ href: "/components/color", label: "Cores", sub: "Tokens de cores semânticas" }}
+            prev={{ href: "/skill", label: "Skills para agentes", sub: "Conhecimento para o seu agente", enLabel: "Agent Skills" }}
+            next={{ href: "/components/color", label: "Cores", sub: "Tokens de cores semânticas", enLabel: "Color" }}
           />
         </div>
       </DocsLayout>

@@ -132,9 +132,9 @@ function LibrarySidebarContent({ onNavigate, locale = "en" }: { onNavigate?: () 
         <img src="/brand/boardui_logo.png" alt="BoardUI" width={24} height={24} className="shrink-0" />
         <span className="text-title-3-semibold text-text-primary">BoardUI</span>
       </Link>
-      <QuickSearch variant="sidebar" />
+      <QuickSearch variant="sidebar" locale={locale} />
       <nav
-        aria-label="Component library"
+        aria-label={chromeString("Component library", locale)}
         className="-mr-1 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pe-1 [scrollbar-width:thin]"
       >
         <p className="sr-only" aria-live="polite">
@@ -180,6 +180,7 @@ function LibrarySidebarContent({ onNavigate, locale = "en" }: { onNavigate?: () 
                       )}
                     >
                       <TreeElbow />
+                      {item.icon ? <item.icon className="size-4 shrink-0 text-foreground-icon-secondary" aria-hidden /> : null}
                       <span className="min-w-0 truncate">{item.label}</span>
                       {item.isNew ? <Badge>{chromeString("New", locale)}</Badge> : null}
 
@@ -267,7 +268,7 @@ function LibraryBreadcrumb({ title, locale = "en" }: { title: string; locale?: S
   const isIndex = path === "/components";
   // The original links the parent crumb to /components in both cases —
   // "Docs" on /installation etc. is its own quirk, kept verbatim.
-  const parentLabel = /^\/(installation|mcp|skill|rtl|getting-started)/.test(path) ? "Docs" : "Components";
+  const parentLabel = /^\/(installation|mcp|skill|rtl|getting-started)/.test(stripLocalePrefix(path)) ? "Docs" : "Components";
   const localizedParentLabel = chromeString(parentLabel, locale);
   const localizedParentHref = localizedHrefFor("/components", locale);
   return (
@@ -394,8 +395,12 @@ function LibraryLayout({
     : (() => {
         const { prev: p, next: n } = prevNextFor(stripLocalePrefix(pathname));
         return {
-          prev: p ? localizeNavItem(p, locale) : undefined,
-          next: n ? localizeNavItem(n, locale) : undefined,
+          prev: p
+            ? { ...localizeNavItem(p, locale), enLabel: p.label, sub: p.sub ? chromeString(p.sub, locale) : undefined }
+            : undefined,
+          next: n
+            ? { ...localizeNavItem(n, locale), enLabel: n.label, sub: n.sub ? chromeString(n.sub, locale) : undefined }
+            : undefined,
         };
       })();
 
@@ -421,7 +426,7 @@ function LibraryLayout({
                       aria-label="Open navigation"
                       className="lg:hidden"
                     />
-                    <Drawer placement="start" size="sm" aria-label="Component library">
+                    <Drawer placement="start" size="sm" aria-label={chromeString("Component library", locale)}>
                       {({ close }) => (
                         <DrawerBody>
                           <LibrarySidebarContent onNavigate={close} locale={locale} />

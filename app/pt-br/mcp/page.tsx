@@ -427,8 +427,8 @@ export default function McpPage() {
         </Section>
 
         <PrevNext
-          prev={{ href: "/installation", label: "Instalação", sub: "Guias de configuração de framework" }}
-          next={{ href: "/skill", label: "Skills para agentes", sub: "Conhecimento para o seu agente" }}
+          prev={{ href: "/installation", label: "Instalação", sub: "Guias de configuração de framework", enLabel: "Installation" }}
+          next={{ href: "/skill", label: "Skills para agentes", sub: "Conhecimento para o seu agente", enLabel: "Agent Skills" }}
           locale="pt-br"
         />
       </div>

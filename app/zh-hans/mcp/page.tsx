@@ -411,8 +411,8 @@ export default function McpPage() {
 
         <PrevNext
           locale="zh-hans"
-          prev={{ href: "/installation", label: "安装", sub: "框架设置指南" }}
-          next={{ href: "/skill", label: "智能体技能", sub: "为您的智能体人提供的知识" }}
+          prev={{ href: "/installation", label: "安装", sub: "框架设置指南", enLabel: "Installation" }}
+          next={{ href: "/skill", label: "智能体技能", sub: "为您的智能体人提供的知识", enLabel: "Agent Skills" }}
         />
       </div>
     </DocsLayout>

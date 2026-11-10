@@ -266,8 +266,8 @@ export default function RtlPage() {
           </Section>
 
           <PrevNext
-            prev={{ href: "/skill", label: "エージェントスキル", sub: "あなたの代理店のための知識" }}
-            next={{ href: "/components/color", label: "カラー", sub: "セマンティックカラートークン" }}
+            prev={{ href: "/skill", label: "エージェントスキル", sub: "あなたの代理店のための知識", enLabel: "Agent Skills" }}
+            next={{ href: "/components/color", label: "カラー", sub: "セマンティックカラートークン", enLabel: "Color" }}
             locale="ja"
           />
         </div>

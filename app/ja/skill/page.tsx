@@ -159,8 +159,8 @@ export default function SkillPage() {
         </Section>
 
         <PrevNext
-          prev={{ href: "/mcp", label: "MCPサーバー", sub: "エージェントがインストールを代行" }}
-          next={{ href: "/rtl", label: "RTLサポート" }}
+          prev={{ href: "/mcp", label: "MCPサーバー", sub: "エージェントがインストールを代行", enLabel: "MCP Server" }}
+          next={{ href: "/rtl", label: "RTLサポート", enLabel: "RTL Support" }}
           locale="ja"
         />
       </div>

@@ -59,7 +59,7 @@ npx boardui@latest add button select date-picker
 
 BoardUI fala MCP: conecte seu agente uma vez para ele explorar todos os 103 componentes com exemplos reais de uso, configurar seu projeto e instalar os arquivos de código-fonte. Ative o Pro no mesmo chat com sua chave de licença.
 
-## Gratuito e Pro
+## Gratuito e BoardUI Pro
 
 Grátis — 73 componentes e blocos, licença MIT. BoardUI Pro — uma compra única libera 30 componentes e blocos Pro e todos os 10 templates de página completa, com atualizações vitalícias.
 
@@ -249,7 +249,7 @@ function Hero() {
           BoardUI é um sistema de design React com 103 componentes únicos, incluindo 19 gráficos de dados, além de 10 templates Pro e mais de 400 tokens de design, criado no Figma.
         </p>
       </div>
-      <GettingStartedShowcase />
+      <GettingStartedShowcase locale="pt-br" />
     </div>
   );
 }
@@ -412,7 +412,7 @@ export default function GettingStartedPage() {
           Conecte seu agente
         </ButtonLink>
       </Section>
-<Section id="free-and-pro" title="Gratuito e Pro">
+<Section id="free-and-pro" title="Gratuito e BoardUI Pro">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-5 dark:border-separator-border dark:bg-background-secondary-default">
             <div className="mb-1.5">
@@ -518,7 +518,7 @@ export default function GettingStartedPage() {
         e nós respondemos em aberto, geralmente no mesmo dia.
       </p>
 
-      <PrevNext next={{ href: "/installation", label: "Instalação", sub: "Guias de configuração de framework" }} locale="pt-br" />
+      <PrevNext next={{ href: "/installation", label: "Instalação", sub: "Guias de configuração de framework", enLabel: "Installation" }} locale="pt-br" />
     </DocsLayout>
   </LocaleHtml>
   );

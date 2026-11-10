@@ -416,8 +416,8 @@ export default function McpPage() {
         </Section>
 
         <PrevNext
-          prev={{ href: "/installation", label: "التثبيت", sub: "أدلة إعداد الإطار" }}
-          next={{ href: "/skill", label: "مهارات الوكيل", sub: "معرفة لوكيلك الذكي" }}
+          prev={{ href: "/installation", label: "التثبيت", sub: "أدلة إعداد الإطار", enLabel: "Installation" }}
+          next={{ href: "/skill", label: "مهارات الوكيل", sub: "معرفة لوكيلك الذكي", enLabel: "Agent Skills" }}
           locale="ar"
         />
       </div>

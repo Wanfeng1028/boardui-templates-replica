@@ -60,7 +60,7 @@ npx boardui@latest add button select date-picker
 
 BoardUIはMCPを話します：エージェントを一度接続すれば、103個すべてのコンポーネントを実際の使用例とともに閲覧でき、プロジェクトをセットアップしてソースファイルを書き込みます。同じチャット内で、ライセンスキーによるProの有効化もできます。
 
-## 無料とプロ
+## 無料版とBoardUI Pro
 
 無料 — 73個のコンポーネントとブロック、MITライセンス。BoardUI Pro — 買い切りで30個のProコンポーネントとブロック、および全10個のフルページテンプレートがアンロックされ、生涯アップデート付き。
 
@@ -251,7 +251,7 @@ function Hero() {
           プロテンプレートと400以上のデザイントークン、Figmaでデザインされています。
         </p>
       </div>
-      <GettingStartedShowcase />
+      <GettingStartedShowcase locale="ja" />
     </div>
   );
 }
@@ -408,7 +408,7 @@ export default function GettingStartedPage() {
           エージェントを接続する
         </ButtonLink>
       </Section>
-<Section id="free-and-pro" title="無料とプロ">
+<Section id="free-and-pro" title="無料版とBoardUI Pro">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-5 dark:border-separator-border dark:bg-background-secondary-default">
             <div className="mb-1.5">
@@ -509,7 +509,7 @@ export default function GettingStartedPage() {
 
       <PrevNext
         locale="ja"
-        next={{ href: "/installation", label: "インストール", sub: "フレームワークセットアップガイド" }}
+        next={{ href: "/installation", label: "インストール", sub: "フレームワークセットアップガイド", enLabel: "Installation" }}
       />
     </DocsLayout>
   </LocaleHtml>

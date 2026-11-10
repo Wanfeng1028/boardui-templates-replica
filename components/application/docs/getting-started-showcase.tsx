@@ -8,6 +8,8 @@ import { PatientInfoCard } from "@/components/application/medical/patient-info-c
 import { WeekRangePill } from "@/components/application/medical/week-range-pill";
 import { cx } from "@/utils/cx";
 
+import { chromeString, intlLocaleTag, weekRangeLabel, type SiteLocale } from "@/components/application/docs/locale-chrome";
+
 /**
  * The getting-started hero's widget marquee, as on boardui.com/getting-started:
  * one row of six Medical Profile widgets (patient info, steps, sleep score,
@@ -142,6 +144,25 @@ function stepWeekLabel(weekIdx: number) {
     : `${start.getDate()} ${sm} - ${end.getDate()} ${em}`;
 }
 
+/** Localized week pill for the steps card: pt-br week 0 comes from the original's dict; other pt-br weeks use localized month shorts in the same template; zh/ja/ar are numeric M/D or D/M via Intl; en keeps stepWeekLabel. */
+function formatStepWeekLabel(weekIdx: number, locale: SiteLocale): string {
+  if (locale === "en") return stepWeekLabel(weekIdx);
+  const start = new Date(2026, 5, 29);
+  start.setDate(start.getDate() + 7 * weekIdx);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  if (locale === "pt-br" && weekIdx === 0) return chromeString("29 Jun - 5 Jul", locale);
+  if (locale === "pt-br") {
+    const sm = chromeString(MONTH_SHORT[start.getMonth()], locale);
+    const em = chromeString(MONTH_SHORT[end.getMonth()], locale);
+    return start.getMonth() === end.getMonth()
+      ? `${start.getDate()} - ${end.getDate()} ${em}`
+      : `${start.getDate()} ${sm} - ${end.getDate()} ${em}`;
+  }
+  const fmt = new Intl.DateTimeFormat(intlLocaleTag(locale), { month: "numeric", day: "numeric" });
+  return `${fmt.format(start)} - ${fmt.format(end)}`;
+}
+
 /** 28px three-ring day cell, as in the medical template's year calendar. */
 function MiniRing({ values, size = 28 }: { values: [number, number, number]; size?: number }) {
   const rings = [
@@ -172,13 +193,13 @@ function MiniRing({ values, size = 28 }: { values: [number, number, number]; siz
 /** Compact steps card: title + week total on the left, week pill on the right, bars below.
  * A port of the original's StepsCard: hash-generated weeks, teal chart-1 bars
  * with a track background + hover cursor outline, hover shows that day's name/value. */
-function ShowcaseStepsCard() {
+function ShowcaseStepsCard({ locale }: { locale: SiteLocale }) {
   const [weekIdx, setWeekIdx] = useState(0);
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const week = stepWeek(weekIdx);
   const hovered = hoveredBar !== null && hoveredBar < week.days.length;
   const headline = useCountUp(hovered ? week.days[hoveredBar as number].value : week.total);
-  const title = hovered ? STEP_DAY_FULL[week.days[hoveredBar as number].label] : "Steps";
+  const title = hovered ? chromeString(STEP_DAY_FULL[week.days[hoveredBar as number].label], locale) : chromeString("Steps", locale);
   return (
     <section className="flex h-full w-full min-w-0 flex-col gap-4 rounded-[20px] bg-background-secondary-default p-2.5">
       <div className="flex w-full items-start justify-between gap-2 px-1.5 pt-1.5">
@@ -188,11 +209,11 @@ function ShowcaseStepsCard() {
             <p key={String(hoveredBar)} className="animate-number-fade text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">
               {headline.toLocaleString("en-US")}
             </p>
-            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">{hovered ? "steps" : "total steps"}</span>
+            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">{hovered ? "steps" : chromeString("total steps", locale)}</span>
           </div>
         </div>
         <WeekRangePill
-          label={stepWeekLabel(weekIdx)}
+          label={formatStepWeekLabel(weekIdx, locale)}
           onPrev={() => setWeekIdx((i) => i - 1)}
           onNext={() => setWeekIdx((i) => i + 1)}
           className="min-w-[151px]"
@@ -239,7 +260,7 @@ function ShowcaseStepsCard() {
                 <Cell key={d.label} fill={i === hoveredBar ? "var(--color-chart-1-active)" : "var(--color-chart-1)"} />
               ))}
             </Bar>
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} height={26} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} height={26} tick={{ fontSize: 12, fill: "var(--color-text-secondary)" }} tickFormatter={(value: string) => chromeString(value, locale)} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -251,7 +272,7 @@ function ShowcaseStepsCard() {
  * Recharts donut + sub-scores. A port of the original's SleepScoreCard: the ring
  * is a Pie donut (inner 37 / outer 52, segments chart-5/3/6 + transparent
  * remainder, paddingAngle 4, cornerRadius 99); hovering a segment shows its score. */
-function ShowcaseSleepCard() {
+function ShowcaseSleepCard({ locale }: { locale: SiteLocale }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const total = SLEEP_ROWS.reduce((s, r) => s + r.score, 0);
   const max = SLEEP_ROWS.reduce((s, r) => s + r.max, 0);
@@ -264,12 +285,12 @@ function ShowcaseSleepCard() {
     <section className="flex h-full w-full min-w-0 flex-col gap-4 rounded-[20px] bg-background-secondary-default p-2.5">
       <div className="flex w-full items-start justify-between gap-2 px-1.5 pt-1.5">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p className="text-body-medium text-text-secondary">Sleep score</p>
+          <p className="text-body-medium text-text-secondary">{chromeString("Sleep score", locale)}</p>
           <p className="text-title-1-medium whitespace-nowrap text-text-primary">
-            {total >= 90 ? "Excellent" : total >= 75 ? "Good" : total >= 50 ? "Fair" : "Poor"}
+            {total >= 90 ? chromeString("Excellent", locale) : total >= 75 ? chromeString("Good", locale) : total >= 50 ? chromeString("Fair", locale) : chromeString("Poor", locale)}
           </p>
         </div>
-        <WeekRangePill label="29 Jun - 5 Jul" className="min-w-[151px]" />
+        <WeekRangePill label={weekRangeLabel(locale)} className="min-w-[151px]" />
       </div>
       <div className="relative -mt-2 h-[104px] w-full shrink-0">
         <ResponsiveContainer width="100%" height="100%">
@@ -307,7 +328,7 @@ function ShowcaseSleepCard() {
             <div className="flex items-center gap-1.5">
               <span className="size-3 shrink-0 rounded-[4px]" style={{ backgroundColor: row.dot }} />
               <span className="text-body-regular whitespace-nowrap text-text-secondary">
-                {row.label}: {row.value}
+                {chromeString(row.label, locale)}: {chromeString(row.value, locale)}
               </span>
             </div>
             <span className="text-body-medium whitespace-nowrap text-text-primary tabular-nums">
@@ -324,9 +345,10 @@ function ShowcaseSleepCard() {
  * A port of the original's MostActiveDaysCard: on mount it scrolls to July (month 6)
  * and the pill follows the visible month; prev/next step one month (clamped, no wrap).
  * Day selection is shared with the activity card via the marquee. */
-function ShowcaseMostActiveDaysCard({ selectedDay, onSelectDay }: {
+function ShowcaseMostActiveDaysCard({ selectedDay, onSelectDay, locale }: {
   selectedDay: { month: number; day: number } | null;
   onSelectDay: (d: { month: number; day: number }) => void;
+  locale: SiteLocale;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const monthRowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -374,14 +396,14 @@ function ShowcaseMostActiveDaysCard({ selectedDay, onSelectDay }: {
     <section className="flex h-full w-full min-w-0 flex-col gap-4 rounded-[20px] bg-background-secondary-default p-2.5">
       <div className="flex w-full items-start justify-between gap-2 px-1.5 pt-1.5">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <p className="text-body-medium whitespace-nowrap text-text-secondary">Most active days</p>
+          <p className="text-body-medium whitespace-nowrap text-text-secondary">{chromeString("Most active days", locale)}</p>
           <div className="flex items-baseline gap-1">
             <p className="text-title-1-medium whitespace-nowrap text-text-primary tabular-nums">32,459</p>
-            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">total steps</span>
+            <span className="text-caption-1-medium whitespace-nowrap text-text-secondary">{chromeString("total steps", locale)}</span>
           </div>
         </div>
         <WeekRangePill
-          label={MONTH_NAMES[visibleMonth]}
+          label={chromeString(MONTH_NAMES[visibleMonth], locale)}
           onPrev={() => scrollToMonth(visibleMonth - 1)}
           onNext={() => scrollToMonth(visibleMonth + 1)}
           className="min-w-[128px]"
@@ -399,7 +421,7 @@ function ShowcaseMostActiveDaysCard({ selectedDay, onSelectDay }: {
                 }}
                 className="flex flex-col gap-2.5"
               >
-                <p className="ps-1 text-title-3-medium text-text-primary">{MONTH_SHORT[m]}</p>
+                <p className="ps-1 text-title-3-medium text-text-primary">{chromeString(MONTH_SHORT[m], locale)}</p>
                 <div className="grid grid-cols-7 gap-x-[5px]">
                   {Array.from({ length: MONTH_DAYS[m] }, (_, d) => d + 1).map((day) => {
                     const values = MINI_RINGS[dayIndex(m, day)] ?? [0, 0, 0];
@@ -437,7 +459,7 @@ function ShowcaseMostActiveDaysCard({ selectedDay, onSelectDay }: {
  * A port of the original's ActivityRingsCard: hovering a ring spotlights it
  * (hover colour, others dim); a day selected in the Most active days card swaps
  * the tiles to that day's values via dayActivity. */
-function ShowcaseActivityCard({ selectedDay }: { selectedDay: { month: number; day: number } | null }) {
+function ShowcaseActivityCard({ selectedDay, locale }: { selectedDay: { month: number; day: number } | null; locale: SiteLocale }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const base = [
     { label: "Move", value: "1,592 kcal", goalPct: 82, color: "var(--color-chart-3)", hoverColor: "var(--color-chart-3-active)" },
@@ -459,7 +481,7 @@ function ShowcaseActivityCard({ selectedDay }: { selectedDay: { month: number; d
     <section className="flex h-full w-full min-w-0 flex-col gap-4 rounded-[20px] bg-background-secondary-default p-2.5">
       <div className="flex w-full flex-col gap-[11px]">
         <p className="px-1.5 pt-1.5 text-body-medium text-text-secondary">
-          {selectedDay ? `Activity for ${MONTH_NAMES[selectedDay.month]} ${selectedDay.day}, 2026` : "Activity"}
+          {selectedDay ? `Activity for ${MONTH_NAMES[selectedDay.month]} ${selectedDay.day}, 2026` : chromeString("Activity", locale)}
         </p>
         <div className="flex h-[57px] w-full shrink-0 items-stretch gap-2">
           {tiles.map((tile) => (
@@ -472,7 +494,7 @@ function ShowcaseActivityCard({ selectedDay }: { selectedDay: { month: number; d
             >
               <div className="flex items-center gap-1.5">
                 <span className="size-3 shrink-0 rounded-[4px]" style={{ backgroundColor: tile.color }} />
-                <span className="text-body-regular whitespace-nowrap text-text-secondary">{tile.label}</span>
+                <span className="text-body-regular whitespace-nowrap text-text-secondary">{chromeString(tile.label, locale)}</span>
               </div>
               <span className="text-body-medium whitespace-nowrap text-text-primary">{tile.value}</span>
             </div>
@@ -480,7 +502,7 @@ function ShowcaseActivityCard({ selectedDay }: { selectedDay: { month: number; d
         </div>
       </div>
       <div className="flex min-h-0 w-full flex-1 items-center justify-center">
-        <svg viewBox="0 0 200 200" className="h-full max-h-[210px] w-full overflow-visible" role="img" aria-label="Move, exercise, and running activity progress" onMouseLeave={() => setHovered(null)}>
+        <svg viewBox="0 0 200 200" className="h-full max-h-[210px] w-full overflow-visible" role="img" aria-label={chromeString("Move, exercise, and running activity progress", locale)} onMouseLeave={() => setHovered(null)}>
           {tiles.map((tile, a) => {
             const dimmed = hovered !== null && hovered !== tile.label;
             return (
@@ -517,20 +539,20 @@ function ShowcaseCard({ delay, children }: { delay: string; children: React.Reac
 /** The hero's widget marquee: two copies of the six-card row for the seamless loop.
  * The selected day is shared state (as in the original's LandingMarquee):
  * picking a day in Most active days swaps the activity card's values, in both copies. */
-export function GettingStartedShowcase() {
+export function GettingStartedShowcase({ locale = "en" }: { locale?: SiteLocale } = {}) {
   const [selectedDay, setSelectedDay] = useState<{ month: number; day: number } | null>(null);
   const cards: { delay: string; node: React.ReactNode }[] = [
-    { delay: "0.1s", node: <PatientInfoCard /> },
-    { delay: "0.3s", node: <ShowcaseStepsCard /> },
-    { delay: "0.4s", node: <ShowcaseSleepCard /> },
-    { delay: "0.2s", node: <ShowcaseMostActiveDaysCard selectedDay={selectedDay} onSelectDay={setSelectedDay} /> },
-    { delay: "0.5s", node: <ShowcaseActivityCard selectedDay={selectedDay} /> },
-    { delay: "0s", node: <ImportantAlertsCard /> },
+    { delay: "0.1s", node: <PatientInfoCard locale={locale} /> },
+    { delay: "0.3s", node: <ShowcaseStepsCard locale={locale} /> },
+    { delay: "0.4s", node: <ShowcaseSleepCard locale={locale} /> },
+    { delay: "0.2s", node: <ShowcaseMostActiveDaysCard selectedDay={selectedDay} onSelectDay={setSelectedDay} locale={locale} /> },
+    { delay: "0.5s", node: <ShowcaseActivityCard selectedDay={selectedDay} locale={locale} /> },
+    { delay: "0s", node: <ImportantAlertsCard locale={locale} /> },
   ];
   return (
     <div className="relative z-10 mt-8 h-[200px] overflow-hidden">
       <div className="w-[182%] origin-top-left scale-[0.55]">
-        <section aria-label="BoardUI widgets showcase" className="w-full overflow-x-clip">
+        <section aria-label={chromeString("BoardUI widgets showcase", locale)} className="w-full overflow-x-clip">
           <div className="animate-landing-marquee flex w-max">
             <div className="flex">
               {cards.map((card, i) => (
