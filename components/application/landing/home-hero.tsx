@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   RiArrowRightLine,
   RiAsterisk,
@@ -19,6 +19,8 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { HeroRays } from "@/components/application/landing/hero-rays/hero-rays";
 import { HERO_RAYS_DEFAULTS } from "@/components/application/landing/hero-rays/hero-rays-config";
+import { useThemeMode } from "@/components/application/theme/theme-toggle";
+import { HeroRotatingHeadline } from "./hero-rotating-headline";
 import { TECH_BADGES } from "./home-data";
 import { homeString, localizeHomeData, type HomeData } from "./home-locale";
 import type { SiteLocale } from "@/components/application/docs/site-language-config";
@@ -59,8 +61,25 @@ export function HomeHero({
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    setReduceMotion(window.matchMedia(REDUCED_MOTION_QUERY).matches);
+    const query = window.matchMedia(REDUCED_MOTION_QUERY);
+    const update = () => setReduceMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, []);
+
+  const theme = useThemeMode();
+  const rays = useMemo(
+    () =>
+      theme === "dark"
+        ? {
+            ...HERO_RAYS_DEFAULTS,
+            background: HERO_RAYS_DEFAULTS.backgroundDark,
+            grain: HERO_RAYS_DEFAULTS.grainDark,
+          }
+        : HERO_RAYS_DEFAULTS,
+    [theme],
+  );
 
   const heroPreviewTabs = data.heroPreviewTabs;
   const tab = heroPreviewTabs[active];
@@ -72,7 +91,7 @@ export function HomeHero({
         style={{ "--hero-shader-height": "1060px" } as CSSProperties}
         className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[420px] overflow-hidden select-none sm:h-[620px] lg:h-[var(--hero-shader-height)]"
       >
-        <HeroRays config={HERO_RAYS_DEFAULTS} paused={reduceMotion} priority className="absolute inset-0 size-full" />
+        <HeroRays config={rays} paused={reduceMotion} priority className="absolute inset-0 size-full" />
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-[820px] flex-col items-start px-6 pt-12 text-start sm:items-center sm:pt-16 sm:text-center">
@@ -85,7 +104,23 @@ export function HomeHero({
         </Link>
         <h1 className="mt-5 text-[32px] leading-[38px] font-medium tracking-[-0.02em] text-text-primary sm:text-[48px] sm:leading-[56px]">
           <span className="block">{homeString("React Design System", locale)}</span>
-          <span className="block">{homeString("for Agentic Interfaces", locale)}</span>
+          {locale === "en" ? (
+            <span className="flex w-full justify-start sm:justify-center">
+              <span className="flex max-w-full items-baseline justify-start sm:inline-flex sm:justify-center">
+                <span className="shrink-0">for&nbsp;</span>
+                <span className="flex min-w-0 flex-1 flex-wrap gap-x-[0.25em] sm:inline-flex sm:flex-none sm:flex-nowrap">
+                  <span className="contents sm:hidden">
+                    <HeroRotatingHeadline locale={locale} mobile active={!reduceMotion} />
+                  </span>
+                  <span className="contents hidden sm:contents">
+                    <HeroRotatingHeadline locale={locale} active={!reduceMotion} />
+                  </span>
+                </span>
+              </span>
+            </span>
+          ) : (
+            <HeroRotatingHeadline locale={locale} active={!reduceMotion} />
+          )}
         </h1>
         <p className="mt-4 max-w-2xl text-body-regular text-pretty text-text-secondary">
           {homeString(
