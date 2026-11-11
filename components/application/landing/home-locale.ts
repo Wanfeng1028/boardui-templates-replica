@@ -28,7 +28,6 @@ export const HOME_STRINGS: Record<string, Partial<Record<Exclude<SiteLocale, "en
   "Analytics dashboard": { "zh-hans": "分析仪表盘", ja: "アナリティクスダッシュボード", ar: "لوحة تحكم التحليلات", "pt-br": "Dashboard de análise" },
   "Bars on one axis, a cased line on the other - volume and rate read together on one canvas.": { "zh-hans": "一个轴上有条形图，另一轴上有一条框线 - 交易量和利率在一张画布上一起读取。", ja: "一方の軸線上のバー、他のケース付き線 - ボリュームと率は、1つのキャンバスで一緒に読みます。", ar: "أشرطة على محور وخط محاط على المحور الآخر - يُقرأ الحجم والمعدل معاً على لوحة واحدة.", "pt-br": "Barras num eixo, uma linha de caixa no outro - volume e taxa lidas juntas em uma tela." },
   "Buy and install now": { "zh-hans": "立即购买并安装", ja: "今すぐ購入してインストール", ar: "اشترِ وثبِّت الآن", "pt-br": "Comprar e instalar agora" },
-  "Choose your plan": { "zh-hans": "选择方案", ja: "プランを選ぶ", ar: "اختر خطتك", "pt-br": "Escolha seu plano" },
   "Composer loader": { "zh-hans": "输入框加载状态", ja: "コンポーザーローダー", ar: "محمّل محرّر الرسائل", "pt-br": "Carregamento do compositor" },
   "Contributor profile": { "zh-hans": "贡献者资料", ja: "貢献者プロフィール", ar: "ملف المساهم", "pt-br": "Perfil de contribuidor" },
   "Discord access": { "zh-hans": "Discord 社区访问", ja: "Discordアクセス", ar: "الوصول إلى Discord", "pt-br": "Acesso ao Discord" },

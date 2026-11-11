@@ -71,6 +71,17 @@ export const SIDEBAR_LABELS: Record<string, Partial<Record<Exclude<SiteLocale, "
     ja: "テンプレート",
     ar: "القوالب",
   },
+  "Docs": {
+    "zh-hans": "文档",
+    ja: "ドキュメント",
+    ar: "التوثيق",
+    "pt-br": "Documentação",
+  },
+  "Blog": {
+    "zh-hans": "博客",
+    ja: "ブログ",
+    ar: "المدونة",
+  },
   // Base
   "Base": {
     "zh-hans": "基础组件",

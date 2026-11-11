@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   RiArrowDownSLine,
   RiArrowRightLine,
@@ -20,6 +20,7 @@ import { GettingStartedShowcase } from "@/components/application/docs/getting-st
 import { PrevNext } from "@/components/application/docs/prev-next";
 import { HeroRays } from "@/components/application/landing/hero-rays/hero-rays";
 import { HERO_RAYS_DEFAULTS } from "@/components/application/landing/hero-rays/hero-rays-config";
+import { useThemeMode } from "@/components/application/theme/theme-toggle";
 import { ProLogoMark } from "@/components/application/landing/pro-logo-mark";
 import {
   Dropdown,
@@ -232,6 +233,18 @@ function Hero() {
   useEffect(() => {
     setReduceMotion(window.matchMedia(REDUCED_MOTION_QUERY).matches);
   }, []);
+  const theme = useThemeMode();
+  const rays = useMemo(
+    () =>
+      theme === "dark"
+        ? {
+            ...HERO_RAYS_DEFAULTS,
+            background: HERO_RAYS_DEFAULTS.backgroundDark,
+            grain: HERO_RAYS_DEFAULTS.grainDark,
+          }
+        : HERO_RAYS_DEFAULTS,
+    [theme],
+  );
   return (
     <div className="relative mt-4 overflow-clip rounded-3xl border border-border-button-default pt-10 dark:border-separator-border">
       <div
@@ -239,7 +252,7 @@ function Hero() {
         style={{ "--hero-shader-height": "1060px" } as CSSProperties}
         className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[420px] overflow-hidden select-none sm:h-[620px] lg:h-[var(--hero-shader-height)]"
       >
-        <HeroRays config={HERO_RAYS_DEFAULTS} paused={reduceMotion} className="absolute inset-0 size-full" />
+        <HeroRays config={rays} paused={reduceMotion} className="absolute inset-0 size-full" />
       </div>
       <div className="relative z-10 mx-auto flex max-w-[560px] flex-col items-center px-6 text-center">
         <h2 className="text-[28px] leading-[34px] font-medium tracking-[-0.02em] text-text-primary sm:text-[36px] sm:leading-[43px]">

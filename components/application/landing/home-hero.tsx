@@ -23,6 +23,7 @@ import { useThemeMode } from "@/components/application/theme/theme-toggle";
 import { HeroRotatingHeadline } from "./hero-rotating-headline";
 import { TECH_BADGES } from "./home-data";
 import { homeString, localizeHomeData, type HomeData } from "./home-locale";
+import { chromeString } from "@/components/application/docs/locale-chrome";
 import type { SiteLocale } from "@/components/application/docs/site-language-config";
 import { cx } from "@/utils/cx";
 
@@ -42,7 +43,7 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
  * Home hero, as on boardui.com: ray field behind a centred headline,
- * "New BoardUI Pro is out" badge to #pricing, "Choose your plan" /
+ * "New BoardUI Pro is out" badge to #pricing, "Get Pro" /
  * "Start for free" CTAs, version badges, and a live template preview
  * below with the original's sidebar-rail tabs (Home, Project board, …).
  * The preview is an iframe of this site's own template routes — the
@@ -130,7 +131,7 @@ export function HomeHero({
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-start gap-3 sm:justify-center">
           <ButtonLink href="#pricing" variant="primary" size="medium">
-            {homeString("Choose your plan", locale)}
+            {chromeString("Get Pro", locale)}
           </ButtonLink>
           <ButtonLink href="/installation" variant="secondary" size="medium">
             {homeString("Start for free", locale)}
